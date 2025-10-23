@@ -287,6 +287,8 @@ class BadgeService {
     // Import Employee model dynamically to avoid circular dependency
     const Employee = (await import('../models')).Employee;
 
+    console.log('🔍 Vérification du matricule:', matricule);
+
     // Find employee by matricule
     const employee = await Employee.findOne({ matricule });
 

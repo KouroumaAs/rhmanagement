@@ -46,14 +46,27 @@ badgeSchema.methods.generateQRCodeImage = async function (): Promise<string> {
   // Get matricule
   const matricule = employee?.matricule || this.qrCode;
 
-  // Generate frontend verification URL
-  const frontendUrl = process.env.FRONTEND_URL || 'http://192.168.100.171:3000';
+  // Get frontend URL from environment
+  const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+
+  // Create verification URL with matricule directly
   const verificationUrl = `${frontendUrl}/verify?qr=${matricule}`;
 
-  console.log('🔍 Génération QR code avec URL:', verificationUrl);
+  console.log('🔍 Génération QR code avec matricule:', matricule);
+  console.log('🌐 URL de vérification:', verificationUrl);
 
-  // Generate QR code with full URL for verification
-  return QRCode.toDataURL(verificationUrl);
+  // Generate QR code with verification URL
+  return QRCode.toDataURL(verificationUrl, {
+    errorCorrectionLevel: 'H',  // High error correction
+    type: 'image/png',
+    quality: 1,
+    margin: 1,
+    width: 300,
+    color: {
+      dark: '#000000',  // QR code color
+      light: '#FFFFFF'  // Background color
+    }
+  });
 };
 
 // Method to mark as printed
