@@ -67,9 +67,10 @@ if (config.nodeEnv === 'development') {
 }
 
 /**
- * Static Files
+ * Static Files - Servir sur /uploads ET /api/uploads pour compatibilité avec nginx
  */
 app.use('/uploads', express.static(config.uploadPath));
+app.use('/api/uploads', express.static(config.uploadPath));
 
 /**
  * API Routes

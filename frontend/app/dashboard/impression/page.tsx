@@ -125,13 +125,12 @@ export default function ImpressionPage() {
 
       const response = await badgesService.getAll(params);
 
-      // La réponse a maintenant la structure { success: true, data: PaginatedResponse<Badge> }
-      const paginatedData = response.data;
-      const badges = paginatedData?.data || [];
+      // La réponse API: { success: true, data: [...], pagination: {...} }
+      const badges = response.data || [];
 
       setBadgeRequests(badges);
-      setTotalPages(paginatedData?.totalPages || 1);
-      setTotalBadges(paginatedData?.total || 0);
+      setTotalPages(response.pagination?.pages || 1);
+      setTotalBadges(response.pagination?.total || 0);
     } catch (error: any) {
       console.error('Erreur chargement badges:', error);
       toast({

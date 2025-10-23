@@ -20,11 +20,12 @@ const initializeApp = async () => {
  * Start Server
  */
 const PORT = config.port;
-
+const host = config.appUrl;
+console.log(`🔌 Environnement: ${config.appUrl}`);
 initializeApp().then(() => {
   const server = app.listen(PORT, '0.0.0.0', () => {
     console.log(`\n🚀 Serveur démarré avec succès!`);
-    console.log(`📍 URL: ${config.appUrl}`);
+    console.log(`📍 URL: ${host}`);
     console.log(`🔌 Port: ${PORT}`);
     console.log(`🌍 Environnement: ${config.nodeEnv}`);
     console.log(`🌐 Accessible sur toutes les interfaces réseau (0.0.0.0)`);

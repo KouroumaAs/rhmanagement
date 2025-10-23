@@ -112,19 +112,15 @@ export default function EmployeesPage() {
       if (dateFinContratA) query.dateFinContratA = dateFinContratA;
 
       const response = await employeeService.getAll(query);
-     // console.log(response);
       logger.log('📥 Response complète:', response);
 
-      // La réponse est maintenant { success: true, data: PaginatedResponse<Employee> }
-      // response.data.data contient le tableau d'employés
-      // response.data contient les infos de pagination
-      const paginatedData = response.data;
-      const employeesData = paginatedData?.data || [];
+      // La réponse API: { success: true, data: [...], pagination: {...} }
+      const employeesData = response.data || [];
       logger.log('👥 Employees:', employeesData);
 
       setEmployees(employeesData);
-      setTotalPages(paginatedData?.totalPages || 1);
-      setTotalEmployees(paginatedData?.total || 0);
+      setTotalPages(response.pagination?.pages || 1);
+      setTotalEmployees(response.pagination?.total || 0);
     } catch (error) {
       // Les logs détaillés sont déjà affichés automatiquement par le service API
       const errorMessage = (error as any).getUserMessage?.() || (error as Error).message || "Impossible de charger les employés";

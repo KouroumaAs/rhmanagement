@@ -154,7 +154,13 @@ export const getImageUrl = (photoPath: string | null | undefined): string | null
     return photoPath;
   }
 
-  // Sinon, préfixer avec l'URL du backend
-  const baseUrl = process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || 'http://localhost:5000';
-  return `${baseUrl}${photoPath}`;
+  // Construire l'URL avec l'API URL de base
+  // En production: https://rhmanagement.dsdguinee.com/api + /uploads/...
+  // = https://rhmanagement.dsdguinee.com/api/uploads/...
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4003';
+
+  // Enlever le / au début de photoPath si présent pour éviter //
+  const cleanPath = photoPath.startsWith('/') ? photoPath.slice(1) : photoPath;
+
+  return `${apiUrl}/${cleanPath}`;
 };
