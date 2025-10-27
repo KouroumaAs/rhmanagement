@@ -69,18 +69,19 @@ export const badgesService = {
   /**
    * Verify badge by QR code - Retourne uniquement le matricule
    */
-  async verify(qrCode: string): Promise<ApiResponse<{
+  async verify(qrCode: string): Promise<{
+    success: boolean;
     employee?: {
       matricule: string;
     };
-  }>> {
+  }> {
     console.log('🔍 Appel API verify avec qrCode:', qrCode);
     // Route publique, pas besoin de token
     return get<{
       employee?: {
         matricule: string;
       };
-    }>(`${API_ENDPOINTS.BADGES}/verify/${qrCode}`);
+    }>(`${API_ENDPOINTS.BADGES}/verify/${qrCode}`) as any;
   },
 
   /**

@@ -4,7 +4,13 @@ const nextConfig: NextConfig = {
   reactStrictMode: false,
   output: 'standalone',
   // Permettre les requêtes cross-origin depuis l'adresse IP locale
-  allowedDevOrigins: ['http://192.168.100.171:3000'],
+  assetPrefix: process.env.NODE_ENV === 'production' ? undefined : '',
+  allowedDevOrigins: [
+    'http://192.168.100.171:3000',
+    'http://192.168.100.171:3001',
+    'http://localhost:3000',
+    'http://localhost:3001',
+  ],
   eslint: {
     ignoreDuringBuilds: true,
   },

@@ -1,1 +1,6 @@
-{}
+{
+  "/dashboard/impression/badges/[id]/print/page": "app/dashboard/impression/badges/[id]/print/page.js",
+  "/dashboard/impression/page": "app/dashboard/impression/page.js",
+  "/favicon.ico/route": "app/favicon.ico/route.js",
+  "/verify/page": "app/verify/page.js"
+}
