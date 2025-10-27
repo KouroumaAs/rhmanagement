@@ -59,7 +59,6 @@ badgeSchema.methods.generateQRCodeImage = async function (): Promise<string> {
   return QRCode.toDataURL(verificationUrl, {
     errorCorrectionLevel: 'H',  // High error correction
     type: 'image/png',
-    quality: 1,
     margin: 1,
     width: 300,
     color: {
