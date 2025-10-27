@@ -30,21 +30,15 @@ const PUBLIC_ROUTES = [
     '/forgot-password',
     '/verify'
 ];
-// Routes qui nécessitent une authentification
-const PROTECTED_ROUTES = [
-    '/dashboard',
-    '/change-password'
-];
 function middleware(request) {
     const { pathname } = request.nextUrl;
-    // Vérifier si la route est protégée
-    const isProtectedRoute = PROTECTED_ROUTES.some((route)=>pathname.startsWith(route));
+    // Vérifier si la route est publique
     const isPublicRoute = PUBLIC_ROUTES.some((route)=>pathname.startsWith(route));
-    // Récupérer le token depuis les cookies (si vous utilisez des cookies)
-    // Ou vérifier via une autre méthode
+    // Récupérer le token depuis les cookies
     const token = request.cookies.get('token')?.value;
-    // Si la route est protégée et qu'il n'y a pas de token
-    if (isProtectedRoute && !token) {
+    // Si la route n'est PAS publique et qu'il n'y a pas de token -> rediriger vers login
+    // Cela protège TOUTES les routes par défaut (y compris /)
+    if (!isPublicRoute && !token) {
         const url = request.nextUrl.clone();
         url.pathname = '/login';
         return __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$rhmanagement$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$esm$2f$server$2f$web$2f$exports$2f$index$2e$js__$5b$middleware$2d$edge$5d$__$28$ecmascript$29$__["NextResponse"].redirect(url);
@@ -64,8 +58,10 @@ const config = {
      * - api (API routes)
      * - _next/static (static files)
      * - _next/image (image optimization files)
+     * - images (public images)
      * - favicon.ico (favicon file)
-     */ '/((?!api|_next/static|_next/image|favicon.ico).*)'
+     * - public static files (.png, .jpg, .jpeg, .svg, .ico)
+     */ '/((?!api|_next/static|_next/image|images|favicon.ico|.*\\.(?:png|jpg|jpeg|svg|ico|webp)).*)'
     ]
 };
 }),
