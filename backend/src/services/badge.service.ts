@@ -293,62 +293,17 @@ class BadgeService {
     const employee = await Employee.findOne({ matricule });
 
     if (!employee) {
-      return {
-        verified: false,
-        message: 'Employé non trouvé',
-      };
+      return {};
     }
 
-    // Find badge for this employee
-    const badge = await Badge.findOne({ employee: employee._id }).populate('employee');
-
-    if (!badge) {
-      return {
-        verified: false,
-        message: 'Badge non trouvé pour cet employé',
-      };
-    }
-
-    return this.validateBadge(badge);
-  };
-
-  private validateBadge = (badge: any): VerifyQRCodeResponseDto => {
-    const employee = badge.employee as any;
-
-    // Check if employee is active
-    if (employee.status !== 'ACTIF') {
-      return {
-        verified: false,
-        message: 'Employé non actif',
-        employee: {
-          matricule: employee.matricule,
-        },
-      };
-    }
-
-    // Check if contract is still valid
-    const now = new Date();
-    const contractEndDate = new Date(employee.dateFinContrat);
-
-    if (contractEndDate < now) {
-      return {
-        verified: false,
-        message: 'Contrat expiré',
-        employee: {
-          matricule: employee.matricule,
-        },
-      };
-    }
-
-    // Everything is valid
+    // Return only matricule
     return {
-      verified: true,
-      message: 'Badge valide',
       employee: {
         matricule: employee.matricule,
       },
     };
   };
+
 
   deleteBadge = async (id: string): Promise<void> => {
     const badge = await Badge.findById(id);

@@ -52,8 +52,6 @@ export class QRCodeResponseDto {
 }
 
 export class VerifyQRCodeResponseDto {
-  verified!: boolean;
-  message!: string;
   employee?: {
     matricule: string;
   };
