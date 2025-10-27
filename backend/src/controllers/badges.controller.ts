@@ -106,6 +106,8 @@ class BadgesController {
     try {
       const result = await badgeService.verifyQRCode(req.params.qrCode);
 
+      console.log('📤 Réponse verify envoyée:', JSON.stringify({ success: true, ...result }));
+
       res.status(200).json({
         success: true,
         ...result,
@@ -123,6 +125,8 @@ class BadgesController {
   verifyByMatricule = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const result = await badgeService.verifyByMatricule(req.params.matricule);
+
+      console.log('📤 Réponse verify envoyée:', JSON.stringify({ success: true, ...result }));
 
       res.status(200).json({
         success: true,
