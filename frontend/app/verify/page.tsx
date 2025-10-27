@@ -58,11 +58,11 @@ function VerifyContent() {
   };
 
   const getStatusInfo = () => {
-    if (!result) {
+    if (!result || !result.data || !result.data.employee) {
       return null;
     }
 
-    // Configuration simple sans statut de validation
+    // Affichage simple avec le matricule trouvé
     return {
       icon: QrCode,
       color: "text-[#ff8d13]",
@@ -142,14 +142,20 @@ function VerifyContent() {
           <Card className={`shadow-2xl border-2 ${statusInfo.borderColor} ${statusInfo.bgColor}`}>
             <CardContent className="p-8 space-y-6">
               {/* Employee Info */}
-              {result.employee && (
+              {result.data?.employee && (
                 <div className="space-y-4">
                   <div className="flex items-center justify-center">
                     <div className="text-center">
                       <p className="text-xs font-semibold text-gray-500 uppercase mb-2">Matricule</p>
-                      <p className="text-3xl font-bold text-gray-900">{result.employee?.matricule}</p>
+                      <p className="text-3xl font-bold text-gray-900">{result.data.employee.matricule}</p>
                     </div>
                   </div>
+                </div>
+              )}
+              {result.data && !result.data.employee && (
+                <div className="text-center">
+                  <XCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
+                  <p className="text-xl font-semibold text-gray-900">Matricule non trouvé</p>
                 </div>
               )}
             </CardContent>
