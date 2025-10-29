@@ -120,6 +120,9 @@ class BadgeService {
             fonction: '$employeeData.fonction',
             matricule: '$employeeData.matricule',
             type: '$employeeData.type',
+            dateEmbauche: '$employeeData.dateEmbauche',
+            dateFinContrat: '$employeeData.dateFinContrat',
+            photo: '$employeeData.photo',
           },
         },
       });
@@ -178,7 +181,7 @@ class BadgeService {
     // Execute query
     const [badges, total] = await Promise.all([
       Badge.find(filters)
-        .populate('employee', 'nom prenom email telephone fonction matricule type')
+        .populate('employee', 'nom prenom email telephone fonction matricule type dateEmbauche dateFinContrat photo')
         .sort('-createdAt')
         .skip(skip)
         .limit(limit),

@@ -1,4 +1,4 @@
-import { EmployeeType, EmployeeStatus } from '../types';
+import { EmployeeType, EmployeeStatus, ContractType } from '../types';
 
 export class CreateEmployeeDto {
   nom!: string;
@@ -8,8 +8,9 @@ export class CreateEmployeeDto {
   fonction!: string;
   matricule!: string;
   type!: EmployeeType;
+  typeContrat!: ContractType;
   dateEmbauche!: Date;
-  dateFinContrat!: Date;
+  dateFinContrat?: Date;
   photo?: string;
 }
 
@@ -21,6 +22,7 @@ export class UpdateEmployeeDto {
   fonction?: string;
   matricule?: string;
   type?: EmployeeType;
+  typeContrat?: ContractType;
   dateEmbauche?: Date;
   dateFinContrat?: Date;
   photo?: string;
@@ -44,6 +46,7 @@ export class EmployeeResponseDto {
   fonction!: string;
   matricule!: string;
   type!: EmployeeType;
+  typeContrat!: ContractType;
   status!: EmployeeStatus;
   dateEmbauche!: Date;
   dateFinContrat?: Date;
