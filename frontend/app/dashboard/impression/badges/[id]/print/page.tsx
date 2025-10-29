@@ -7,7 +7,6 @@ import { ArrowLeft, Printer } from "lucide-react";
 import { badgesService } from "@/src/services/badges.service";
 import { getImageUrl } from "@/src/constants";
 import Image from "next/image";
-
 export default function PrintBadgePage() {
   const params = useParams();
   const router = useRouter();
@@ -177,7 +176,7 @@ export default function PrintBadgePage() {
                 left: 0,
                 width: "100%",
                 height: "100%",
-                objectFit: "cover",  /* Remplit tout l'espace sans déformation */
+                objectFit: "cover",
                 zIndex: 1
               }}
             />

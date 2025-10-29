@@ -123,10 +123,10 @@ export default function ImpressionPage() {
       if (dateImpressionDe) params.dateImpressionDe = dateImpressionDe;
       if (dateImpressionA) params.dateImpressionA = dateImpressionA;
 
-      const response = await badgesService.getAll(params);
+      const response:any = await badgesService.getAll(params);
 
       // La réponse API: { success: true, data: [...], pagination: {...} }
-      const badges = response.data || [];
+      const badges = Array.isArray(response.data) ? response.data : [];
 
       setBadgeRequests(badges);
       setTotalPages(response.pagination?.pages || 1);

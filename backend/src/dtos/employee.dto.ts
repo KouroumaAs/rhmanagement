@@ -12,6 +12,7 @@ export class CreateEmployeeDto {
   dateEmbauche!: Date;
   dateFinContrat?: Date;
   photo?: string;
+  
 }
 
 export class UpdateEmployeeDto {

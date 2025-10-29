@@ -1,1 +1,178 @@
-{"version":3,"caseSensitive":false,"basePath":"","rewrites":{"beforeFiles":[],"afterFiles":[],"fallback":[]},"redirects":[{"source":"/:path+/","destination":"/:path+","permanent":true,"internal":true,"regex":"^(?:\\/((?:[^\\/]+?)(?:\\/(?:[^\\/]+?))*))\\/$"}],"headers":[]}
+{
+  "version": 3,
+  "pages404": true,
+  "caseSensitive": false,
+  "basePath": "",
+  "redirects": [
+    {
+      "source": "/:path+/",
+      "destination": "/:path+",
+      "internal": true,
+      "statusCode": 308,
+      "regex": "^(?:/((?:[^/]+?)(?:/(?:[^/]+?))*))/$"
+    }
+  ],
+  "headers": [],
+  "rewrites": {
+    "beforeFiles": [],
+    "afterFiles": [],
+    "fallback": []
+  },
+  "dynamicRoutes": [
+    {
+      "page": "/dashboard/impression/badges/[id]/print",
+      "regex": "^/dashboard/impression/badges/([^/]+?)/print(?:/)?$",
+      "routeKeys": {
+        "nxtPid": "nxtPid"
+      },
+      "namedRegex": "^/dashboard/impression/badges/(?<nxtPid>[^/]+?)/print(?:/)?$"
+    },
+    {
+      "page": "/dashboard/rh/employees/[id]",
+      "regex": "^/dashboard/rh/employees/([^/]+?)(?:/)?$",
+      "routeKeys": {
+        "nxtPid": "nxtPid"
+      },
+      "namedRegex": "^/dashboard/rh/employees/(?<nxtPid>[^/]+?)(?:/)?$"
+    },
+    {
+      "page": "/dashboard/rh/employees/[id]/edit",
+      "regex": "^/dashboard/rh/employees/([^/]+?)/edit(?:/)?$",
+      "routeKeys": {
+        "nxtPid": "nxtPid"
+      },
+      "namedRegex": "^/dashboard/rh/employees/(?<nxtPid>[^/]+?)/edit(?:/)?$"
+    },
+    {
+      "page": "/dashboard/rh/users/[id]",
+      "regex": "^/dashboard/rh/users/([^/]+?)(?:/)?$",
+      "routeKeys": {
+        "nxtPid": "nxtPid"
+      },
+      "namedRegex": "^/dashboard/rh/users/(?<nxtPid>[^/]+?)(?:/)?$"
+    },
+    {
+      "page": "/dashboard/rh/users/[id]/edit",
+      "regex": "^/dashboard/rh/users/([^/]+?)/edit(?:/)?$",
+      "routeKeys": {
+        "nxtPid": "nxtPid"
+      },
+      "namedRegex": "^/dashboard/rh/users/(?<nxtPid>[^/]+?)/edit(?:/)?$"
+    }
+  ],
+  "staticRoutes": [
+    {
+      "page": "/",
+      "regex": "^/(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/(?:/)?$"
+    },
+    {
+      "page": "/_not-found",
+      "regex": "^/_not\\-found(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/_not\\-found(?:/)?$"
+    },
+    {
+      "page": "/change-password",
+      "regex": "^/change\\-password(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/change\\-password(?:/)?$"
+    },
+    {
+      "page": "/change-password/change-password",
+      "regex": "^/change\\-password/change\\-password(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/change\\-password/change\\-password(?:/)?$"
+    },
+    {
+      "page": "/dashboard/impression",
+      "regex": "^/dashboard/impression(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/dashboard/impression(?:/)?$"
+    },
+    {
+      "page": "/dashboard/rh",
+      "regex": "^/dashboard/rh(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/dashboard/rh(?:/)?$"
+    },
+    {
+      "page": "/dashboard/rh/employees",
+      "regex": "^/dashboard/rh/employees(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/dashboard/rh/employees(?:/)?$"
+    },
+    {
+      "page": "/dashboard/rh/employees/new",
+      "regex": "^/dashboard/rh/employees/new(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/dashboard/rh/employees/new(?:/)?$"
+    },
+    {
+      "page": "/dashboard/rh/users",
+      "regex": "^/dashboard/rh/users(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/dashboard/rh/users(?:/)?$"
+    },
+    {
+      "page": "/dashboard/security/scan",
+      "regex": "^/dashboard/security/scan(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/dashboard/security/scan(?:/)?$"
+    },
+    {
+      "page": "/favicon.ico",
+      "regex": "^/favicon\\.ico(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/favicon\\.ico(?:/)?$"
+    },
+    {
+      "page": "/forgot-password",
+      "regex": "^/forgot\\-password(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/forgot\\-password(?:/)?$"
+    },
+    {
+      "page": "/login",
+      "regex": "^/login(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/login(?:/)?$"
+    },
+    {
+      "page": "/register",
+      "regex": "^/register(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/register(?:/)?$"
+    },
+    {
+      "page": "/test-images",
+      "regex": "^/test\\-images(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/test\\-images(?:/)?$"
+    },
+    {
+      "page": "/verify",
+      "regex": "^/verify(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/verify(?:/)?$"
+    }
+  ],
+  "dataRoutes": [],
+  "rsc": {
+    "header": "rsc",
+    "varyHeader": "rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch",
+    "prefetchHeader": "next-router-prefetch",
+    "didPostponeHeader": "x-nextjs-postponed",
+    "contentTypeHeader": "text/x-component",
+    "suffix": ".rsc",
+    "prefetchSuffix": ".prefetch.rsc",
+    "prefetchSegmentHeader": "next-router-segment-prefetch",
+    "prefetchSegmentSuffix": ".segment.rsc",
+    "prefetchSegmentDirSuffix": ".segments"
+  },
+  "rewriteHeaders": {
+    "pathHeader": "x-nextjs-rewritten-path",
+    "queryHeader": "x-nextjs-rewritten-query"
+  }
+}

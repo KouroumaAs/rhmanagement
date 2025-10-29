@@ -1,1 +1,23 @@
-{}
+{
+  "/_not-found/page": "app/_not-found/page.js",
+  "/change-password/change-password/page": "app/change-password/change-password/page.js",
+  "/change-password/page": "app/change-password/page.js",
+  "/dashboard/impression/badges/[id]/print/page": "app/dashboard/impression/badges/[id]/print/page.js",
+  "/dashboard/impression/page": "app/dashboard/impression/page.js",
+  "/dashboard/rh/employees/[id]/edit/page": "app/dashboard/rh/employees/[id]/edit/page.js",
+  "/dashboard/rh/employees/[id]/page": "app/dashboard/rh/employees/[id]/page.js",
+  "/dashboard/rh/employees/new/page": "app/dashboard/rh/employees/new/page.js",
+  "/dashboard/rh/employees/page": "app/dashboard/rh/employees/page.js",
+  "/dashboard/rh/page": "app/dashboard/rh/page.js",
+  "/dashboard/rh/users/[id]/edit/page": "app/dashboard/rh/users/[id]/edit/page.js",
+  "/dashboard/rh/users/[id]/page": "app/dashboard/rh/users/[id]/page.js",
+  "/dashboard/rh/users/page": "app/dashboard/rh/users/page.js",
+  "/dashboard/security/scan/page": "app/dashboard/security/scan/page.js",
+  "/favicon.ico/route": "app/favicon.ico/route.js",
+  "/forgot-password/page": "app/forgot-password/page.js",
+  "/login/page": "app/login/page.js",
+  "/page": "app/page.js",
+  "/register/page": "app/register/page.js",
+  "/test-images/page": "app/test-images/page.js",
+  "/verify/page": "app/verify/page.js"
+}
