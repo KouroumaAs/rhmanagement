@@ -184,6 +184,65 @@ class EmployeesController {
       next(error);
     }
   };
+
+  /**
+   * @desc    Download employee photo
+   * @route   GET /api/employees/:id/photo/download
+   * @access  Private
+   */
+  downloadEmployeePhoto = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      console.log('📥 [downloadEmployeePhoto] Requête reçue pour employee ID:', req.params.id);
+
+      const result = await employeeService.getEmployeeById(req.params.id);
+      console.log('📥 [downloadEmployeePhoto] Employé trouvé:', result.nom, result.prenom);
+      console.log('📥 [downloadEmployeePhoto] Photo path:', result.photo);
+
+      if (!result.photo) {
+        console.log('❌ [downloadEmployeePhoto] Aucune photo disponible');
+        res.status(404).json({
+          success: false,
+          message: 'Aucune photo disponible pour cet employé',
+        });
+        return;
+      }
+
+      // Construire le chemin complet du fichier
+      const path = require('path');
+      const fs = require('fs');
+      const filePath = path.join(process.cwd(), result.photo);
+      console.log('📥 [downloadEmployeePhoto] Chemin complet du fichier:', filePath);
+
+      // Vérifier si le fichier existe
+      if (!fs.existsSync(filePath)) {
+        console.log('❌ [downloadEmployeePhoto] Fichier introuvable:', filePath);
+        res.status(404).json({
+          success: false,
+          message: 'Fichier photo introuvable',
+        });
+        return;
+      }
+
+      // Extraire l'extension du fichier
+      const extension = path.extname(result.photo);
+
+      // Créer un nom de fichier avec le matricule
+      const downloadName = `${result.matricule}${extension}`;
+      console.log('📥 [downloadEmployeePhoto] Nom de téléchargement:', downloadName);
+
+      // Définir les headers pour forcer le téléchargement
+      res.setHeader('Content-Type', 'application/octet-stream');
+      res.setHeader('Content-Disposition', `attachment; filename="${downloadName}"`);
+
+      console.log('✅ [downloadEmployeePhoto] Envoi du fichier...');
+
+      // Envoyer le fichier
+      res.sendFile(filePath);
+    } catch (error: any) {
+      console.error('❌ [downloadEmployeePhoto] Erreur:', error);
+      next(error);
+    }
+  };
 }
 
 export default new EmployeesController();

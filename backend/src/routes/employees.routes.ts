@@ -11,7 +11,18 @@ import {
 const router = Router();
 
 /**
- * All routes require authentication and RH, ASSISTANT_RH or ADMIN role
+ * Routes requiring only authentication (accessible to all authenticated users)
+ */
+// Download employee photo - accessible to ADMIN and IMPRESSION only
+router.get(
+  '/:id/photo/download',
+  protect,
+  authorize('ADMIN', 'IMPRESSION'),
+  employeesController.downloadEmployeePhoto
+);
+
+/**
+ * All other routes require authentication and RH, ASSISTANT_RH or ADMIN role
  */
 router.use(protect);
 router.use(authorize('RH', 'ASSISTANT_RH', 'ADMIN'));

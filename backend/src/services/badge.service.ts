@@ -122,6 +122,9 @@ class BadgeService {
             fonction: '$employeeData.fonction',
             matricule: '$employeeData.matricule',
             type: '$employeeData.type',
+            dateEmbauche: '$employeeData.dateEmbauche',
+            dateFinContrat: '$employeeData.dateFinContrat',
+            photo: '$employeeData.photo',
           },
         },
       });

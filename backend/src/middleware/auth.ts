@@ -25,7 +25,11 @@ export const protect = async (req: Request, res: Response, next: NextFunction): 
       token = req.headers.authorization.split(' ')[1];
     }
 
+    console.log('🔐 Auth Middleware - Token présent:', !!token);
+    console.log('🔐 Auth Middleware - Headers:', req.headers.authorization);
+
     if (!token) {
+      console.log('❌ Auth Middleware - Aucun token fourni');
       res.status(401).json({
         success: false,
         message: 'Non autorisé - Aucun token fourni',
@@ -34,13 +38,18 @@ export const protect = async (req: Request, res: Response, next: NextFunction): 
     }
 
     try {
+      console.log('🔑 Auth Middleware - Vérification du token...');
+      console.log('🔑 JWT_SECRET utilisé:', config.jwtSecret.substring(0, 10) + '...');
+
       // Verify token
       const decoded = jwt.verify(token, config.jwtSecret) as { id: string };
+      console.log('✅ Auth Middleware - Token valide, User ID:', decoded.id);
 
       // Get user from token
       const user = await User.findById(decoded.id).select('-password');
 
       if (!user) {
+        console.log('❌ Auth Middleware - Utilisateur non trouvé pour ID:', decoded.id);
         res.status(401).json({
           success: false,
           message: 'Non autorisé - Utilisateur non trouvé',
@@ -48,8 +57,11 @@ export const protect = async (req: Request, res: Response, next: NextFunction): 
         return;
       }
 
+      console.log('✅ Auth Middleware - Utilisateur trouvé:', user.email);
+
       // Check if user is blocked
       if (user.isBlocked) {
+        console.log('❌ Auth Middleware - Compte bloqué:', user.email);
         res.status(403).json({
           success: false,
           message: 'Compte bloqué - Contactez l\'administrateur',
@@ -59,6 +71,7 @@ export const protect = async (req: Request, res: Response, next: NextFunction): 
 
       // Check if user is active
       if (!user.isActive) {
+        console.log('❌ Auth Middleware - Compte désactivé:', user.email);
         res.status(403).json({
           success: false,
           message: 'Compte désactivé - Contactez l\'administrateur',
@@ -66,9 +79,14 @@ export const protect = async (req: Request, res: Response, next: NextFunction): 
         return;
       }
 
+      console.log('✅ Auth Middleware - Authentification réussie:', user.email);
       req.user = user;
       next();
     } catch (error) {
+      console.error('❌ Auth Middleware - Erreur de vérification du token:', error);
+      if (error instanceof jwt.JsonWebTokenError) {
+        console.error('❌ JWT Error:', error.message);
+      }
       res.status(401).json({
         success: false,
         message: 'Non autorisé - Token invalide',
@@ -76,6 +94,7 @@ export const protect = async (req: Request, res: Response, next: NextFunction): 
       return;
     }
   } catch (error) {
+    console.error('❌ Auth Middleware - Erreur serveur:', error);
     res.status(500).json({
       success: false,
       message: 'Erreur serveur',

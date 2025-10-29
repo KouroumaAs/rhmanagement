@@ -37,7 +37,7 @@ app.use(
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin'],
-    exposedHeaders: ['Content-Length', 'X-Request-Id'],
+    exposedHeaders: ['Content-Length', 'X-Request-Id', 'Content-Disposition'],
     preflightContinue: false,
     optionsSuccessStatus: 204,
     maxAge: 86400, // 24 heures de cache pour les preflight requests
