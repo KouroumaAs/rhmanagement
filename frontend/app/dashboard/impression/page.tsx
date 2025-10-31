@@ -30,7 +30,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Printer, QrCode, CheckCircle, Clock, Download, Building2, Users, Search, X, LogOut, KeyRound, FileText } from "lucide-react";
+import { Printer, QrCode, CheckCircle, Clock, Download, Building2, Users, Search, X, LogOut, KeyRound, FileText, Image } from "lucide-react";
 import Link from "next/link";
 import { QRCodeSVG } from "qrcode.react";
 import QRCodeLib from "qrcode";
@@ -217,6 +217,50 @@ export default function ImpressionPage() {
         variant: "destructive",
         title: "Erreur",
         description: "Impossible de télécharger le QR code",
+      });
+    }
+  };
+
+  const downloadPhoto = async (badge: any) => {
+    try {
+      if (!badge.employee?.photo) {
+        toast({
+          variant: "destructive",
+          title: "Erreur",
+          description: "Aucune photo disponible pour cet employé",
+        });
+        return;
+      }
+
+      // Obtenir l'URL de base sans /api
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://192.168.100.171:4003/api';
+      const baseUrl = apiUrl.replace('/api', '');
+      const photoUrl = `${baseUrl}${badge.employee.photo}`;
+
+      // Télécharger la photo
+      const response = await fetch(photoUrl);
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+
+      // Créer un lien de téléchargement
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `Photo-${badge.employee?.matricule || 'employee'}.jpg`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+
+      toast({
+        title: "Photo téléchargée",
+        description: `La photo de ${badge.employee?.prenom} ${badge.employee?.nom} a été téléchargée`,
+      });
+    } catch (error) {
+      console.error("Erreur lors du téléchargement de la photo:", error);
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: "Impossible de télécharger la photo",
       });
     }
   };
@@ -902,6 +946,18 @@ export default function ImpressionPage() {
                             <Download className="w-4 h-4" />
                             QR Code
                           </Button>
+                          {request.employee?.photo && (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="gap-2 border-blue-200 hover:bg-blue-50 text-blue-600"
+                              onClick={() => downloadPhoto(request)}
+                              title="Télécharger la photo"
+                            >
+                              <Image className="w-4 h-4" />
+                              Photo
+                            </Button>
+                          )}
                         </div>
                       </TableCell>
                     </TableRow>
