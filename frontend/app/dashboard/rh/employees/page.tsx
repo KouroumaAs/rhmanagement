@@ -399,13 +399,13 @@ export default function EmployeesPage() {
     );
   };
 
-  const getTypeBadge = (type: string) => {
+  const getTypeBadge = (type: string, sousType?: string) => {
     const typeLabels: Record<string, string> = {
       PERSONNELS_DSD: "Personnels DSD",
       DNTT: "DNTT",
       STAGIAIRES_DSD: "Stagiaires DSD",
-      BANQUES: "Banques",
-      MAISONS_PLAQUE: "Maisons de Plaque",
+      BANQUES: "Banque",
+      MAISONS_PLAQUE: "Emboutisseur",
       DNTT_STAGIAIRES: "DNTT Stagiaires",
       DEMARCHEURS: "Démarcheurs",
     };
@@ -420,9 +420,12 @@ export default function EmployeesPage() {
       DEMARCHEURS: "bg-amber-600",
     };
 
+    const label = typeLabels[type] || type;
+    const displayLabel = sousType ? `${label} ${sousType}` : label;
+
     return (
       <Badge className={`${colors[type] || "bg-gray-600"} text-white font-semibold`}>
-        {typeLabels[type] || type}
+        {displayLabel}
       </Badge>
     );
   };
@@ -753,7 +756,7 @@ export default function EmployeesPage() {
                             )}
                           </div>
                         </TableCell>
-                        <TableCell>{getTypeBadge(employee.type)}</TableCell>
+                        <TableCell>{getTypeBadge(employee.type, employee.sousType)}</TableCell>
                         <TableCell>{getStatusBadge(employee.status)}</TableCell>
                         <TableCell className="text-sm font-medium text-gray-700">
                           {formatDate(employee.dateEmbauche)}

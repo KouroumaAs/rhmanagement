@@ -26,6 +26,7 @@ export interface Employee {
   fonction: string;
   matricule: string;
   type: EmployeeType;
+  sousType?: string;
   status: EmployeeStatus;
   motifSuspension?: string | null;
   dateFinSuspension?: string | null;

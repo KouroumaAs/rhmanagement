@@ -185,7 +185,7 @@ class BadgeService {
     // Execute query
     const [badges, total] = await Promise.all([
       Badge.find(filters)
-        .populate('employee', 'nom prenom email telephone fonction matricule type dateEmbauche dateFinContrat photo')
+        .populate('employee', 'nom prenom email telephone fonction matricule type sousType dateEmbauche dateFinContrat photo')
         .populate('reprintHistory.authorizedBy', 'nom prenom email')
         .sort('-createdAt')
         .skip(skip)
