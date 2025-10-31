@@ -217,7 +217,7 @@ class BadgeService {
 
   getBadgeById = async (id: string): Promise<BadgeResponseDto> => {
     const badge = await Badge.findById(id)
-      .populate('employee', 'nom prenom email telephone fonction matricule type dateEmbauche dateFinContrat photo')
+      .populate('employee', 'nom prenom email telephone fonction matricule type sousType dateEmbauche dateFinContrat photo')
       .populate('reprintHistory.authorizedBy', 'nom prenom email');
 
     if (!badge) {
@@ -251,7 +251,7 @@ class BadgeService {
 
   printBadge = async (badgeId: string, _printedBy: string): Promise<BadgeResponseDto> => {
     const badge = await Badge.findById(badgeId)
-      .populate('employee')
+      .populate('employee', 'nom prenom email telephone fonction matricule type sousType dateEmbauche dateFinContrat photo')
       .populate('reprintHistory.authorizedBy', 'nom prenom email');
 
     if (!badge) {
@@ -357,7 +357,7 @@ class BadgeService {
 
   authorizeReprint = async (badgeId: string, userId: string): Promise<BadgeResponseDto> => {
     const badge = await Badge.findById(badgeId)
-      .populate('employee', 'nom prenom email telephone fonction matricule type dateEmbauche dateFinContrat photo')
+      .populate('employee', 'nom prenom email telephone fonction matricule type sousType dateEmbauche dateFinContrat photo')
       .populate('reprintHistory.authorizedBy', 'nom prenom email');
 
     if (!badge) {
@@ -408,7 +408,7 @@ class BadgeService {
         },
       ]),
       Badge.find({ status: 'IMPRIME' })
-        .populate('employee', 'nom prenom email type')
+        .populate('employee', 'nom prenom email type sousType')
         .populate('reprintHistory.authorizedBy', 'nom prenom email')
         .sort('-printDate')
         .limit(5),
