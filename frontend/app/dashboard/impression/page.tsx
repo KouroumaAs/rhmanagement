@@ -950,9 +950,10 @@ export default function ImpressionPage() {
                             <Button
                               size="sm"
                               variant="outline"
-                              className="gap-2 border-blue-200 hover:bg-blue-50 text-blue-600"
+                              className="gap-2 border-blue-200 hover:bg-blue-50 text-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
                               onClick={() => downloadPhoto(request)}
                               title="Télécharger la photo"
+                              disabled={request.status === "IMPRIME"}
                             >
                               <Image className="w-4 h-4" />
                               Photo
