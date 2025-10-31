@@ -36,13 +36,25 @@ export default function PrintBadgePage() {
   // Auto-impression si demandée
   useEffect(() => {
     if (shouldAutoPrint && badge && qrCodeImage && !isLoading) {
-      // Petit délai pour s'assurer que tout est bien rendu
-      const timer = setTimeout(() => {
-        window.print();
-      }, 1000);
+      // Marquer comme imprimé puis imprimer
+      const autoPrintBadge = async () => {
+        try {
+          await badgesService.print(badgeId);
+          console.log('✅ Badge marqué comme imprimé (auto-print)');
+
+          // Petit délai pour s'assurer que tout est bien rendu
+          setTimeout(() => {
+            window.print();
+          }, 500);
+        } catch (error) {
+          console.error('❌ Erreur auto-print:', error);
+        }
+      };
+
+      const timer = setTimeout(autoPrintBadge, 1000);
       return () => clearTimeout(timer);
     }
-  }, [shouldAutoPrint, badge, qrCodeImage, isLoading]);
+  }, [shouldAutoPrint, badge, qrCodeImage, isLoading, badgeId]);
 
   const fetchBadgeData = async () => {
     try {
@@ -66,8 +78,18 @@ export default function PrintBadgePage() {
     }
   };
 
-  const handlePrint = () => {
-    window.print();
+  const handlePrint = async () => {
+    try {
+      // Marquer le badge comme imprimé dans la base de données
+      await badgesService.print(badgeId);
+      console.log('✅ Badge marqué comme imprimé');
+
+      // Ouvrir la fenêtre d'impression
+      window.print();
+    } catch (error) {
+      console.error('❌ Erreur lors de l\'impression:', error);
+      alert('Erreur lors de l\'impression du badge. Veuillez réessayer.');
+    }
   };
 
   if (!mounted) {
@@ -296,13 +318,13 @@ export default function PrintBadgePage() {
                   margin: 0,
                   fontStyle: "italic"
                 }}>
-                  {employee?.type === "PERSONNELS_DSD" && "Personnels DSD Guinée"}
+                  {employee?.type === "PERSONNEL_DSD" && "Personnel DSD Guinée"}
                   {employee?.type === "DNTT" && "DNTT"}
-                  {employee?.type === "STAGIAIRES_DSD" && "Stagiaires DSD Guinée"}
-                  {employee?.type === "BANQUES" && "Banques"}
-                  {employee?.type === "MAISONS_PLAQUE" && "Maisons de Plaque"}
-                  {employee?.type === "DNTT_STAGIAIRES" && "DNTT Stagiaires"}
-                  {employee?.type === "DEMARCHEURS" && "Colletif des démarcheurs"}
+                  {employee?.type === "STAGIAIRE_DSD" && "Stagiaire DSD Guinée"}
+                  {employee?.type === "BANQUE" && "Banque"}
+                  {employee?.type === "EMBOUTISSEUR" && "Emboutisseur"}
+                  {employee?.type === "DNTT_STAGIAIRE" && "DNTT Stagiaire"}
+                  {employee?.type === "DEMARCHEUR" && "Collectif des démarcheurs"}
                 </p>
               </div>
 

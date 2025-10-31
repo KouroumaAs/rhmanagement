@@ -176,6 +176,35 @@ class BadgesController {
   };
 
   /**
+   * @desc    Authorize badge reprint (for RH)
+   * @route   POST /api/badges/:id/authorize-reprint
+   * @access  Private (RH, ADMIN)
+   */
+  authorizeReprint = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const userId = (req.user?._id as any)?.toString();
+
+      if (!userId) {
+        res.status(401).json({
+          success: false,
+          message: 'Non autorisé',
+        });
+        return;
+      }
+
+      const result = await badgeService.authorizeReprint(req.params.id, userId);
+
+      res.status(200).json({
+        success: true,
+        message: 'Réimpression autorisée avec succès',
+        data: result,
+      });
+    } catch (error: any) {
+      next(error);
+    }
+  };
+
+  /**
    * @desc    Get badge statistics
    * @route   GET /api/badges/stats
    * @access  Private

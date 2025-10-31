@@ -585,15 +585,19 @@ export default function ImpressionPage() {
     return titles[type] || type;
   };
 
-  const getStatusBadge = (status: string) => {
+  const getStatusBadge = (status: string, printCount?: number) => {
     const variants: Record<string, { label: string; className: string }> = {
       EN_ATTENTE: {
         label: "En attente",
         className: "bg-[#ff8d13] text-white font-semibold",
       },
       IMPRIME: {
-        label: "Imprimé",
+        label: printCount && printCount > 1 ? `Badge réimprimé${printCount > 2 ? `(${printCount - 2})` : ""}` : "Badge imprimé",
         className: "bg-green-500 text-white font-semibold",
+      },
+      REIMPRESSION: {
+        label: "Autorisé pour réimpression",
+        className: "bg-blue-500 text-white font-semibold",
       },
     };
     const variant = variants[status] || variants.EN_ATTENTE;
@@ -757,6 +761,7 @@ export default function ImpressionPage() {
                   <SelectContent className="bg-white">
                     <SelectItem value="TOUS" className="text-base font-semibold py-3 cursor-pointer hover:bg-gray-50">Tous les statuts</SelectItem>
                     <SelectItem value="EN_ATTENTE" className="text-base font-semibold py-3 cursor-pointer hover:bg-orange-50">En attente</SelectItem>
+                    <SelectItem value="REIMPRESSION" className="text-base font-semibold py-3 cursor-pointer hover:bg-blue-50">Autorisé pour réimpression</SelectItem>
                     <SelectItem value="IMPRIME" className="text-base font-semibold py-3 cursor-pointer hover:bg-green-50">Imprimé</SelectItem>
                   </SelectContent>
                 </Select>
@@ -902,24 +907,41 @@ export default function ImpressionPage() {
                           <span className="text-gray-400">-</span>
                         )}
                       </TableCell>
-                      <TableCell>{getStatusBadge(request.status)}</TableCell>
+                      <TableCell>{getStatusBadge(request.status, request.printCount)}</TableCell>
                       <TableCell>
                         <div className="flex items-center justify-end gap-2">
-                          <Link href={`/dashboard/impression/badges/${request.id}/print`}>
+                          {request.status === "REIMPRESSION" ? (
+                            <Link href={`/dashboard/impression/badges/${request.id}/print`}>
+                              <Button
+                                size="sm"
+                                className="gap-2 bg-gradient-to-r from-[#ff8d13] to-[#ff8d13] hover:from-[#e67d0f] hover:to-[#ff8d13] shadow-md"
+                              >
+                                <Printer className="w-4 h-4" />
+                                Réimprimer
+                              </Button>
+                            </Link>
+                          ) : (
                             <Button
                               size="sm"
                               className="gap-2 bg-gradient-to-r from-[#ff8d13] to-[#ff8d13] hover:from-[#e67d0f] hover:to-[#ff8d13] shadow-md"
+                              disabled={request.status === "IMPRIME"}
+                              onClick={() => {
+                                if (request.status === "EN_ATTENTE") {
+                                  window.location.href = `/dashboard/impression/badges/${request.id}/print`;
+                                }
+                              }}
                             >
                               <Printer className="w-4 h-4" />
-                              {request.status === "EN_ATTENTE" ? "Imprimer" : "Réimprimer"}
+                              {request.status === "EN_ATTENTE" ? "Imprimer" : request.status === "IMPRIME" ? "Imprimé" : "Réimprimer"}
                             </Button>
-                          </Link>
+                          )}
                           <Button
                             size="sm"
                             variant="outline"
-                            className="gap-2 border-green-200 hover:bg-green-50 text-green-600"
+                            className="gap-2 border-green-200 hover:bg-green-50 text-green-600 disabled:opacity-50 disabled:cursor-not-allowed"
                             onClick={() => downloadQRCode(request)}
                             title="Télécharger le QR code"
+                            disabled={request.status === "IMPRIME"}
                           >
                             <Download className="w-4 h-4" />
                             QR Code

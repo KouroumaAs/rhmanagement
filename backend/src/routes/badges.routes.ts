@@ -41,6 +41,7 @@ router
  * Badge actions
  */
 router.post('/:id/print', authorize('IMPRESSION', 'ADMIN'), badgesController.printBadge);
+router.post('/:id/authorize-reprint', authorize('RH', 'ADMIN'), badgesController.authorizeReprint);
 router.get('/:id/qr-code', badgesController.getQRCode);
 router.put(
   '/:id/status',

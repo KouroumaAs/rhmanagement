@@ -120,4 +120,16 @@ export const badgesService = {
       throw error;
     }
   },
+
+  /**
+   * Authorize badge reprint (for RH)
+   */
+  async authorizeReprint(badgeId: string): Promise<ApiResponse<Badge>> {
+    const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+    return post<Badge>(`${API_ENDPOINTS.BADGES}/${badgeId}/authorize-reprint`, {}, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+  },
 };

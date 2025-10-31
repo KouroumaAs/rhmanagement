@@ -27,8 +27,11 @@ export default function EditEmployeePage() {
     dateEmbauche: "",
     dateFinContrat: "",
     fonction: "",
+    profil: "",
+    diplome: "",
     matricule: "",
-    typeEmploye: "PERSONNELS_DSD",
+    typeEmploye: "PERSONNEL_DSD",
+    sousType: "",
     status: "ACTIF",
     motifSuspension: "",
     dateFinSuspension: "",
@@ -67,11 +70,10 @@ export default function EditEmployeePage() {
         throw new Error('Employé non trouvé');
       }
 
-      // Extraire les chiffres après DSD du matricule
+      // Extraire seulement le numéro du matricule (enlever le préfixe)
       const matriculeValue = employee.matricule || "";
-      const matriculeNumbers = matriculeValue.startsWith("DSD")
-        ? matriculeValue.substring(3)
-        : matriculeValue;
+      // On extrait juste les chiffres à la fin
+      const matriculeNumbers = matriculeValue.replace(/\D/g, '');
 
       setFormData({
         nom: employee.nom || "",
@@ -81,8 +83,11 @@ export default function EditEmployeePage() {
         dateEmbauche: employee.dateEmbauche ? new Date(employee.dateEmbauche).toISOString().split('T')[0] : "",
         dateFinContrat: employee.dateFinContrat ? new Date(employee.dateFinContrat).toISOString().split('T')[0] : "",
         fonction: employee.fonction || "",
+        profil: employee.profil || "",
+        diplome: employee.diplome || "",
         matricule: matriculeNumbers,
-        typeEmploye: employee.type || "PERSONNELS_DSD",
+        typeEmploye: employee.type || "PERSONNEL_DSD",
+        sousType: employee.sousType || "",
         status: employee.status || "ACTIF",
         motifSuspension: employee.motifSuspension || "",
         dateFinSuspension: employee.dateFinSuspension ? new Date(employee.dateFinSuspension).toISOString().split('T')[0] : "",
@@ -126,8 +131,11 @@ export default function EditEmployeePage() {
         telephone: formData.telephone,
         email: formData.email,
         fonction: formData.fonction,
+        profil: formData.profil || undefined,
+        diplome: formData.diplome || undefined,
         matricule: `DSD${formData.matricule}`,
         type: formData.typeEmploye,
+        sousType: formData.sousType || undefined,
         status: formData.status,
         dateEmbauche: formData.dateEmbauche,
         dateFinContrat: formData.dateFinContrat || undefined,
@@ -340,13 +348,13 @@ export default function EditEmployeePage() {
                       <SelectValue placeholder="Sélectionner un type" />
                     </SelectTrigger>
                     <SelectContent className="bg-white border-2 border-gray-200 shadow-2xl z-50">
-                      <SelectItem value="PERSONNELS_DSD" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">Personnels DSD Guinée</SelectItem>
+                      <SelectItem value="PERSONNEL_DSD" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">Personnel DSD Guinée</SelectItem>
                       <SelectItem value="DNTT" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">DNTT</SelectItem>
-                      <SelectItem value="STAGIAIRES_DSD" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">Stagiaires DSD Guinée</SelectItem>
-                      <SelectItem value="BANQUES" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">Banques</SelectItem>
-                      <SelectItem value="MAISONS_PLAQUE" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">Maisons de Plaque</SelectItem>
-                      <SelectItem value="DNTT_STAGIAIRES" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">DNTT Stagiaires</SelectItem>
-                      <SelectItem value="DEMARCHEURS" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">Collectif des Démarcheurs</SelectItem>
+                      <SelectItem value="STAGIAIRE_DSD" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">Stagiaire DSD Guinée</SelectItem>
+                      <SelectItem value="BANQUE" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">Banque</SelectItem>
+                      <SelectItem value="EMBOUTISSEUR" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">Emboutisseur</SelectItem>
+                      <SelectItem value="DNTT_STAGIAIRE" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">DNTT Stagiaire</SelectItem>
+                      <SelectItem value="DEMARCHEUR" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">Collectif des Démarcheurs</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -418,6 +426,44 @@ export default function EditEmployeePage() {
                     className="h-11 border-2 border-gray-200 focus:border-[#ff8d13] focus:ring-4 focus:ring-[#ff8d13]/10 transition-all rounded-xl"
                     required
                   />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="profil" className="text-sm font-semibold text-gray-700">
+                    Profil
+                  </Label>
+                  <Input
+                    id="profil"
+                    value={formData.profil}
+                    onChange={(e) => setFormData({ ...formData, profil: e.target.value })}
+                    placeholder="Ex: Comptable, Informaticien, etc."
+                    className="h-11 border-2 border-gray-200 focus:border-[#ff8d13] focus:ring-4 focus:ring-[#ff8d13]/10 transition-all rounded-xl"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <div className="space-y-2">
+                  <Label htmlFor="diplome" className="text-sm font-semibold text-gray-700">
+                    Diplôme
+                  </Label>
+                  <Select
+                    value={formData.diplome}
+                    onValueChange={(value) => setFormData({ ...formData, diplome: value })}
+                  >
+                    <SelectTrigger className="h-11 w-full border-2 border-gray-200 focus:border-[#ff8d13] rounded-xl bg-white text-gray-900 font-medium">
+                      <SelectValue placeholder="Sélectionner un diplôme" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-white border-2 border-gray-200 shadow-2xl z-50">
+                      <SelectItem value="BAC" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">BAC</SelectItem>
+                      <SelectItem value="BTS" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">BTS</SelectItem>
+                      <SelectItem value="Licence 1" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">Licence 1</SelectItem>
+                      <SelectItem value="Licence 2" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">Licence 2</SelectItem>
+                      <SelectItem value="Licence 3" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">Licence 3</SelectItem>
+                      <SelectItem value="Master 1" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">Master 1</SelectItem>
+                      <SelectItem value="Master 2" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">Master 2</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
 
                 <div className="space-y-2">

@@ -11,7 +11,7 @@ const badgeSchema = new Schema<IBadge>(
     },
     status: {
       type: String,
-      enum: ['EN_ATTENTE', 'IMPRIME'],
+      enum: ['EN_ATTENTE', 'IMPRIME', 'REIMPRESSION'],
       default: 'EN_ATTENTE',
     },
     qrCode: {
@@ -26,6 +26,24 @@ const badgeSchema = new Schema<IBadge>(
     printDate: {
       type: Date,
     },
+    printCount: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
+    reprintHistory: [{
+      authorizedBy: {
+        type: Schema.Types.ObjectId,
+        ref: 'User',
+      },
+      authorizedAt: {
+        type: Date,
+        default: Date.now,
+      },
+      printedAt: {
+        type: Date,
+      },
+    }],
   },
   {
     timestamps: true,
@@ -72,6 +90,36 @@ badgeSchema.methods.generateQRCodeImage = async function (): Promise<string> {
 badgeSchema.methods.markAsPrinted = async function (): Promise<void> {
   this.status = 'IMPRIME';
   this.printDate = new Date();
+  this.printCount += 1;
+
+  // Si c'est une réimpression, mettre à jour l'historique
+  if (this.reprintHistory.length > 0) {
+    const lastReprint = this.reprintHistory[this.reprintHistory.length - 1];
+    if (!lastReprint.printedAt) {
+      lastReprint.printedAt = new Date();
+    }
+  }
+
+  await this.save();
+};
+
+// Method to authorize reprint (for RH)
+badgeSchema.methods.authorizeReprint = async function (userId: string): Promise<void> {
+  // Autoriser la réimpression seulement si le badge a été imprimé au moins une fois
+  if (this.printCount === 0) {
+    throw new Error('Le badge doit être imprimé au moins une fois avant de pouvoir être renvoyé pour réimpression');
+  }
+
+  // Changer le status en REIMPRESSION (même s'il l'est déjà)
+  this.status = 'REIMPRESSION';
+
+  // Ajouter une entrée dans l'historique
+  this.reprintHistory.push({
+    authorizedBy: userId,
+    authorizedAt: new Date(),
+    printedAt: null,
+  });
+
   await this.save();
 };
 

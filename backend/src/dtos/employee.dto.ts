@@ -6,13 +6,16 @@ export class CreateEmployeeDto {
   email!: string;
   telephone!: string;
   fonction!: string;
+  profil?: string;
+  diplome?: string;
   matricule!: string;
   type!: EmployeeType;
+  sousType?: string;
   typeContrat!: ContractType;
   dateEmbauche!: Date;
   dateFinContrat?: Date;
   photo?: string;
-  
+
 }
 
 export class UpdateEmployeeDto {
@@ -21,8 +24,11 @@ export class UpdateEmployeeDto {
   email?: string;
   telephone?: string;
   fonction?: string;
+  profil?: string;
+  diplome?: string;
   matricule?: string;
   type?: EmployeeType;
+  sousType?: string;
   typeContrat?: ContractType;
   dateEmbauche?: Date;
   dateFinContrat?: Date;
@@ -45,8 +51,11 @@ export class EmployeeResponseDto {
   email!: string;
   telephone!: string;
   fonction!: string;
+  profil?: string;
+  diplome?: string;
   matricule!: string;
   type!: EmployeeType;
+  sousType?: string;
   typeContrat!: ContractType;
   status!: EmployeeStatus;
   dateEmbauche!: Date;

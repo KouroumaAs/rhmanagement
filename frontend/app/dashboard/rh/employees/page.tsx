@@ -45,6 +45,7 @@ import { Textarea } from "@/components/ui/textarea";
 import Link from "next/link";
 import { useToast } from "@/src/hooks/use-toast";
 import { employeeService } from "@/src/services/employee.service";
+import { badgesService } from "@/src/services/badges.service";
 import type { Employee, BadgeStatus } from "@/src/types";
 import type { EmployeeQueryParams } from "@/src/types/employee";
 import { logger } from "@/src/utils/logger";
@@ -169,6 +170,40 @@ export default function EmployeesPage() {
         variant: "destructive",
         title: "Erreur de transfert",
         description: errorMessage,
+      });
+    }
+  };
+
+  const handleAuthorizeReprint = async (employee: Employee) => {
+    if (!employee.badgeId) {
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: "Badge introuvable pour cet employé",
+      });
+      return;
+    }
+
+    try {
+      await badgesService.authorizeReprint(employee.badgeId);
+
+      // Update local state immediately
+      const updatedEmployees = employees.map(e =>
+        e.id === employee.id
+          ? { ...e, badgeStatus: 'REIMPRESSION' as BadgeStatus }
+          : e
+      );
+      setEmployees(updatedEmployees);
+
+      toast({
+        title: "✅ Réimpression autorisée",
+        description: `Le badge de ${employee.prenom} ${employee.nom} a été renvoyé pour réimpression`,
+      });
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "❌ Erreur",
+        description: (error as Error).message || "Impossible d'autoriser la réimpression",
       });
     }
   };
@@ -751,6 +786,8 @@ export default function EmployeesPage() {
                         </TableCell>
                         <TableCell>
                           <div className="flex items-center justify-end gap-2">
+                            {/* Bouton Transférer : apparaît UNE SEULE FOIS quand l'employé vient d'être créé (!hasBadge) */}
+                            {/* Une fois transféré, hasBadge devient true et le bouton disparaît définitivement */}
                             {employee.status === "ACTIF" && !employee.hasBadge && (
                               <Button
                                 size="sm"
@@ -761,10 +798,42 @@ export default function EmployeesPage() {
                                 Transférer
                               </Button>
                             )}
-                            {employee.hasBadge && (
-                              <Badge className="bg-blue-600 text-white font-semibold">
-                                {employee.badgeStatus === "IMPRIME" ? "Badge imprimé" : "En attente d'impression"}
+                            {employee.hasBadge && employee.badgeStatus === "EN_ATTENTE" && (
+                              <Badge className="bg-orange-500 text-white font-semibold">
+                                En attente d'impression
                               </Badge>
+                            )}
+                            {employee.hasBadge && employee.badgeStatus === "IMPRIME" && (
+                              <>
+                                <Badge className="bg-green-600 text-white font-semibold">
+                                  Badge imprimé
+                                </Badge>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  className="gap-2 border-blue-200 hover:bg-blue-50 text-blue-600"
+                                  onClick={() => handleAuthorizeReprint(employee)}
+                                >
+                                  <Send className="w-4 h-4" />
+                                  Renvoyer pour réimpression
+                                </Button>
+                              </>
+                            )}
+                            {employee.hasBadge && employee.badgeStatus === "REIMPRESSION" && (
+                              <>
+                                <Badge className="bg-blue-600 text-white font-semibold">
+                                  Autorisé pour réimpression
+                                </Badge>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  className="gap-2 border-blue-200 hover:bg-blue-50 text-blue-600"
+                                  onClick={() => handleAuthorizeReprint(employee)}
+                                >
+                                  <Send className="w-4 h-4" />
+                                  Renvoyer à nouveau
+                                </Button>
+                              </>
                             )}
 
                             {/* Dropdown menu pour changer le statut */}
