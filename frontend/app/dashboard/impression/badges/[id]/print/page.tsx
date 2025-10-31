@@ -321,8 +321,8 @@ export default function PrintBadgePage() {
                   {employee?.type === "PERSONNEL_DSD" && "Personnel DSD Guinée"}
                   {employee?.type === "DNTT" && "DNTT"}
                   {employee?.type === "STAGIAIRE_DSD" && "Stagiaire DSD Guinée"}
-                  {employee?.type === "BANQUE" && "Banque"}
-                  {employee?.type === "EMBOUTISSEUR" && "Emboutisseur"}
+                  {employee?.type === "BANQUE" && `Banque ${employee?.sousType || ''}`}
+                  {employee?.type === "EMBOUTISSEUR" && `Emboutisseur ${employee?.sousType || ''}`}
                   {employee?.type === "DNTT_STAGIAIRE" && "DNTT Stagiaire"}
                   {employee?.type === "DEMARCHEUR" && "Collectif des démarcheurs"}
                 </p>

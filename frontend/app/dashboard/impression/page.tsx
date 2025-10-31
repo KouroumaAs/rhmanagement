@@ -484,7 +484,7 @@ export default function ImpressionPage() {
             <!-- Badge Recto -->
             <div class="badge-card">
               <div class="badge-header">
-                <h1>${getBadgeTitle(badge.employee?.type)}</h1>
+                <h1>${getBadgeTitle(badge.employee?.type, badge.employee?.sousType)}</h1>
               </div>
 
               <div class="badge-info">
@@ -572,17 +572,18 @@ export default function ImpressionPage() {
     `;
   };
 
-  const getBadgeTitle = (type: string) => {
+  const getBadgeTitle = (type: string, sousType?: string) => {
     const titles: Record<string, string> = {
       PERSONNELS_DSD: "PERSONNELS DSD GUINEE",
       DNTT: "DNTT",
       STAGIAIRES_DSD: "STAGIAIRES DSD GUINEE",
-      BANQUES: "BANQUES",
-      MAISONS_PLAQUE: "MAISONS DE PLAQUE",
+      BANQUES: "BANQUE",
+      MAISONS_PLAQUE: "EMBOUTISSEUR",
       DNTT_STAGIAIRES: "DNTT STAGIAIRES",
       DEMARCHEURS: "COLLECTIF DES DEMARCHEURS",
     };
-    return titles[type] || type;
+    const title = titles[type] || type;
+    return sousType ? `${title} ${sousType.toUpperCase()}` : title;
   };
 
   const getStatusBadge = (status: string, printCount?: number) => {
@@ -608,13 +609,13 @@ export default function ImpressionPage() {
     );
   };
 
-  const getTypeBadge = (type: string) => {
+  const getTypeBadge = (type: string, sousType?: string) => {
     const typeLabels: Record<string, string> = {
       PERSONNELS_DSD: "Personnels DSD",
       DNTT: "DNTT",
       STAGIAIRES_DSD: "Stagiaires DSD",
-      BANQUES: "Banques",
-      MAISONS_PLAQUE: "Maisons de Plaque",
+      BANQUES: "Banque",
+      MAISONS_PLAQUE: "Emboutisseur",
       DNTT_STAGIAIRES: "DNTT Stagiaires",
       DEMARCHEURS: "Démarcheurs",
     };
@@ -629,9 +630,12 @@ export default function ImpressionPage() {
       DEMARCHEURS: "bg-amber-600",
     };
 
+    const label = typeLabels[type] || type;
+    const displayLabel = sousType ? `${label} ${sousType}` : label;
+
     return (
       <Badge className={`${colors[type] || "bg-gray-600"} text-white font-semibold`}>
-        {typeLabels[type] || type}
+        {displayLabel}
       </Badge>
     );
   };
@@ -892,7 +896,7 @@ export default function ImpressionPage() {
                           </div>
                         </div>
                       </TableCell>
-                      <TableCell>{getTypeBadge(request.employee?.type)}</TableCell>
+                      <TableCell>{getTypeBadge(request.employee?.type, request.employee?.sousType)}</TableCell>
                       <TableCell>
                         <div className="flex items-center gap-2">
                           <QrCode className="w-4 h-4 text-[#ff8d13]" />
@@ -1095,13 +1099,7 @@ export default function ImpressionPage() {
                   {/* Header */}
                   <div className="text-center pb-3 border-b border-white/30 flex-shrink-0 pr-32">
                     <p className="text-base font-bold uppercase tracking-wide">
-                      {selectedBadge.employee?.type === "PERSONNELS_DSD" && "PERSONNELS DSD GUINEE"}
-                      {selectedBadge.employee?.type === "DNTT" && "DNTT"}
-                      {selectedBadge.employee?.type === "STAGIAIRES_DSD" && "STAGIAIRES DSD GUINEE"}
-                      {selectedBadge.employee?.type === "BANQUES" && "BANQUES"}
-                      {selectedBadge.employee?.type === "MAISONS_PLAQUE" && "MAISONS DE PLAQUE"}
-                      {selectedBadge.employee?.type === "DNTT_STAGIAIRES" && "DNTT STAGIAIRES"}
-                      {selectedBadge.employee?.type === "DEMARCHEURS" && "COLLECTIF DES DEMARCHEURS"}
+                      {getBadgeTitle(selectedBadge.employee?.type, selectedBadge.employee?.sousType)}
                     </p>
                   </div>
 
