@@ -548,6 +548,99 @@ export default function PrintBadgePage() {
               )}
 
               {/*
+                TYPE EMPLOYÉ - En haut, avant l'adresse
+                - Affiche le type et le sousType si disponible
+                - Texte orange
+              */}
+              <div style={{
+                position: "absolute",
+                top: "260px",
+                left: "150px"
+              }}>
+                {employee?.type === "PERSONNEL_DSD" && (
+                  <p style={{
+                    fontSize: "28px",
+                    fontWeight: "700",
+                    color: "#ff8d13",
+                    margin: 0,
+                    lineHeight: "1.2"
+                  }}>Personnel DSD Guinée</p>
+                )}
+                {employee?.type === "DNTT" && (
+                  <p style={{
+                    fontSize: "28px",
+                    fontWeight: "700",
+                    color: "#ff8d13",
+                    margin: 0,
+                    lineHeight: "1.2"
+                  }}>DNTT</p>
+                )}
+                {employee?.type === "STAGIAIRE_DSD" && (
+                  <p style={{
+                    fontSize: "28px",
+                    fontWeight: "700",
+                    color: "#ff8d13",
+                    margin: 0,
+                    lineHeight: "1.2"
+                  }}>Stagiaire DSD Guinée</p>
+                )}
+                {employee?.type === "BANQUE" && (
+                  <div style={{ lineHeight: "1.2" }}>
+                    <p style={{
+                      fontSize: "28px",
+                      fontWeight: "700",
+                      color: "#ff8d13",
+                      margin: 0
+                    }}>Banque</p>
+                    {employee?.sousType && (
+                      <p style={{
+                        fontSize: "24px",
+                        fontWeight: "700",
+                        color: "#ff8d13",
+                        margin: 0
+                      }}>{employee.sousType}</p>
+                    )}
+                  </div>
+                )}
+                {employee?.type === "EMBOUTISSEUR" && (
+                  <div style={{ lineHeight: "1.2" }}>
+                    <p style={{
+                      fontSize: "28px",
+                      fontWeight: "700",
+                      color: "#ff8d13",
+                      margin: 0
+                    }}>Emboutisseur</p>
+                    {employee?.sousType && (
+                      <p style={{
+                        fontSize: "24px",
+                        fontWeight: "700",
+                        color: "#ff8d13",
+                        margin: 0
+                      }}>{employee.sousType}</p>
+                    )}
+                  </div>
+                )}
+                {employee?.type === "DNTT_STAGIAIRE" && (
+                  <p style={{
+                    fontSize: "28px",
+                    fontWeight: "700",
+                    color: "#ff8d13",
+                    margin: 0,
+                    lineHeight: "1.2"
+                  }}>DNTT Stagiaire</p>
+                )}
+                {employee?.type === "DEMARCHEUR" && (
+                  <p style={{
+                    fontSize: "28px",
+                    fontWeight: "700",
+                    color: "#ff8d13",
+                    margin: 0,
+                    lineHeight: "1.2"
+                  }}>Collectif des démarcheurs</p>
+                )}
+              </div>
+
+              {/*
                 ADRESSE (Icône localisation) - En haut à gauche
                 - Position : à droite de l'icône localisation
                 - Texte noir
