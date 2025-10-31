@@ -806,7 +806,12 @@ export default function EmployeesPage() {
                             {employee.hasBadge && employee.badgeStatus === "IMPRIME" && (
                               <>
                                 <Badge className="bg-green-600 text-white font-semibold">
-                                  Badge imprimé
+                                  {employee.printCount === 1
+                                    ? "Badge imprimé"
+                                    : employee.printCount === 2
+                                      ? "Badge réimprimé"
+                                      : `Badge réimprimé(${(employee.printCount || 2) - 2})`
+                                  }
                                 </Badge>
                                 <Button
                                   size="sm"

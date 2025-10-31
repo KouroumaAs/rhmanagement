@@ -134,7 +134,7 @@ class EmployeeService {
       employees.map(async (emp) => {
         const badge = await Badge.findOne({
           employee: emp._id,
-          status: { $in: ['EN_ATTENTE', 'IMPRIME'] },
+          status: { $in: ['EN_ATTENTE', 'IMPRIME', 'REIMPRESSION'] },
         });
 
         return {
@@ -159,6 +159,7 @@ class EmployeeService {
           hasBadge: !!badge,
           badgeId: badge?._id?.toString() || null,
           badgeStatus: badge?.status || null,
+          printCount: badge?.printCount || 0,
           createdAt: emp.createdAt,
           updatedAt: emp.updatedAt,
         };

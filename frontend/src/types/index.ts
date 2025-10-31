@@ -31,7 +31,9 @@ export interface Employee {
   dateFinSuspension?: string | null;
   photo?: string | null;
   hasBadge?: boolean;
+  badgeId?: string | null;
   badgeStatus?: BadgeStatus | null;
+  printCount?: number;
   createdAt?: string;
   updatedAt?: string;
 }
