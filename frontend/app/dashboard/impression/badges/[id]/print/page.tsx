@@ -312,21 +312,91 @@ export default function PrintBadgePage() {
                 backgroundColor: "#FFFFFF",
                 padding: "8px 0"
               }}>
-                <p style={{
-                  fontSize: "42px",
-                  fontWeight: "400",
-                  color: "#ff8d13",
-                  margin: 0,
-                  fontStyle: "italic"
-                }}>
-                  {employee?.type === "PERSONNEL_DSD" && "Personnel DSD Guinée"}
-                  {employee?.type === "DNTT" && "DNTT"}
-                  {employee?.type === "STAGIAIRE_DSD" && "Stagiaire DSD Guinée"}
-                  {employee?.type === "BANQUE" && `Banque ${employee?.sousType || ''}`}
-                  {employee?.type === "EMBOUTISSEUR" && `Emboutisseur ${employee?.sousType || ''}`}
-                  {employee?.type === "DNTT_STAGIAIRE" && "DNTT Stagiaire"}
-                  {employee?.type === "DEMARCHEUR" && "Collectif des démarcheurs"}
-                </p>
+                {employee?.type === "PERSONNEL_DSD" && (
+                  <p style={{
+                    fontSize: "42px",
+                    fontWeight: "400",
+                    color: "#ff8d13",
+                    margin: 0,
+                    fontStyle: "italic"
+                  }}>Personnel DSD Guinée</p>
+                )}
+                {employee?.type === "DNTT" && (
+                  <p style={{
+                    fontSize: "42px",
+                    fontWeight: "400",
+                    color: "#ff8d13",
+                    margin: 0,
+                    fontStyle: "italic"
+                  }}>DNTT</p>
+                )}
+                {employee?.type === "STAGIAIRE_DSD" && (
+                  <p style={{
+                    fontSize: "42px",
+                    fontWeight: "400",
+                    color: "#ff8d13",
+                    margin: 0,
+                    fontStyle: "italic"
+                  }}>Stagiaire DSD Guinée</p>
+                )}
+                {employee?.type === "BANQUE" && (
+                  <div style={{ lineHeight: "1.2" }}>
+                    <p style={{
+                      fontSize: "42px",
+                      fontWeight: "400",
+                      color: "#ff8d13",
+                      margin: 0,
+                      fontStyle: "italic"
+                    }}>Banque</p>
+                    {employee?.sousType && (
+                      <p style={{
+                        fontSize: "36px",
+                        fontWeight: "700",
+                        color: "#ff8d13",
+                        margin: 0,
+                        fontStyle: "italic"
+                      }}>{employee.sousType}</p>
+                    )}
+                  </div>
+                )}
+                {employee?.type === "EMBOUTISSEUR" && (
+                  <div style={{ lineHeight: "1.2" }}>
+                    <p style={{
+                      fontSize: "42px",
+                      fontWeight: "400",
+                      color: "#ff8d13",
+                      margin: 0,
+                      fontStyle: "italic"
+                    }}>Emboutisseur</p>
+                    {employee?.sousType && (
+                      <p style={{
+                        fontSize: "36px",
+                        fontWeight: "700",
+                        color: "#ff8d13",
+                        margin: 0,
+                        fontStyle: "italic"
+                      }}>{employee.sousType}</p>
+                    )}
+                  </div>
+                )}
+                {employee?.type === "DNTT_STAGIAIRE" && (
+                  <p style={{
+                    fontSize: "42px",
+                    fontWeight: "400",
+                    color: "#ff8d13",
+                    margin: 0,
+                    fontStyle: "italic"
+                  }}>DNTT Stagiaire</p>
+                )}
+                {employee?.type === "DEMARCHEUR" && (
+                  <p style={{
+                    fontSize: "42px",
+                    fontWeight: "400",
+                    color: "#ff8d13",
+                    margin: 0,
+                    fontStyle: "italic"
+                  }}>Collectif des démarcheurs</p>
+                )}
               </div>
 
               {/*
