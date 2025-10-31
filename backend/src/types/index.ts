@@ -2,13 +2,13 @@ import { Document, ObjectId } from 'mongoose';
 
 // Employee Types
 export type EmployeeType =
-  | 'PERSONNELS_DSD'
+  | 'PERSONNEL_DSD'
   | 'DNTT'
-  | 'STAGIAIRES_DSD'
-  | 'BANQUES'
-  | 'MAISONS_PLAQUE'
-  | 'DNTT_STAGIAIRES'
-  | 'DEMARCHEURS';
+  | 'STAGIAIRE_DSD'
+  | 'BANQUE'
+  | 'EMBOUTISSEUR'
+  | 'DNTT_STAGIAIRE'
+  | 'DEMARCHEUR';
 
 export type EmployeeStatus = 'ACTIF' | 'SUSPENDU' | 'TERMINE';
 
@@ -27,8 +27,11 @@ export interface IEmployee extends Document {
   typeContrat: ContractType;
   // dateFinContrat?: Date;
   fonction: string;
+  profil?: string;
+  diplome?: string;
   matricule: string;
   type: EmployeeType;
+  sousType?: string;
   status: EmployeeStatus;
   motifSuspension?: string;
   dateFinSuspension?: Date;
@@ -38,7 +41,13 @@ export interface IEmployee extends Document {
 }
 
 // Badge Types
-export type BadgeStatus = 'EN_ATTENTE' | 'IMPRIME';
+export type BadgeStatus = 'EN_ATTENTE' | 'IMPRIME' | 'REIMPRESSION';
+
+export interface IReprintHistoryEntry {
+  authorizedBy: IUser['_id'];
+  authorizedAt: Date;
+  printedAt?: Date;
+}
 
 export interface IBadge extends Document {
   _id:string
@@ -47,8 +56,13 @@ export interface IBadge extends Document {
   qrCode: string;
   requestDate: Date;
   printDate?: Date;
+  printCount: number;
+  reprintHistory: IReprintHistoryEntry[];
   createdAt: Date;
   updatedAt: Date;
+  markAsPrinted(): Promise<void>;
+  authorizeReprint(userId: string): Promise<void>;
+  generateQRCodeImage(): Promise<string>;
 }
 
 // User Types

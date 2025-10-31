@@ -1,12 +1,12 @@
 // Employee Types
 export type EmployeeType =
-  | "PERSONNELS_DSD"
+  | "PERSONNEL_DSD"
   | "DNTT"
-  | "STAGIAIRES_DSD"
-  | "BANQUES"
-  | "MAISONS_PLAQUE"
-  | "DNTT_STAGIAIRES"
-  | "DEMARCHEURS";
+  | "STAGIAIRE_DSD"
+  | "BANQUE"
+  | "EMBOUTISSEUR"
+  | "DNTT_STAGIAIRE"
+  | "DEMARCHEUR";
 
 export type EmployeeStatus = "ACTIF" | "SUSPENDU" | "TERMINE";
 
@@ -37,21 +37,28 @@ export interface Employee {
 }
 
 // Badge Types
-export type BadgeStatus = "EN_ATTENTE" | "IMPRIME";
+export type BadgeStatus = "EN_ATTENTE" | "IMPRIME" | "REIMPRESSION";
+
+export interface ReprintHistoryEntry {
+  authorizedBy: string | User;
+  authorizedAt: string;
+  printedAt?: string;
+}
 
 export interface Badge {
-  id: number;
-  employeeId: number;
-  name: string;
-  email: string;
-  telephone: string;
-  fonction: string;
-  matricule: string;
-  type: EmployeeType;
+  id: string;
+  employee: string | Employee;
+  type?: EmployeeType;
   status: BadgeStatus;
-  requestDate: string;
-  printDate?: string;
   qrCode: string;
+  printedBy?: string | User;
+  printedAt?: string;
+  printDate?: string;
+  requestDate?: string;
+  printCount: number;
+  reprintHistory: ReprintHistoryEntry[];
+  createdAt: string;
+  updatedAt: string;
 }
 
 // User Types

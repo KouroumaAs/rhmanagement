@@ -32,30 +32,45 @@ const employeeSchema = new Schema<IEmployee>(
       required: [true, 'La fonction est requise'],
       trim: true,
     },
+    profil: {
+      type: String,
+      trim: true,
+      default: null,
+    },
+    diplome: {
+      type: String,
+      trim: true,
+      default: null,
+    },
     matricule: {
       type: String,
       required: [true, 'Le matricule est requis'],
       unique: true,
       trim: true,
       uppercase: true,
-      minlength: [4, 'Le matricule doit contenir au moins 4 caractères (DSD + chiffres)'],
-      match: [/^DSD\d+$/, 'Le matricule doit commencer par DSD suivi de chiffres (ex: DSD001)'],
+      minlength: [4, 'Le matricule doit contenir au moins 4 caractères'],
     },
     type: {
       type: String,
       required: [true, "Le type d'employé est requis"],
       enum: {
         values: [
-          'PERSONNELS_DSD',
+          'PERSONNEL_DSD',
           'DNTT',
-          'STAGIAIRES_DSD',
-          'BANQUES',
-          'MAISONS_PLAQUE',
-          'DNTT_STAGIAIRES',
-          'DEMARCHEURS',
+          'STAGIAIRE_DSD',
+          'BANQUE',
+          'EMBOUTISSEUR',
+          'DNTT_STAGIAIRE',
+          'DEMARCHEUR',
         ],
         message: '{VALUE} n\'est pas un type valide',
       },
+    },
+    sousType: {
+      type: String,
+      default: null,
+      // Pour BANQUE: TTLB, GLOBAL, I_CRDIGITAL
+      // Pour EMBOUTISSEUR: nom de l'emboutisseur
     },
     status: {
       type: String,
