@@ -24,6 +24,8 @@ export interface Employee {
   typeContrat: ContractType;
   dateFinContrat?: string | null;
   fonction: string;
+  profil?: string | null;
+  diplome?: string | null;
   matricule: string;
   type: EmployeeType;
   sousType?: string;

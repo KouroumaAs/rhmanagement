@@ -53,4 +53,6 @@ export interface EmployeeQueryParams {
   search?: string;
   dateFinContratDe?: string;
   dateFinContratA?: string;
+  profil?: string;
+  diplome?: string;
 }

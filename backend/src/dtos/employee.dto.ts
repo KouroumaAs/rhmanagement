@@ -75,6 +75,8 @@ export class EmployeeQueryDto {
   search?: string;
   dateFinContratDe?: string;
   dateFinContratA?: string;
+  profil?: string;
+  diplome?: string;
 }
 
 export class PaginatedEmployeeResponseDto {

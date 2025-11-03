@@ -123,6 +123,15 @@ class EmployeeService {
       }
     }
 
+    // Filtres par profil et diplome
+    if (query.profil) {
+      filters.profil = { $regex: query.profil, $options: 'i' };
+    }
+
+    if (query.diplome) {
+      filters.diplome = { $regex: query.diplome, $options: 'i' };
+    }
+
     // Execute query
     const [employees, total] = await Promise.all([
       Employee.find(filters).sort('-createdAt').skip(skip).limit(limit),

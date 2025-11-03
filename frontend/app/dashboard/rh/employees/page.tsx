@@ -56,6 +56,8 @@ export default function EmployeesPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [filterType, setFilterType] = useState("TOUS");
   const [filterStatus, setFilterStatus] = useState("TOUS");
+  const [filterProfil, setFilterProfil] = useState("");
+  const [filterDiplome, setFilterDiplome] = useState("");
   const [dateFinContratDe, setDateFinContratDe] = useState("");
   const [dateFinContratA, setDateFinContratA] = useState("");
   const [employees, setEmployees] = useState<Employee[]>([]);
@@ -75,12 +77,12 @@ export default function EmployeesPage() {
 
   useEffect(() => {
     fetchEmployees();
-  }, [filterType, filterStatus, searchQuery, currentPage, limit, dateFinContratDe, dateFinContratA]);
+  }, [filterType, filterStatus, searchQuery, currentPage, limit, dateFinContratDe, dateFinContratA, filterProfil, filterDiplome]);
   console.log("Les employees:", employees);
   // Réinitialiser la sélection quand on change de page ou de filtre
   useEffect(() => {
     setSelectedEmployees([]);
-  }, [currentPage, limit, filterType, filterStatus, searchQuery, dateFinContratDe, dateFinContratA]);
+  }, [currentPage, limit, filterType, filterStatus, searchQuery, dateFinContratDe, dateFinContratA, filterProfil, filterDiplome]);
 
   // Mémoriser la date actuelle pour éviter de la recalculer à chaque render
   const today = useMemo(() => new Date(), []);
@@ -111,6 +113,8 @@ export default function EmployeesPage() {
       if (searchQuery) query.search = searchQuery;
       if (dateFinContratDe) query.dateFinContratDe = dateFinContratDe;
       if (dateFinContratA) query.dateFinContratA = dateFinContratA;
+      if (filterProfil) query.profil = filterProfil;
+      if (filterDiplome) query.diplome = filterDiplome;
 
       const response = await employeeService.getAll(query);
       logger.log('📥 Response complète:', response);
@@ -633,8 +637,32 @@ export default function EmployeesPage() {
                 </div>
               </div>
 
+              {/* Ligne 3: Filtres par profil et diplôme */}
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div className="md:col-span-2">
+                  <label className="text-xs font-semibold text-gray-600 mb-1 block">Profil</label>
+                  <Input
+                    type="text"
+                    placeholder="Filtrer par profil..."
+                    value={filterProfil}
+                    onChange={(e) => setFilterProfil(e.target.value)}
+                    className="h-11 border-2 border-gray-200 focus:border-[#ff8d13] focus:ring-4 focus:ring-[#ff8d13]/10 transition-all rounded-xl"
+                  />
+                </div>
+                <div className="md:col-span-2">
+                  <label className="text-xs font-semibold text-gray-600 mb-1 block">Diplôme</label>
+                  <Input
+                    type="text"
+                    placeholder="Filtrer par diplôme..."
+                    value={filterDiplome}
+                    onChange={(e) => setFilterDiplome(e.target.value)}
+                    className="h-11 border-2 border-gray-200 focus:border-[#ff8d13] focus:ring-4 focus:ring-[#ff8d13]/10 transition-all rounded-xl"
+                  />
+                </div>
+              </div>
+
               {/* Bouton pour réinitialiser les filtres */}
-              {(dateFinContratDe || dateFinContratA) && (
+              {(dateFinContratDe || dateFinContratA || filterProfil || filterDiplome) && (
                 <div className="flex justify-end">
                   <Button
                     variant="outline"
@@ -642,11 +670,13 @@ export default function EmployeesPage() {
                     onClick={() => {
                       setDateFinContratDe("");
                       setDateFinContratA("");
+                      setFilterProfil("");
+                      setFilterDiplome("");
                     }}
                     className="border-[#fed7aa] hover:bg-[#fff5ed]"
                   >
                     <X className="w-4 h-4 mr-2" />
-                    Réinitialiser les dates
+                    Réinitialiser les filtres
                   </Button>
                 </div>
               )}
