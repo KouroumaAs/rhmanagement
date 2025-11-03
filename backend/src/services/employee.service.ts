@@ -222,23 +222,33 @@ class EmployeeService {
   };
 
   createEmployee = async (dto: CreateEmployeeDto, file?: Express.Multer.File): Promise<EmployeeResponseDto> => {
+    console.log('📝 [CREATE EMPLOYEE] Début de la création');
+    console.log('📝 [CREATE EMPLOYEE] Données reçues:', JSON.stringify(dto, null, 2));
+    console.log('📝 [CREATE EMPLOYEE] Fichier photo:', file ? file.filename : 'Aucun');
+
     // Check if matricule already exists
+    console.log('🔍 [CREATE EMPLOYEE] Vérification matricule:', dto.matricule);
     const existingMatricule = await Employee.findOne({ matricule: dto.matricule });
     if (existingMatricule) {
+      console.log('❌ [CREATE EMPLOYEE] Matricule existe déjà:', dto.matricule);
       const error: any = new Error('Ce matricule existe déjà');
       error.statusCode = 400;
       error.field = 'matricule';
       throw error;
     }
+    console.log('✅ [CREATE EMPLOYEE] Matricule disponible');
 
     // Check if email already exists
+    console.log('🔍 [CREATE EMPLOYEE] Vérification email:', dto.email);
     const existingEmail = await Employee.findOne({ email: dto.email });
     if (existingEmail) {
+      console.log('❌ [CREATE EMPLOYEE] Email existe déjà:', dto.email);
       const error: any = new Error('Cet email existe déjà');
       error.statusCode = 400;
       error.field = 'email';
       throw error;
     }
+    console.log('✅ [CREATE EMPLOYEE] Email disponible');
 
     // Préparer les données avec le chemin de la photo si elle existe
     const employeeData: any = {
@@ -249,33 +259,47 @@ class EmployeeService {
     if (file) {
       // Enregistrer le chemin relatif de la photo
       employeeData.photo = `/uploads/employees/${file.filename}`;
+      console.log('📷 [CREATE EMPLOYEE] Photo enregistrée:', employeeData.photo);
     }
 
-    // Create employee
-    const employee = await Employee.create(employeeData);
+    console.log('💾 [CREATE EMPLOYEE] Données finales à enregistrer:', JSON.stringify(employeeData, null, 2));
 
-    return {
-      id: employee._id.toString(),
-      nom: employee.nom,
-      prenom: employee.prenom,
-      email: employee.email,
-      telephone: employee.telephone,
-      fonction: employee.fonction,
-      profil: employee.profil,
-      diplome: employee.diplome,
-      matricule: employee.matricule,
-      type: employee.type,
-      sousType: employee.sousType,
-      typeContrat: employee.typeContrat,
-      status: employee.status,
-      dateEmbauche: employee.dateEmbauche,
-      dateFinContrat: employee.dateFinContrat,
-      motifSuspension: employee.motifSuspension,
-      dateFinSuspension: employee.dateFinSuspension,
-      photo: employee.photo,
-      createdAt: employee.createdAt,
-      updatedAt: employee.updatedAt,
-    };
+    // Create employee
+    try {
+      console.log('🚀 [CREATE EMPLOYEE] Création dans la base de données...');
+      const employee = await Employee.create(employeeData);
+      console.log('✅ [CREATE EMPLOYEE] Employé créé avec succès, ID:', employee._id);
+
+      const response = {
+        id: employee._id.toString(),
+        nom: employee.nom,
+        prenom: employee.prenom,
+        email: employee.email,
+        telephone: employee.telephone,
+        fonction: employee.fonction,
+        profil: employee.profil,
+        diplome: employee.diplome,
+        matricule: employee.matricule,
+        type: employee.type,
+        sousType: employee.sousType,
+        typeContrat: employee.typeContrat,
+        status: employee.status,
+        dateEmbauche: employee.dateEmbauche,
+        dateFinContrat: employee.dateFinContrat,
+        motifSuspension: employee.motifSuspension,
+        dateFinSuspension: employee.dateFinSuspension,
+        photo: employee.photo,
+        createdAt: employee.createdAt,
+        updatedAt: employee.updatedAt,
+      };
+
+      console.log('📤 [CREATE EMPLOYEE] Réponse envoyée:', JSON.stringify(response, null, 2));
+      return response;
+    } catch (error: any) {
+      console.error('❌ [CREATE EMPLOYEE] Erreur lors de la création:', error.message);
+      console.error('❌ [CREATE EMPLOYEE] Stack:', error.stack);
+      throw error;
+    }
   };
 
   updateEmployee = async (id: string, dto: UpdateEmployeeDto, file?: Express.Multer.File): Promise<EmployeeResponseDto> => {

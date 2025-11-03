@@ -56,17 +56,27 @@ class EmployeesController {
    */
   createEmployee = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
+      console.log('🌐 [CONTROLLER] POST /api/employees - Requête reçue');
+      console.log('🌐 [CONTROLLER] Headers:', JSON.stringify(req.headers, null, 2));
+      console.log('🌐 [CONTROLLER] Body:', JSON.stringify(req.body, null, 2));
+      console.log('🌐 [CONTROLLER] File:', req.file ? req.file.filename : 'Aucun fichier');
+
       const dto: CreateEmployeeDto = req.body;
       const file = req.file;
 
+      console.log('🌐 [CONTROLLER] Appel du service createEmployee...');
       const result = await employeeService.createEmployee(dto, file);
+      console.log('✅ [CONTROLLER] Service terminé avec succès');
 
       res.status(201).json({
         success: true,
         message: 'Employé créé avec succès',
         data: result,
       });
+      console.log('✅ [CONTROLLER] Réponse 201 envoyée');
     } catch (error: any) {
+      console.error('❌ [CONTROLLER] Erreur capturée:', error.message);
+      console.error('❌ [CONTROLLER] Stack:', error.stack);
       next(error);
     }
   };
