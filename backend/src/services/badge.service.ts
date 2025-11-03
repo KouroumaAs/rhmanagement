@@ -110,6 +110,8 @@ class BadgeService {
           qrCode: 1,
           requestDate: 1,
           printDate: 1,
+          printCount: 1,
+          reprintHistory: 1,
           createdAt: 1,
           updatedAt: 1,
           employee: {
@@ -120,6 +122,9 @@ class BadgeService {
             fonction: '$employeeData.fonction',
             matricule: '$employeeData.matricule',
             type: '$employeeData.type',
+            dateEmbauche: '$employeeData.dateEmbauche',
+            dateFinContrat: '$employeeData.dateFinContrat',
+            photo: '$employeeData.photo',
           },
         },
       });
@@ -134,6 +139,8 @@ class BadgeService {
           qrCode: badge.qrCode,
           requestDate: badge.requestDate,
           printDate: badge.printDate,
+          printCount: badge.printCount,
+          reprintHistory: badge.reprintHistory,
           createdAt: badge.createdAt,
           updatedAt: badge.updatedAt,
         })) as any,
@@ -178,7 +185,8 @@ class BadgeService {
     // Execute query
     const [badges, total] = await Promise.all([
       Badge.find(filters)
-        .populate('employee', 'nom prenom email telephone fonction matricule type')
+        .populate('employee', 'nom prenom email telephone fonction matricule type sousType dateEmbauche dateFinContrat photo')
+        .populate('reprintHistory.authorizedBy', 'nom prenom email')
         .sort('-createdAt')
         .skip(skip)
         .limit(limit),
@@ -193,6 +201,8 @@ class BadgeService {
         qrCode: badge.qrCode,
         requestDate: badge.requestDate,
         printDate: badge.printDate,
+        printCount: badge.printCount,
+        reprintHistory: badge.reprintHistory,
         createdAt: badge.createdAt,
         updatedAt: badge.updatedAt,
       })) as any,
@@ -207,7 +217,8 @@ class BadgeService {
 
   getBadgeById = async (id: string): Promise<BadgeResponseDto> => {
     const badge = await Badge.findById(id)
-      .populate('employee', 'nom prenom email telephone fonction matricule type dateEmbauche dateFinContrat photo');
+      .populate('employee', 'nom prenom email telephone fonction matricule type sousType dateEmbauche dateFinContrat photo')
+      .populate('reprintHistory.authorizedBy', 'nom prenom email');
 
     if (!badge) {
       throw new Error('Badge non trouvé');
@@ -227,6 +238,8 @@ class BadgeService {
       qrCode: badge.qrCode,
       printDate: badge.printDate,
       requestDate: badge.requestDate,
+      printCount: badge.printCount,
+      reprintHistory: badge.reprintHistory,
       createdAt: badge.createdAt,
       updatedAt: badge.updatedAt,
     };
@@ -237,18 +250,18 @@ class BadgeService {
   };
 
   printBadge = async (badgeId: string, _printedBy: string): Promise<BadgeResponseDto> => {
-    const badge = await Badge.findById(badgeId).populate('employee');
+    const badge = await Badge.findById(badgeId)
+      .populate('employee', 'nom prenom email telephone fonction matricule type sousType dateEmbauche dateFinContrat photo')
+      .populate('reprintHistory.authorizedBy', 'nom prenom email');
 
     if (!badge) {
       throw new Error('Badge non trouvé');
     }
 
-    // Permettre la réimpression : mettre à jour la date d'impression même si déjà imprimé
-    badge.status = 'IMPRIME';
-    badge.printDate = new Date();
-    await badge.save();
+    // Utiliser la méthode markAsPrinted du modèle
+    await badge.markAsPrinted();
 
-    console.log(`📄 Badge ${badge.status === 'IMPRIME' ? 'réimprimé' : 'imprimé'} pour ${(badge.employee as any)?.matricule}`);
+    console.log(`📄 Badge ${badge.printCount > 1 ? 'réimprimé' : 'imprimé'} pour ${(badge.employee as any)?.matricule} (impression #${badge.printCount})`);
 
     return {
       id: badge._id.toString(),
@@ -257,6 +270,8 @@ class BadgeService {
       status: badge.status,
       qrCode: badge.qrCode,
       printDate: badge.printDate,
+      printCount: badge.printCount,
+      reprintHistory: badge.reprintHistory,
       createdAt: badge.createdAt,
       updatedAt: badge.updatedAt,
     } as any;
@@ -287,66 +302,23 @@ class BadgeService {
     // Import Employee model dynamically to avoid circular dependency
     const Employee = (await import('../models')).Employee;
 
+    console.log('🔍 Vérification du matricule:', matricule);
+
     // Find employee by matricule
     const employee = await Employee.findOne({ matricule });
 
     if (!employee) {
-      return {
-        verified: false,
-        message: 'Employé non trouvé',
-      };
+      return {};
     }
 
-    // Find badge for this employee
-    const badge = await Badge.findOne({ employee: employee._id }).populate('employee');
-
-    if (!badge) {
-      return {
-        verified: false,
-        message: 'Badge non trouvé pour cet employé',
-      };
-    }
-
-    return this.validateBadge(badge);
-  };
-
-  private validateBadge = (badge: any): VerifyQRCodeResponseDto => {
-    const employee = badge.employee as any;
-
-    // Check if employee is active
-    if (employee.status !== 'ACTIF') {
-      return {
-        verified: false,
-        message: 'Employé non actif',
-        employee: {
-          matricule: employee.matricule,
-        },
-      };
-    }
-
-    // Check if contract is still valid
-    const now = new Date();
-    const contractEndDate = new Date(employee.dateFinContrat);
-
-    if (contractEndDate < now) {
-      return {
-        verified: false,
-        message: 'Contrat expiré',
-        employee: {
-          matricule: employee.matricule,
-        },
-      };
-    }
-
-    // Everything is valid
+    // Return only matricule
     return {
-      verified: true,
-      message: 'Badge valide',
       employee: {
         matricule: employee.matricule,
       },
     };
   };
+
 
   deleteBadge = async (id: string): Promise<void> => {
     const badge = await Badge.findById(id);
@@ -359,7 +331,8 @@ class BadgeService {
   };
 
   updateBadgeStatus = async (id: string, dto: UpdateBadgeStatusDto): Promise<BadgeResponseDto> => {
-    const badge = await Badge.findById(id);
+    const badge = await Badge.findById(id)
+      .populate('reprintHistory.authorizedBy', 'nom prenom email');
 
     if (!badge) {
       throw new Error('Badge non trouvé');
@@ -375,6 +348,36 @@ class BadgeService {
       status: badge.status,
       qrCode: badge.qrCode,
       printDate: badge.printDate,
+      printCount: badge.printCount,
+      reprintHistory: badge.reprintHistory,
+      createdAt: badge.createdAt,
+      updatedAt: badge.updatedAt,
+    } as any;
+  };
+
+  authorizeReprint = async (badgeId: string, userId: string): Promise<BadgeResponseDto> => {
+    const badge = await Badge.findById(badgeId)
+      .populate('employee', 'nom prenom email telephone fonction matricule type sousType dateEmbauche dateFinContrat photo')
+      .populate('reprintHistory.authorizedBy', 'nom prenom email');
+
+    if (!badge) {
+      throw new Error('Badge non trouvé');
+    }
+
+    // Utiliser la méthode authorizeReprint du modèle
+    await badge.authorizeReprint(userId);
+
+    console.log(`✅ Réimpression autorisée pour le badge ${badge._id} par l'utilisateur ${userId}`);
+
+    return {
+      id: badge._id.toString(),
+      employee: badge.employee,
+      type: (badge as any).type,
+      status: badge.status,
+      qrCode: badge.qrCode,
+      printDate: badge.printDate,
+      printCount: badge.printCount,
+      reprintHistory: badge.reprintHistory,
       createdAt: badge.createdAt,
       updatedAt: badge.updatedAt,
     } as any;
@@ -405,7 +408,8 @@ class BadgeService {
         },
       ]),
       Badge.find({ status: 'IMPRIME' })
-        .populate('employee', 'nom prenom email type')
+        .populate('employee', 'nom prenom email type sousType')
+        .populate('reprintHistory.authorizedBy', 'nom prenom email')
         .sort('-printDate')
         .limit(5),
     ]);
@@ -424,6 +428,8 @@ class BadgeService {
         status: badge.status,
         qrCode: badge.qrCode,
         printDate: badge.printDate,
+        printCount: badge.printCount,
+        reprintHistory: badge.reprintHistory,
         createdAt: badge.createdAt,
         updatedAt: badge.updatedAt,
       })) as any,

@@ -67,20 +67,21 @@ export const badgesService = {
   },
 
   /**
-   * Verify badge by QR code
+   * Verify badge by QR code - Retourne uniquement le matricule
    */
-  async verify(qrCode: string): Promise<ApiResponse<{
-    valid: boolean;
-    employee: Badge;
-    status: "ACTIVE" | "EXPIRED" | "INVALID";
-  }>> {
+  async verify(qrCode: string): Promise<{
+    success: boolean;
+    employee?: {
+      matricule: string;
+    };
+  }> {
     console.log('🔍 Appel API verify avec qrCode:', qrCode);
     // Route publique, pas besoin de token
     return get<{
-      valid: boolean;
-      employee: Badge;
-      status: "ACTIVE" | "EXPIRED" | "INVALID";
-    }>(`${API_ENDPOINTS.BADGES}/verify/${qrCode}`);
+      employee?: {
+        matricule: string;
+      };
+    }>(`${API_ENDPOINTS.BADGES}/verify/${qrCode}`) as any;
   },
 
   /**
@@ -118,5 +119,17 @@ export const badgesService = {
       console.error('Erreur téléchargement QR code:', error);
       throw error;
     }
+  },
+
+  /**
+   * Authorize badge reprint (for RH)
+   */
+  async authorizeReprint(badgeId: string): Promise<ApiResponse<Badge>> {
+    const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+    return post<Badge>(`${API_ENDPOINTS.BADGES}/${badgeId}/authorize-reprint`, {}, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
   },
 };

@@ -30,7 +30,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Printer, QrCode, CheckCircle, Clock, Download, Building2, Users, Search, X, LogOut, KeyRound, FileText } from "lucide-react";
+import { Printer, QrCode, CheckCircle, Clock, Download, Building2, Users, Search, X, LogOut, KeyRound, FileText, Image } from "lucide-react";
 import Link from "next/link";
 import { QRCodeSVG } from "qrcode.react";
 import QRCodeLib from "qrcode";
@@ -217,6 +217,50 @@ export default function ImpressionPage() {
         variant: "destructive",
         title: "Erreur",
         description: "Impossible de télécharger le QR code",
+      });
+    }
+  };
+
+  const downloadPhoto = async (badge: any) => {
+    try {
+      if (!badge.employee?.photo) {
+        toast({
+          variant: "destructive",
+          title: "Erreur",
+          description: "Aucune photo disponible pour cet employé",
+        });
+        return;
+      }
+
+      // Obtenir l'URL de base sans /api
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://192.168.100.171:4003/api';
+      const baseUrl = apiUrl.replace('/api', '');
+      const photoUrl = `${baseUrl}${badge.employee.photo}`;
+
+      // Télécharger la photo
+      const response = await fetch(photoUrl);
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+
+      // Créer un lien de téléchargement
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `Photo-${badge.employee?.matricule || 'employee'}.jpg`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+
+      toast({
+        title: "Photo téléchargée",
+        description: `La photo de ${badge.employee?.prenom} ${badge.employee?.nom} a été téléchargée`,
+      });
+    } catch (error) {
+      console.error("Erreur lors du téléchargement de la photo:", error);
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: "Impossible de télécharger la photo",
       });
     }
   };
@@ -440,7 +484,7 @@ export default function ImpressionPage() {
             <!-- Badge Recto -->
             <div class="badge-card">
               <div class="badge-header">
-                <h1>${getBadgeTitle(badge.employee?.type)}</h1>
+                <h1>${getBadgeTitle(badge.employee?.type, badge.employee?.sousType)}</h1>
               </div>
 
               <div class="badge-info">
@@ -528,28 +572,33 @@ export default function ImpressionPage() {
     `;
   };
 
-  const getBadgeTitle = (type: string) => {
+  const getBadgeTitle = (type: string, sousType?: string) => {
     const titles: Record<string, string> = {
       PERSONNELS_DSD: "PERSONNELS DSD GUINEE",
       DNTT: "DNTT",
       STAGIAIRES_DSD: "STAGIAIRES DSD GUINEE",
-      BANQUES: "BANQUES",
-      MAISONS_PLAQUE: "MAISONS DE PLAQUE",
+      BANQUES: "BANQUE",
+      MAISONS_PLAQUE: "EMBOUTISSEUR",
       DNTT_STAGIAIRES: "DNTT STAGIAIRES",
       DEMARCHEURS: "COLLECTIF DES DEMARCHEURS",
     };
-    return titles[type] || type;
+    const title = titles[type] || type;
+    return sousType ? `${title} ${sousType.toUpperCase()}` : title;
   };
 
-  const getStatusBadge = (status: string) => {
+  const getStatusBadge = (status: string, printCount?: number) => {
     const variants: Record<string, { label: string; className: string }> = {
       EN_ATTENTE: {
         label: "En attente",
         className: "bg-[#ff8d13] text-white font-semibold",
       },
       IMPRIME: {
-        label: "Imprimé",
+        label: printCount && printCount > 1 ? `Badge réimprimé${printCount > 2 ? `(${printCount - 2})` : ""}` : "Badge imprimé",
         className: "bg-green-500 text-white font-semibold",
+      },
+      REIMPRESSION: {
+        label: "Autorisé pour réimpression",
+        className: "bg-blue-500 text-white font-semibold",
       },
     };
     const variant = variants[status] || variants.EN_ATTENTE;
@@ -560,13 +609,13 @@ export default function ImpressionPage() {
     );
   };
 
-  const getTypeBadge = (type: string) => {
+  const getTypeBadge = (type: string, sousType?: string) => {
     const typeLabels: Record<string, string> = {
       PERSONNELS_DSD: "Personnels DSD",
       DNTT: "DNTT",
       STAGIAIRES_DSD: "Stagiaires DSD",
-      BANQUES: "Banques",
-      MAISONS_PLAQUE: "Maisons de Plaque",
+      BANQUES: "Banque",
+      MAISONS_PLAQUE: "Emboutisseur",
       DNTT_STAGIAIRES: "DNTT Stagiaires",
       DEMARCHEURS: "Démarcheurs",
     };
@@ -581,9 +630,12 @@ export default function ImpressionPage() {
       DEMARCHEURS: "bg-amber-600",
     };
 
+    const label = typeLabels[type] || type;
+    const displayLabel = sousType ? `${label} ${sousType}` : label;
+
     return (
       <Badge className={`${colors[type] || "bg-gray-600"} text-white font-semibold`}>
-        {typeLabels[type] || type}
+        {displayLabel}
       </Badge>
     );
   };
@@ -713,6 +765,7 @@ export default function ImpressionPage() {
                   <SelectContent className="bg-white">
                     <SelectItem value="TOUS" className="text-base font-semibold py-3 cursor-pointer hover:bg-gray-50">Tous les statuts</SelectItem>
                     <SelectItem value="EN_ATTENTE" className="text-base font-semibold py-3 cursor-pointer hover:bg-orange-50">En attente</SelectItem>
+                    <SelectItem value="REIMPRESSION" className="text-base font-semibold py-3 cursor-pointer hover:bg-blue-50">Autorisé pour réimpression</SelectItem>
                     <SelectItem value="IMPRIME" className="text-base font-semibold py-3 cursor-pointer hover:bg-green-50">Imprimé</SelectItem>
                   </SelectContent>
                 </Select>
@@ -843,7 +896,7 @@ export default function ImpressionPage() {
                           </div>
                         </div>
                       </TableCell>
-                      <TableCell>{getTypeBadge(request.employee?.type)}</TableCell>
+                      <TableCell>{getTypeBadge(request.employee?.type, request.employee?.sousType)}</TableCell>
                       <TableCell>
                         <div className="flex items-center gap-2">
                           <QrCode className="w-4 h-4 text-[#ff8d13]" />
@@ -858,28 +911,58 @@ export default function ImpressionPage() {
                           <span className="text-gray-400">-</span>
                         )}
                       </TableCell>
-                      <TableCell>{getStatusBadge(request.status)}</TableCell>
+                      <TableCell>{getStatusBadge(request.status, request.printCount)}</TableCell>
                       <TableCell>
                         <div className="flex items-center justify-end gap-2">
-                          <Link href={`/dashboard/impression/badges/${request.id}/print`}>
+                          {request.status === "REIMPRESSION" ? (
+                            <Link href={`/dashboard/impression/badges/${request.id}/print`}>
+                              <Button
+                                size="sm"
+                                className="gap-2 bg-gradient-to-r from-[#ff8d13] to-[#ff8d13] hover:from-[#e67d0f] hover:to-[#ff8d13] shadow-md"
+                              >
+                                <Printer className="w-4 h-4" />
+                                Réimprimer
+                              </Button>
+                            </Link>
+                          ) : (
                             <Button
                               size="sm"
                               className="gap-2 bg-gradient-to-r from-[#ff8d13] to-[#ff8d13] hover:from-[#e67d0f] hover:to-[#ff8d13] shadow-md"
+                              disabled={request.status === "IMPRIME"}
+                              onClick={() => {
+                                if (request.status === "EN_ATTENTE") {
+                                  window.location.href = `/dashboard/impression/badges/${request.id}/print`;
+                                }
+                              }}
                             >
                               <Printer className="w-4 h-4" />
-                              {request.status === "EN_ATTENTE" ? "Imprimer" : "Réimprimer"}
+                              {request.status === "EN_ATTENTE" ? "Imprimer" : request.status === "IMPRIME" ? "Imprimé" : "Réimprimer"}
                             </Button>
-                          </Link>
+                          )}
                           <Button
                             size="sm"
                             variant="outline"
-                            className="gap-2 border-green-200 hover:bg-green-50 text-green-600"
+                            className="gap-2 border-green-200 hover:bg-green-50 text-green-600 disabled:opacity-50 disabled:cursor-not-allowed"
                             onClick={() => downloadQRCode(request)}
                             title="Télécharger le QR code"
+                            disabled={request.status === "IMPRIME"}
                           >
                             <Download className="w-4 h-4" />
                             QR Code
                           </Button>
+                          {request.employee?.photo && (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="gap-2 border-blue-200 hover:bg-blue-50 text-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                              onClick={() => downloadPhoto(request)}
+                              title="Télécharger la photo"
+                              disabled={request.status === "IMPRIME"}
+                            >
+                              <Image className="w-4 h-4" />
+                              Photo
+                            </Button>
+                          )}
                         </div>
                       </TableCell>
                     </TableRow>
@@ -1016,13 +1099,7 @@ export default function ImpressionPage() {
                   {/* Header */}
                   <div className="text-center pb-3 border-b border-white/30 flex-shrink-0 pr-32">
                     <p className="text-base font-bold uppercase tracking-wide">
-                      {selectedBadge.employee?.type === "PERSONNELS_DSD" && "PERSONNELS DSD GUINEE"}
-                      {selectedBadge.employee?.type === "DNTT" && "DNTT"}
-                      {selectedBadge.employee?.type === "STAGIAIRES_DSD" && "STAGIAIRES DSD GUINEE"}
-                      {selectedBadge.employee?.type === "BANQUES" && "BANQUES"}
-                      {selectedBadge.employee?.type === "MAISONS_PLAQUE" && "MAISONS DE PLAQUE"}
-                      {selectedBadge.employee?.type === "DNTT_STAGIAIRES" && "DNTT STAGIAIRES"}
-                      {selectedBadge.employee?.type === "DEMARCHEURS" && "COLLECTIF DES DEMARCHEURS"}
+                      {getBadgeTitle(selectedBadge.employee?.type, selectedBadge.employee?.sousType)}
                     </p>
                   </div>
 

@@ -7,15 +7,17 @@ export type EmployeeStatus = 'ACTIF' | 'SUSPENDU' | 'TERMINE';
 export type ContractType = 'CDI' | 'CDD' | 'STAGE';
 
 export type EmployeeType =
-  | 'PERSONNELS_DSD'
+  | 'PERSONNEL_DSD'
   | 'DNTT'
-  | 'STAGIAIRES_DSD'
-  | 'BANQUES'
-  | 'MAISONS_PLAQUE'
-  | 'DNTT_STAGIAIRES'
-  | 'DEMARCHEURS';
+  | 'STAGIAIRE_DSD'
+  | 'BANQUE'
+  | 'EMBOUTISSEUR'
+  | 'DNTT_STAGIAIRE'
+  | 'DEMARCHEUR';
 
-export type BadgeStatus = 'EN_ATTENTE' | 'IMPRIME';
+export type BanqueType = 'TTLB' | 'GLOBAL' | 'I_CRDIGITAL';
+
+export type BadgeStatus = 'EN_ATTENTE' | 'IMPRIME' | 'REIMPRESSION';
 
 export interface Employee {
   id: string;
@@ -24,8 +26,11 @@ export interface Employee {
   email?: string;
   telephone: string;
   fonction: string;
+  profil?: string;
+  diplome?: string;
   matricule: string;
   type: EmployeeType;
+  sousType?: string | null;
   status: EmployeeStatus;
   dateEmbauche: string;
   typeContrat: ContractType;
@@ -34,6 +39,7 @@ export interface Employee {
   dateFinSuspension?: string | null;
   photo?: string;
   hasBadge: boolean;
+  badgeId?: string | null;
   badgeStatus?: BadgeStatus | null;
   createdAt: string;
   updatedAt: string;
@@ -47,4 +53,6 @@ export interface EmployeeQueryParams {
   search?: string;
   dateFinContratDe?: string;
   dateFinContratA?: string;
+  profil?: string;
+  diplome?: string;
 }

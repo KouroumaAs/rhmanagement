@@ -129,13 +129,13 @@ export default function EmployeeDetailsPage() {
 
   const getTypeLabel = (type: string) => {
     const types: Record<string, string> = {
-      'PERSONNELS_DSD': 'Personnels DSD Guinée',
+      'PERSONNEL_DSD': 'Personnel DSD Guinée',
       'DNTT': 'DNTT',
-      'STAGIAIRES_DSD': 'Stagiaires DSD Guinée',
-      'BANQUES': 'Banques',
-      'MAISONS_PLAQUE': 'Maisons de Plaque',
-      'DNTT_STAGIAIRES': 'DNTT Stagiaires',
-      'DEMARCHEURS': 'Collectif des Démarcheurs',
+      'STAGIAIRE_DSD': 'Stagiaire DSD Guinée',
+      'BANQUE': 'Banque',
+      'EMBOUTISSEUR': 'Emboutisseur',
+      'DNTT_STAGIAIRE': 'DNTT Stagiaire',
+      'DEMARCHEUR': 'Collectif des Démarcheurs',
     };
     return types[type] || type;
   };
@@ -266,6 +266,17 @@ export default function EmployeeDetailsPage() {
                   <div>
                     <p className="text-sm font-semibold text-gray-500 mb-1">Matricule</p>
                     <p className="text-lg font-bold text-[#ff8d13]">{employee.matricule}</p>
+                  </div>
+                </div>
+
+                <div className="pt-4 border-t border-gray-100 grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <p className="text-sm font-semibold text-gray-500 mb-1">Profil</p>
+                    <p className="text-lg font-bold text-gray-900">{employee.profil || 'Non renseigné'}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-gray-500 mb-1">Diplôme</p>
+                    <p className="text-lg font-bold text-gray-900">{employee.diplome || 'Non renseigné'}</p>
                   </div>
                 </div>
 

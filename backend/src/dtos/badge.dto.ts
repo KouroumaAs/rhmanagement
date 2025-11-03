@@ -12,6 +12,12 @@ export class UpdateBadgeStatusDto {
   status!: BadgeStatus;
 }
 
+export class ReprintHistoryEntryDto {
+  authorizedBy!: string | UserResponseDto;
+  authorizedAt!: Date;
+  printedAt?: Date;
+}
+
 export class BadgeResponseDto {
   id!: string;
   employee!: string | EmployeeResponseDto;
@@ -20,6 +26,8 @@ export class BadgeResponseDto {
   qrCode!: string;
   printedBy?: string | UserResponseDto;
   printedAt?: Date;
+  printCount!: number;
+  reprintHistory!: ReprintHistoryEntryDto[];
   createdAt!: Date;
   updatedAt!: Date;
 }
@@ -52,8 +60,6 @@ export class QRCodeResponseDto {
 }
 
 export class VerifyQRCodeResponseDto {
-  verified!: boolean;
-  message!: string;
   employee?: {
     matricule: string;
   };

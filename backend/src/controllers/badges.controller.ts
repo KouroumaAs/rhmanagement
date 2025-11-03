@@ -106,6 +106,8 @@ class BadgesController {
     try {
       const result = await badgeService.verifyQRCode(req.params.qrCode);
 
+      console.log('📤 Réponse verify envoyée:', JSON.stringify({ success: true, ...result }));
+
       res.status(200).json({
         success: true,
         ...result,
@@ -123,6 +125,8 @@ class BadgesController {
   verifyByMatricule = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const result = await badgeService.verifyByMatricule(req.params.matricule);
+
+      console.log('📤 Réponse verify envoyée:', JSON.stringify({ success: true, ...result }));
 
       res.status(200).json({
         success: true,
@@ -164,6 +168,35 @@ class BadgesController {
       res.status(200).json({
         success: true,
         message: 'Statut du badge modifié avec succès',
+        data: result,
+      });
+    } catch (error: any) {
+      next(error);
+    }
+  };
+
+  /**
+   * @desc    Authorize badge reprint (for RH)
+   * @route   POST /api/badges/:id/authorize-reprint
+   * @access  Private (RH, ADMIN)
+   */
+  authorizeReprint = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const userId = (req.user?._id as any)?.toString();
+
+      if (!userId) {
+        res.status(401).json({
+          success: false,
+          message: 'Non autorisé',
+        });
+        return;
+      }
+
+      const result = await badgeService.authorizeReprint(req.params.id, userId);
+
+      res.status(200).json({
+        success: true,
+        message: 'Réimpression autorisée avec succès',
         data: result,
       });
     } catch (error: any) {

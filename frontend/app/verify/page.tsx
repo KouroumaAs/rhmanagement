@@ -40,9 +40,14 @@ function VerifyContent() {
       setError("");
       setResult(null);
 
+      console.log('🔍 [Frontend] Appel verify avec code:', code);
       const response = await badgesService.verify(code);
+      console.log('📥 [Frontend] Réponse reçue:', JSON.stringify(response, null, 2));
+      console.log('📥 [Frontend] response.data:', response.data);
+      console.log('📥 [Frontend] response.data?.employee:', response.data?.employee);
       setResult(response);
     } catch (err: any) {
+      console.error('❌ [Frontend] Erreur verify:', err);
       setError(err.message || "Code QR invalide ou non trouvé");
     } finally {
       setIsLoading(false);
@@ -58,11 +63,11 @@ function VerifyContent() {
   };
 
   const getStatusInfo = () => {
-    if (!result) {
+    if (!result || !result.employee) {
       return null;
     }
 
-    // Configuration simple sans statut de validation
+    // Affichage simple avec le matricule trouvé
     return {
       icon: QrCode,
       color: "text-[#ff8d13]",
@@ -147,9 +152,15 @@ function VerifyContent() {
                   <div className="flex items-center justify-center">
                     <div className="text-center">
                       <p className="text-xs font-semibold text-gray-500 uppercase mb-2">Matricule</p>
-                      <p className="text-3xl font-bold text-gray-900">{result.employee?.matricule}</p>
+                      <p className="text-3xl font-bold text-gray-900">{result.employee.matricule}</p>
                     </div>
                   </div>
+                </div>
+              )}
+              {result && !result.employee && (
+                <div className="text-center">
+                  <XCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
+                  <p className="text-xl font-semibold text-gray-900">Matricule non trouvé</p>
                 </div>
               )}
             </CardContent>

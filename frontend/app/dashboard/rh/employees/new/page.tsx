@@ -30,8 +30,11 @@ export default function NewEmployeePage() {
     typeContrat: "CDD" as "CDI" | "CDD" | "STAGE",
     dateFinContrat: "",
     fonction: "",
+    profil: "",
+    diplome: "",
     matricule: "",
-    typeEmploye: "PERSONNELS_DSD",
+    typeEmploye: "PERSONNEL_DSD",
+    sousType: "",
     photo: null as File | null,
   };
 
@@ -49,6 +52,61 @@ export default function NewEmployeePage() {
     fonction?: string;
     matricule?: string;
   }>({});
+
+  // Liste des emboutisseurs avec leurs préfixes
+  const emboutisseursMap: Record<string, string> = {
+    'SUPER_PLAQUE': 'SP',
+    'EPIG_SARL': 'ES',
+    'BARRY_ET_FILS': 'BEF',
+    'MK_GUINEE_PLAQUE': 'MKGP',
+    'ISB_PLA': 'IP',
+    'AKD': 'AKD',
+    'TRANSIT_224': 'T2',
+    'S': 'S',
+    'GALAXIE_GUINEE': 'GG',
+    'KAECK_CONTEQUE': 'KAC',
+    'BOLIBANA_SARLU': 'BS',
+    'BILHAQ_SIGNALISATION': 'BIS',
+    'FOURA_ET_FILS': 'FEF',
+    'PROFUCO_PLAQUE': 'PP',
+    'AZ_PROJET': 'AP',
+    'SOMBORI_BONFI': 'SB',
+    'SOGBE_GENERALE_SARL': 'SGS',
+    'AKIM': 'A',
+    'PLAQUE_DE_GUINEE': 'PDG',
+    'GOLFE_DE_GUINEE': 'GDG',
+    'BISSIKRI_PLAQUE': 'BP',
+  };
+
+  // Fonction pour obtenir le préfixe de matricule selon le type
+  const getMatriculePrefix = (typeEmploye: string, sousType?: string): string => {
+    switch (typeEmploye) {
+      case 'PERSONNEL_DSD':
+        return 'DSD';
+      case 'STAGIAIRE_DSD':
+        return 'Stage';
+      case 'DNTT':
+        return 'DNTT';
+      case 'DNTT_STAGIAIRE':
+        return 'DNTTST';
+      case 'DEMARCHEUR':
+        return 'CDDO';
+      case 'BANQUE':
+        if (sousType === 'TTLB') return 'TTLB';
+        if (sousType === 'GLOBAL') return 'GL';
+        if (sousType === 'I_CRDIGITAL') return 'CRD';
+        return 'BANQUE';
+      case 'EMBOUTISSEUR':
+        return sousType ? emboutisseursMap[sousType] || '' : '';
+      default:
+        return 'DSD';
+    }
+  };
+
+  // Fonction pour obtenir le format du numéro (2 ou 3 chiffres)
+  const getMatriculeNumberLength = (typeEmploye: string): number => {
+    return typeEmploye === 'DEMARCHEUR' ? 2 : 3;
+  };
 
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -153,8 +211,26 @@ export default function NewEmployeePage() {
       formDataToSend.append('telephone', formData.telephone);
       formDataToSend.append('email', formData.email);
       formDataToSend.append('fonction', formData.fonction);
-      formDataToSend.append('matricule', `DSD${formData.matricule}`);
+
+      if (formData.profil) {
+        formDataToSend.append('profil', formData.profil);
+      }
+
+      if (formData.diplome) {
+        formDataToSend.append('diplome', formData.diplome);
+      }
+
+      // Générer le matricule avec le bon préfixe
+      const prefix = getMatriculePrefix(formData.typeEmploye, formData.sousType);
+      const fullMatricule = prefix ? `${prefix}${formData.matricule}` : formData.matricule;
+      formDataToSend.append('matricule', fullMatricule);
+
       formDataToSend.append('type', formData.typeEmploye);
+
+      if (formData.sousType) {
+        formDataToSend.append('sousType', formData.sousType);
+      }
+
       formDataToSend.append('typeContrat', formData.typeContrat);
       formDataToSend.append('dateEmbauche', formData.dateEmbauche);
 
@@ -226,9 +302,11 @@ export default function NewEmployeePage() {
       }
       // Erreur de matricule dupliqué
       else if (errorMessage.includes("matricule") && (errorMessage.includes("existe") || errorMessage.includes("unique") || errorMessage.includes("déjà") || errorMessage.includes("deja") || errorMessage.includes("duplicate"))) {
+        const prefix = getMatriculePrefix(formData.typeEmploye, formData.sousType);
+        const fullMatricule = prefix ? `${prefix}${formData.matricule}` : formData.matricule;
         title = "Matricule déjà existant";
-        description = `Le matricule DSD${formData.matricule} est déjà utilisé par un autre employé.`;
-        errors.matricule = `Le matricule DSD${formData.matricule} existe déjà`;
+        description = `Le matricule ${fullMatricule} est déjà utilisé par un autre employé.`;
+        errors.matricule = `Le matricule ${fullMatricule} existe déjà`;
       }
       // Erreur de validation email
       else if (errorMessage.includes("email") && (errorMessage.includes("invalide") || errorMessage.includes("invalid") || errorMessage.includes("format"))) {
@@ -237,9 +315,9 @@ export default function NewEmployeePage() {
         errors.email = "Format d'email invalide";
       }
       // Erreur de validation matricule
-      else if (errorMessage.includes("matricule") && errorMessage.includes("dsd")) {
+      else if (errorMessage.includes("matricule") && errorMessage.includes("format")) {
         title = "Format de matricule invalide";
-        description = "Le matricule doit commencer par DSD suivi de chiffres (ex: DSD001)";
+        description = "Le matricule n'est pas au bon format";
         errors.matricule = "Format de matricule invalide";
       }
       // Erreur de téléphone
@@ -511,25 +589,89 @@ export default function NewEmployeePage() {
                 </Label>
                 <Select
                   value={formData.typeEmploye}
-                  onValueChange={(value) => setFormData({ ...formData, typeEmploye: value })}
+                  onValueChange={(value) => {
+                    setFormData({ ...formData, typeEmploye: value, sousType: "" });
+                  }}
                 >
                   <SelectTrigger className="h-11 w-full border-2 border-gray-200 focus:border-[#ff8d13] rounded-xl bg-white text-gray-900 font-medium">
                     <SelectValue placeholder="Sélectionner un type" />
                   </SelectTrigger>
                   <SelectContent className="bg-white border-2 border-gray-200 shadow-2xl z-50">
-                    <SelectItem value="PERSONNELS_DSD" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">Personnels DSD Guinée</SelectItem>
+                    <SelectItem value="PERSONNEL_DSD" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">Personnel DSD Guinée</SelectItem>
                     <SelectItem value="DNTT" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">DNTT</SelectItem>
-                    <SelectItem value="STAGIAIRES_DSD" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">Stagiaires DSD Guinée</SelectItem>
-                    <SelectItem value="BANQUES" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">Banques</SelectItem>
-                    <SelectItem value="MAISONS_PLAQUE" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">Maisons de Plaque</SelectItem>
-                    <SelectItem value="DNTT_STAGIAIRES" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">DNTT Stagiaires</SelectItem>
-                    <SelectItem value="DEMARCHEURS" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">Collectif des Démarcheurs</SelectItem>
+                    <SelectItem value="STAGIAIRE_DSD" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">Stagiaire DSD Guinée</SelectItem>
+                    <SelectItem value="BANQUE" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">Banque</SelectItem>
+                    <SelectItem value="EMBOUTISSEUR" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">Emboutisseur</SelectItem>
+                    <SelectItem value="DNTT_STAGIAIRE" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">DNTT Stagiaire</SelectItem>
+                    <SelectItem value="DEMARCHEUR" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">Collectif des Démarcheurs</SelectItem>
                   </SelectContent>
                 </Select>
                 <p className="text-xs text-gray-500 mt-1">
                   Sélectionnez la catégorie de badge appropriée pour cet employé
                 </p>
               </div>
+
+              {/* Sous-sélection pour les Banques */}
+              {formData.typeEmploye === 'BANQUE' && (
+                <div className="space-y-2">
+                  <Label htmlFor="sousType" className="text-sm font-semibold text-gray-700">
+                    Type de Banque *
+                  </Label>
+                  <Select
+                    value={formData.sousType}
+                    onValueChange={(value) => setFormData({ ...formData, sousType: value })}
+                  >
+                    <SelectTrigger className="h-11 w-full border-2 border-gray-200 focus:border-[#ff8d13] rounded-xl bg-white text-gray-900 font-medium">
+                      <SelectValue placeholder="Sélectionner une banque" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-white border-2 border-gray-200 shadow-2xl z-50">
+                      <SelectItem value="TTLB" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">TTLB</SelectItem>
+                      <SelectItem value="GLOBAL" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">GLOBAL</SelectItem>
+                      <SelectItem value="I_CRDIGITAL" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">I_CRDIGITAL</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+
+              {/* Sous-sélection pour les Emboutisseurs */}
+              {formData.typeEmploye === 'EMBOUTISSEUR' && (
+                <div className="space-y-2">
+                  <Label htmlFor="sousType" className="text-sm font-semibold text-gray-700">
+                    Nom de l&apos;Emboutisseur *
+                  </Label>
+                  <Select
+                    value={formData.sousType}
+                    onValueChange={(value) => setFormData({ ...formData, sousType: value })}
+                  >
+                    <SelectTrigger className="h-11 w-full border-2 border-gray-200 focus:border-[#ff8d13] rounded-xl bg-white text-gray-900 font-medium">
+                      <SelectValue placeholder="Sélectionner un emboutisseur" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-white border-2 border-gray-200 shadow-2xl z-50 max-h-[300px]">
+                      <SelectItem value="SUPER_PLAQUE" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">SUPER PLAQUE</SelectItem>
+                      <SelectItem value="EPIG_SARL" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">EPIG SARL</SelectItem>
+                      <SelectItem value="BARRY_ET_FILS" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">BARRY ET FILS</SelectItem>
+                      <SelectItem value="MK_GUINEE_PLAQUE" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">M.K GUINEE PLAQUE</SelectItem>
+                      <SelectItem value="ISB_PLA" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">ISB PLA</SelectItem>
+                      <SelectItem value="AKD" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">A.K.D</SelectItem>
+                      <SelectItem value="TRANSIT_224" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">TRANSIT 224</SelectItem>
+                      <SelectItem value="S" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">S</SelectItem>
+                      <SelectItem value="GALAXIE_GUINEE" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">GALAXIE GUINEE</SelectItem>
+                      <SelectItem value="KAECK_CONTEQUE" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">K.AECK CONTEQUE</SelectItem>
+                      <SelectItem value="BOLIBANA_SARLU" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">BOLIBANA SARLU</SelectItem>
+                      <SelectItem value="BILHAQ_SIGNALISATION" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">BILHAQ SIGNALISATION</SelectItem>
+                      <SelectItem value="FOURA_ET_FILS" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">FOURA ET FILS</SelectItem>
+                      <SelectItem value="PROFUCO_PLAQUE" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">PROFUCO PLAQUE</SelectItem>
+                      <SelectItem value="AZ_PROJET" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">AZ PROJET</SelectItem>
+                      <SelectItem value="SOMBORI_BONFI" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">SOMBORI BONFI</SelectItem>
+                      <SelectItem value="SOGBE_GENERALE_SARL" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">SOGBE GENERALE SARL</SelectItem>
+                      <SelectItem value="AKIM" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">AKIM</SelectItem>
+                      <SelectItem value="PLAQUE_DE_GUINEE" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">Plaque de Guinée</SelectItem>
+                      <SelectItem value="GOLFE_DE_GUINEE" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">Golfe de Guinée</SelectItem>
+                      <SelectItem value="BISSIKRI_PLAQUE" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">Bissikri Plaque</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 <div className="space-y-2">
@@ -556,13 +698,53 @@ export default function NewEmployeePage() {
                 </div>
 
                 <div className="space-y-2">
+                  <Label htmlFor="profil" className="text-sm font-semibold text-gray-700">
+                    Profil
+                  </Label>
+                  <Input
+                    id="profil"
+                    value={formData.profil}
+                    onChange={(e) => setFormData({ ...formData, profil: e.target.value })}
+                    placeholder="Ex: Comptable, Informaticien, etc."
+                    className="h-11 border-2 border-gray-200 focus:border-[#ff8d13] focus:ring-4 focus:ring-[#ff8d13]/10 transition-all rounded-xl"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <div className="space-y-2">
+                  <Label htmlFor="diplome" className="text-sm font-semibold text-gray-700">
+                    Diplôme
+                  </Label>
+                  <Select
+                    value={formData.diplome}
+                    onValueChange={(value) => setFormData({ ...formData, diplome: value })}
+                  >
+                    <SelectTrigger className="h-11 w-full border-2 border-gray-200 focus:border-[#ff8d13] rounded-xl bg-white text-gray-900 font-medium">
+                      <SelectValue placeholder="Sélectionner un diplôme" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-white border-2 border-gray-200 shadow-2xl z-50">
+                      <SelectItem value="BAC" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">BAC</SelectItem>
+                      <SelectItem value="BTS" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">BTS</SelectItem>
+                      <SelectItem value="Licence 1" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">Licence 1</SelectItem>
+                      <SelectItem value="Licence 2" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">Licence 2</SelectItem>
+                      <SelectItem value="Licence 3" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">Licence 3</SelectItem>
+                      <SelectItem value="Master 1" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">Master 1</SelectItem>
+                      <SelectItem value="Master 2" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">Master 2</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
                   <Label htmlFor="matricule" className="text-sm font-semibold text-gray-700">
                     Matricule *
                   </Label>
                   <div className="flex items-center gap-2">
-                    <div className="h-11 px-4 border-2 border-gray-200 bg-gray-100 rounded-xl flex items-center font-semibold text-gray-700">
-                      DSD
-                    </div>
+                    {getMatriculePrefix(formData.typeEmploye, formData.sousType) && (
+                      <div className="h-11 px-4 border-2 border-gray-200 bg-gray-100 rounded-xl flex items-center font-semibold text-gray-700">
+                        {getMatriculePrefix(formData.typeEmploye, formData.sousType)}
+                      </div>
+                    )}
                     <Input
                       id="matricule"
                       type="text"
@@ -572,7 +754,7 @@ export default function NewEmployeePage() {
                         setFormData({ ...formData, matricule: value });
                         setFieldErrors({ ...fieldErrors, matricule: undefined });
                       }}
-                      placeholder="001, 002, 254..."
+                      placeholder={getMatriculeNumberLength(formData.typeEmploye) === 2 ? "01, 02, 99..." : "001, 002, 254..."}
                       className={`h-11 border-2 ${fieldErrors.matricule ? 'border-red-500 focus:border-red-500' : 'border-gray-200 focus:border-[#ff8d13]'} focus:ring-4 focus:ring-[#ff8d13]/10 transition-all rounded-xl flex-1`}
                       required
                       maxLength={10}
@@ -583,9 +765,13 @@ export default function NewEmployeePage() {
                       <span>⚠</span>
                       {fieldErrors.matricule}
                     </p>
+                  ) : getMatriculePrefix(formData.typeEmploye, formData.sousType) ? (
+                    <p className="text-xs text-gray-500 mt-1">
+                      Le matricule sera: {getMatriculePrefix(formData.typeEmploye, formData.sousType)}{formData.matricule || (getMatriculeNumberLength(formData.typeEmploye) === 2 ? "__" : "___")}
+                    </p>
                   ) : (
                     <p className="text-xs text-gray-500 mt-1">
-                      Le matricule sera: DSD{formData.matricule || "___"}
+                      Entrez le matricule complet pour ce type d&apos;employé
                     </p>
                   )}
                 </div>

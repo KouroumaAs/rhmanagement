@@ -123,6 +123,15 @@ class EmployeeService {
       }
     }
 
+    // Filtres par profil et diplome
+    if (query.profil) {
+      filters.profil = { $regex: query.profil, $options: 'i' };
+    }
+
+    if (query.diplome) {
+      filters.diplome = { $regex: query.diplome, $options: 'i' };
+    }
+
     // Execute query
     const [employees, total] = await Promise.all([
       Employee.find(filters).sort('-createdAt').skip(skip).limit(limit),
@@ -134,7 +143,7 @@ class EmployeeService {
       employees.map(async (emp) => {
         const badge = await Badge.findOne({
           employee: emp._id,
-          status: { $in: ['EN_ATTENTE', 'IMPRIME'] },
+          status: { $in: ['EN_ATTENTE', 'IMPRIME', 'REIMPRESSION'] },
         });
 
         return {
@@ -144,8 +153,12 @@ class EmployeeService {
           email: emp.email,
           telephone: emp.telephone,
           fonction: emp.fonction,
+          profil: emp.profil,
+          diplome: emp.diplome,
           matricule: emp.matricule,
           type: emp.type,
+          sousType: emp.sousType,
+          typeContrat: emp.typeContrat,
           status: emp.status,
           dateEmbauche: emp.dateEmbauche,
           dateFinContrat: emp.dateFinContrat,
@@ -153,7 +166,9 @@ class EmployeeService {
           dateFinSuspension: emp.dateFinSuspension,
           photo: emp.photo,
           hasBadge: !!badge,
+          badgeId: badge?._id?.toString() || null,
           badgeStatus: badge?.status || null,
+          printCount: badge?.printCount || 0,
           createdAt: emp.createdAt,
           updatedAt: emp.updatedAt,
         };
@@ -189,8 +204,12 @@ class EmployeeService {
       email: employee.email,
       telephone: employee.telephone,
       fonction: employee.fonction,
+      profil: employee.profil,
+      diplome: employee.diplome,
       matricule: employee.matricule,
       type: employee.type,
+      sousType: employee.sousType,
+      typeContrat: employee.typeContrat,
       status: employee.status,
       dateEmbauche: employee.dateEmbauche,
       dateFinContrat: employee.dateFinContrat,
@@ -242,8 +261,12 @@ class EmployeeService {
       email: employee.email,
       telephone: employee.telephone,
       fonction: employee.fonction,
+      profil: employee.profil,
+      diplome: employee.diplome,
       matricule: employee.matricule,
       type: employee.type,
+      sousType: employee.sousType,
+      typeContrat: employee.typeContrat,
       status: employee.status,
       dateEmbauche: employee.dateEmbauche,
       dateFinContrat: employee.dateFinContrat,
@@ -397,8 +420,12 @@ class EmployeeService {
       email: employee.email,
       telephone: employee.telephone,
       fonction: employee.fonction,
+      profil: employee.profil,
+      diplome: employee.diplome,
       matricule: employee.matricule,
       type: employee.type,
+      sousType: employee.sousType,
+      typeContrat: employee.typeContrat,
       status: employee.status,
       dateEmbauche: employee.dateEmbauche,
       dateFinContrat: employee.dateFinContrat,

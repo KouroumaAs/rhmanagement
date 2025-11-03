@@ -45,6 +45,7 @@ import { Textarea } from "@/components/ui/textarea";
 import Link from "next/link";
 import { useToast } from "@/src/hooks/use-toast";
 import { employeeService } from "@/src/services/employee.service";
+import { badgesService } from "@/src/services/badges.service";
 import type { Employee, BadgeStatus } from "@/src/types";
 import type { EmployeeQueryParams } from "@/src/types/employee";
 import { logger } from "@/src/utils/logger";
@@ -55,6 +56,8 @@ export default function EmployeesPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [filterType, setFilterType] = useState("TOUS");
   const [filterStatus, setFilterStatus] = useState("TOUS");
+  const [filterProfil, setFilterProfil] = useState("");
+  const [filterDiplome, setFilterDiplome] = useState("");
   const [dateFinContratDe, setDateFinContratDe] = useState("");
   const [dateFinContratA, setDateFinContratA] = useState("");
   const [employees, setEmployees] = useState<Employee[]>([]);
@@ -74,12 +77,12 @@ export default function EmployeesPage() {
 
   useEffect(() => {
     fetchEmployees();
-  }, [filterType, filterStatus, searchQuery, currentPage, limit, dateFinContratDe, dateFinContratA]);
+  }, [filterType, filterStatus, searchQuery, currentPage, limit, dateFinContratDe, dateFinContratA, filterProfil, filterDiplome]);
   console.log("Les employees:", employees);
   // Réinitialiser la sélection quand on change de page ou de filtre
   useEffect(() => {
     setSelectedEmployees([]);
-  }, [currentPage, limit, filterType, filterStatus, searchQuery, dateFinContratDe, dateFinContratA]);
+  }, [currentPage, limit, filterType, filterStatus, searchQuery, dateFinContratDe, dateFinContratA, filterProfil, filterDiplome]);
 
   // Mémoriser la date actuelle pour éviter de la recalculer à chaque render
   const today = useMemo(() => new Date(), []);
@@ -110,6 +113,8 @@ export default function EmployeesPage() {
       if (searchQuery) query.search = searchQuery;
       if (dateFinContratDe) query.dateFinContratDe = dateFinContratDe;
       if (dateFinContratA) query.dateFinContratA = dateFinContratA;
+      if (filterProfil) query.profil = filterProfil;
+      if (filterDiplome) query.diplome = filterDiplome;
 
       const response = await employeeService.getAll(query);
       logger.log('📥 Response complète:', response);
@@ -169,6 +174,40 @@ export default function EmployeesPage() {
         variant: "destructive",
         title: "Erreur de transfert",
         description: errorMessage,
+      });
+    }
+  };
+
+  const handleAuthorizeReprint = async (employee: Employee) => {
+    if (!employee.badgeId) {
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: "Badge introuvable pour cet employé",
+      });
+      return;
+    }
+
+    try {
+      await badgesService.authorizeReprint(employee.badgeId);
+
+      // Update local state immediately
+      const updatedEmployees = employees.map(e =>
+        e.id === employee.id
+          ? { ...e, badgeStatus: 'REIMPRESSION' as BadgeStatus }
+          : e
+      );
+      setEmployees(updatedEmployees);
+
+      toast({
+        title: "✅ Réimpression autorisée",
+        description: `Le badge de ${employee.prenom} ${employee.nom} a été renvoyé pour réimpression`,
+      });
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "❌ Erreur",
+        description: (error as Error).message || "Impossible d'autoriser la réimpression",
       });
     }
   };
@@ -364,13 +403,13 @@ export default function EmployeesPage() {
     );
   };
 
-  const getTypeBadge = (type: string) => {
+  const getTypeBadge = (type: string, sousType?: string) => {
     const typeLabels: Record<string, string> = {
       PERSONNELS_DSD: "Personnels DSD",
       DNTT: "DNTT",
       STAGIAIRES_DSD: "Stagiaires DSD",
-      BANQUES: "Banques",
-      MAISONS_PLAQUE: "Maisons de Plaque",
+      BANQUES: "Banque",
+      MAISONS_PLAQUE: "Emboutisseur",
       DNTT_STAGIAIRES: "DNTT Stagiaires",
       DEMARCHEURS: "Démarcheurs",
     };
@@ -385,9 +424,12 @@ export default function EmployeesPage() {
       DEMARCHEURS: "bg-amber-600",
     };
 
+    const label = typeLabels[type] || type;
+    const displayLabel = sousType ? `${label} ${sousType}` : label;
+
     return (
       <Badge className={`${colors[type] || "bg-gray-600"} text-white font-semibold`}>
-        {typeLabels[type] || type}
+        {displayLabel}
       </Badge>
     );
   };
@@ -548,15 +590,14 @@ export default function EmployeesPage() {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="TOUS">Tous les types</SelectItem>
-                      <SelectItem value="PERSONNELS_DSD">Personnels DSD</SelectItem>
+                      <SelectItem value="PERSONNEL_DSD">Personnel DSD</SelectItem>
                       <SelectItem value="DNTT">DNTT</SelectItem>
-                      <SelectItem value="STAGIAIRES_DSD">Stagiaires DSD</SelectItem>
-                      <SelectItem value="BANQUES">Banques</SelectItem>
-                      <SelectItem value="MAISONS_PLAQUE">Maisons de Plaque</SelectItem>
-                      <SelectItem value="DNTT_STAGIAIRES">DNTT Stagiaires</SelectItem>
-                      <SelectItem value="DEMARCHEURS">Démarcheurs</SelectItem>
-                    </SelectContent>
-                  </Select>
+                      <SelectItem value="STAGIAIRE_DSD">Stagiaire DSD</SelectItem>
+                      <SelectItem value="BANQUE">Banque</SelectItem>
+                      <SelectItem value="EMBOUTISSEUR">Emboutisseur</SelectItem>
+                      <SelectItem value="DNTT_STAGIAIRE">DNTT Stagiaire</SelectItem>
+                      <SelectItem value="DEMARCHEUR">Démarcheur</SelectItem>
+                    </SelectContent>                  </Select>
                 </div>
                 <div>
                   <Select value={filterStatus} onValueChange={setFilterStatus}>
@@ -595,8 +636,32 @@ export default function EmployeesPage() {
                 </div>
               </div>
 
+              {/* Ligne 3: Filtres par profil et diplôme */}
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div className="md:col-span-2">
+                  <label className="text-xs font-semibold text-gray-600 mb-1 block">Profil</label>
+                  <Input
+                    type="text"
+                    placeholder="Filtrer par profil..."
+                    value={filterProfil}
+                    onChange={(e) => setFilterProfil(e.target.value)}
+                    className="h-11 border-2 border-gray-200 focus:border-[#ff8d13] focus:ring-4 focus:ring-[#ff8d13]/10 transition-all rounded-xl"
+                  />
+                </div>
+                <div className="md:col-span-2">
+                  <label className="text-xs font-semibold text-gray-600 mb-1 block">Diplôme</label>
+                  <Input
+                    type="text"
+                    placeholder="Filtrer par diplôme..."
+                    value={filterDiplome}
+                    onChange={(e) => setFilterDiplome(e.target.value)}
+                    className="h-11 border-2 border-gray-200 focus:border-[#ff8d13] focus:ring-4 focus:ring-[#ff8d13]/10 transition-all rounded-xl"
+                  />
+                </div>
+              </div>
+
               {/* Bouton pour réinitialiser les filtres */}
-              {(dateFinContratDe || dateFinContratA) && (
+              {(dateFinContratDe || dateFinContratA || filterProfil || filterDiplome) && (
                 <div className="flex justify-end">
                   <Button
                     variant="outline"
@@ -604,11 +669,13 @@ export default function EmployeesPage() {
                     onClick={() => {
                       setDateFinContratDe("");
                       setDateFinContratA("");
+                      setFilterProfil("");
+                      setFilterDiplome("");
                     }}
                     className="border-[#fed7aa] hover:bg-[#fff5ed]"
                   >
                     <X className="w-4 h-4 mr-2" />
-                    Réinitialiser les dates
+                    Réinitialiser les filtres
                   </Button>
                 </div>
               )}
@@ -718,7 +785,7 @@ export default function EmployeesPage() {
                             )}
                           </div>
                         </TableCell>
-                        <TableCell>{getTypeBadge(employee.type)}</TableCell>
+                        <TableCell>{getTypeBadge(employee.type, employee.sousType)}</TableCell>
                         <TableCell>{getStatusBadge(employee.status)}</TableCell>
                         <TableCell className="text-sm font-medium text-gray-700">
                           {formatDate(employee.dateEmbauche)}
@@ -751,6 +818,8 @@ export default function EmployeesPage() {
                         </TableCell>
                         <TableCell>
                           <div className="flex items-center justify-end gap-2">
+                            {/* Bouton Transférer : apparaît UNE SEULE FOIS quand l'employé vient d'être créé (!hasBadge) */}
+                            {/* Une fois transféré, hasBadge devient true et le bouton disparaît définitivement */}
                             {employee.status === "ACTIF" && !employee.hasBadge && (
                               <Button
                                 size="sm"
@@ -761,10 +830,47 @@ export default function EmployeesPage() {
                                 Transférer
                               </Button>
                             )}
-                            {employee.hasBadge && (
-                              <Badge className="bg-blue-600 text-white font-semibold">
-                                {employee.badgeStatus === "IMPRIME" ? "Badge imprimé" : "En attente d'impression"}
+                            {employee.hasBadge && employee.badgeStatus === "EN_ATTENTE" && (
+                              <Badge className="bg-orange-500 text-white font-semibold">
+                                En attente d'impression
                               </Badge>
+                            )}
+                            {employee.hasBadge && employee.badgeStatus === "IMPRIME" && (
+                              <>
+                                <Badge className="bg-green-600 text-white font-semibold">
+                                  {employee.printCount === 1
+                                    ? "Badge imprimé"
+                                    : employee.printCount === 2
+                                      ? "Badge réimprimé"
+                                      : `Badge réimprimé(${(employee.printCount || 2) - 2})`
+                                  }
+                                </Badge>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  className="gap-2 border-blue-200 hover:bg-blue-50 text-blue-600"
+                                  onClick={() => handleAuthorizeReprint(employee)}
+                                >
+                                  <Send className="w-4 h-4" />
+                                  Renvoyer pour réimpression
+                                </Button>
+                              </>
+                            )}
+                            {employee.hasBadge && employee.badgeStatus === "REIMPRESSION" && (
+                              <>
+                                <Badge className="bg-blue-600 text-white font-semibold">
+                                  Autorisé pour réimpression
+                                </Badge>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  className="gap-2 border-blue-200 hover:bg-blue-50 text-blue-600"
+                                  onClick={() => handleAuthorizeReprint(employee)}
+                                >
+                                  <Send className="w-4 h-4" />
+                                  Renvoyer à nouveau
+                                </Button>
+                              </>
                             )}
 
                             {/* Dropdown menu pour changer le statut */}

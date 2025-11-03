@@ -12,7 +12,10 @@ const router = Router();
 /**
  * Public routes
  */
-router.get('/verify/:matricule', badgesController.verifyByMatricule);
+// Route pour vérifier par QR code (utilisée par le scanner)
+router.get('/verify/:qrCode', badgesController.verifyQRCode);
+// Route pour vérifier par matricule (alias pour compatibilité)
+// router.get('/verify-matricule/:matricule', badgesController.verifyByMatricule);
 
 /**
  * Protected routes
@@ -38,6 +41,7 @@ router
  * Badge actions
  */
 router.post('/:id/print', authorize('IMPRESSION', 'ADMIN'), badgesController.printBadge);
+router.post('/:id/authorize-reprint', authorize('RH', 'ADMIN'), badgesController.authorizeReprint);
 router.get('/:id/qr-code', badgesController.getQRCode);
 router.put(
   '/:id/status',

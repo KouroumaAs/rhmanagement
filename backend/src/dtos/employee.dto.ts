@@ -1,4 +1,4 @@
-import { EmployeeType, EmployeeStatus } from '../types';
+import { EmployeeType, EmployeeStatus, ContractType } from '../types';
 
 export class CreateEmployeeDto {
   nom!: string;
@@ -6,11 +6,16 @@ export class CreateEmployeeDto {
   email!: string;
   telephone!: string;
   fonction!: string;
+  profil?: string;
+  diplome?: string;
   matricule!: string;
   type!: EmployeeType;
+  sousType?: string;
+  typeContrat!: ContractType;
   dateEmbauche!: Date;
-  dateFinContrat!: Date;
+  dateFinContrat?: Date;
   photo?: string;
+
 }
 
 export class UpdateEmployeeDto {
@@ -19,8 +24,12 @@ export class UpdateEmployeeDto {
   email?: string;
   telephone?: string;
   fonction?: string;
+  profil?: string;
+  diplome?: string;
   matricule?: string;
   type?: EmployeeType;
+  sousType?: string;
+  typeContrat?: ContractType;
   dateEmbauche?: Date;
   dateFinContrat?: Date;
   photo?: string;
@@ -42,8 +51,12 @@ export class EmployeeResponseDto {
   email!: string;
   telephone!: string;
   fonction!: string;
+  profil?: string;
+  diplome?: string;
   matricule!: string;
   type!: EmployeeType;
+  sousType?: string;
+  typeContrat!: ContractType;
   status!: EmployeeStatus;
   dateEmbauche!: Date;
   dateFinContrat?: Date;
@@ -62,6 +75,8 @@ export class EmployeeQueryDto {
   search?: string;
   dateFinContratDe?: string;
   dateFinContratA?: string;
+  profil?: string;
+  diplome?: string;
 }
 
 export class PaginatedEmployeeResponseDto {
