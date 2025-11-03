@@ -590,15 +590,14 @@ export default function EmployeesPage() {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="TOUS">Tous les types</SelectItem>
-                      <SelectItem value="PERSONNELS_DSD">Personnels DSD</SelectItem>
+                      <SelectItem value="PERSONNEL_DSD">Personnel DSD</SelectItem>
                       <SelectItem value="DNTT">DNTT</SelectItem>
-                      <SelectItem value="STAGIAIRES_DSD">Stagiaires DSD</SelectItem>
-                      <SelectItem value="BANQUES">Banques</SelectItem>
-                      <SelectItem value="MAISONS_PLAQUE">Maisons de Plaque</SelectItem>
-                      <SelectItem value="DNTT_STAGIAIRES">DNTT Stagiaires</SelectItem>
-                      <SelectItem value="DEMARCHEURS">Démarcheurs</SelectItem>
-                    </SelectContent>
-                  </Select>
+                      <SelectItem value="STAGIAIRE_DSD">Stagiaire DSD</SelectItem>
+                      <SelectItem value="BANQUE">Banque</SelectItem>
+                      <SelectItem value="EMBOUTISSEUR">Emboutisseur</SelectItem>
+                      <SelectItem value="DNTT_STAGIAIRE">DNTT Stagiaire</SelectItem>
+                      <SelectItem value="DEMARCHEUR">Démarcheur</SelectItem>
+                    </SelectContent>                  </Select>
                 </div>
                 <div>
                   <Select value={filterStatus} onValueChange={setFilterStatus}>
