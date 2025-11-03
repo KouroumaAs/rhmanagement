@@ -28,7 +28,7 @@ export default function EditEmployeePage() {
     dateFinContrat: "",
     fonction: "",
     matricule: "",
-    typeEmploye: "PERSONNELS_DSD",
+    typeEmploye: "PERSONNEL_DSD",
     status: "ACTIF",
     motifSuspension: "",
     dateFinSuspension: "",
@@ -82,7 +82,7 @@ export default function EditEmployeePage() {
         dateFinContrat: employee.dateFinContrat ? new Date(employee.dateFinContrat).toISOString().split('T')[0] : "",
         fonction: employee.fonction || "",
         matricule: matriculeNumbers,
-        typeEmploye: employee.type || "PERSONNELS_DSD",
+        typeEmploye: employee.type || "PERSONNEL_DSD",
         status: employee.status || "ACTIF",
         motifSuspension: employee.motifSuspension || "",
         dateFinSuspension: employee.dateFinSuspension ? new Date(employee.dateFinSuspension).toISOString().split('T')[0] : "",
@@ -340,13 +340,13 @@ export default function EditEmployeePage() {
                       <SelectValue placeholder="Sélectionner un type" />
                     </SelectTrigger>
                     <SelectContent className="bg-white border-2 border-gray-200 shadow-2xl z-50">
-                      <SelectItem value="PERSONNELS_DSD" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">Personnels DSD Guinée</SelectItem>
+                      <SelectItem value="PERSONNEL_DSD" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">Personnel DSD Guinée</SelectItem>
                       <SelectItem value="DNTT" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">DNTT</SelectItem>
-                      <SelectItem value="STAGIAIRES_DSD" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">Stagiaires DSD Guinée</SelectItem>
-                      <SelectItem value="BANQUES" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">Banques</SelectItem>
-                      <SelectItem value="MAISONS_PLAQUE" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">Maisons de Plaque</SelectItem>
-                      <SelectItem value="DNTT_STAGIAIRES" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">DNTT Stagiaires</SelectItem>
-                      <SelectItem value="DEMARCHEURS" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">Collectif des Démarcheurs</SelectItem>
+                      <SelectItem value="STAGIAIRE_DSD" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">Stagiaire DSD Guinée</SelectItem>
+                      <SelectItem value="BANQUE" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">Banque</SelectItem>
+                      <SelectItem value="EMBOUTISSEUR" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">Emboutisseur</SelectItem>
+                      <SelectItem value="DNTT_STAGIAIRE" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">DNTT Stagiaire</SelectItem>
+                      <SelectItem value="DEMARCHEUR" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">Collectif des Démarcheurs</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
