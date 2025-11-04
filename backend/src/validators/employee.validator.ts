@@ -1,13 +1,13 @@
 import { z } from 'zod';
 
 const employeeTypeEnum = z.enum([
-  'PERSONNELS_DSD',
+  'PERSONNEL_DSD',
   'DNTT',
-  'STAGIAIRES_DSD',
-  'BANQUES',
-  'MAISONS_PLAQUE',
-  'DNTT_STAGIAIRES',
-  'DEMARCHEURS',
+  'STAGIAIRE_DSD',
+  'BANQUE',
+  'EMBOUTISSEUR',
+  'DNTT_STAGIAIRE',
+  'DEMARCHEUR',
 ]);
 
 const employeeStatusEnum = z.enum(['ACTIF', 'SUSPENDU', 'TERMINE']);

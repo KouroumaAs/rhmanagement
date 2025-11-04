@@ -222,12 +222,8 @@ class EmployeeService {
   };
 
   createEmployee = async (dto: CreateEmployeeDto, file?: Express.Multer.File): Promise<EmployeeResponseDto> => {
-    console.log('📝 [CREATE EMPLOYEE] Début de la création');
-    console.log('📝 [CREATE EMPLOYEE] Données reçues:', JSON.stringify(dto, null, 2));
-    console.log('📝 [CREATE EMPLOYEE] Fichier photo:', file ? file.filename : 'Aucun');
 
     // Check if matricule already exists
-    console.log('🔍 [CREATE EMPLOYEE] Vérification matricule:', dto.matricule);
     const existingMatricule = await Employee.findOne({ matricule: dto.matricule });
     if (existingMatricule) {
       console.log('❌ [CREATE EMPLOYEE] Matricule existe déjà:', dto.matricule);
@@ -239,7 +235,6 @@ class EmployeeService {
     console.log('✅ [CREATE EMPLOYEE] Matricule disponible');
 
     // Check if email already exists
-    console.log('🔍 [CREATE EMPLOYEE] Vérification email:', dto.email);
     const existingEmail = await Employee.findOne({ email: dto.email });
     if (existingEmail) {
       console.log('❌ [CREATE EMPLOYEE] Email existe déjà:', dto.email);
@@ -248,7 +243,6 @@ class EmployeeService {
       error.field = 'email';
       throw error;
     }
-    console.log('✅ [CREATE EMPLOYEE] Email disponible');
 
     // Préparer les données avec le chemin de la photo si elle existe
     const employeeData: any = {
