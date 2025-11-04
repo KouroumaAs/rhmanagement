@@ -112,6 +112,17 @@ async function fetchAPI<T>(
         // Log detailed error in console
         console.error("❌ API Error:", apiError.getDebugInfo());
 
+        // 🔐 REDIRECTION AUTOMATIQUE si token expiré ou invalide (401)
+        if (response.status === 401 && typeof window !== 'undefined') {
+          console.log('🔒 Token expiré ou invalide - Redirection vers /login');
+          localStorage.removeItem('token');
+          localStorage.removeItem('auth_token');
+          localStorage.removeItem('user');
+          window.location.href = '/login';
+          // On lance quand même l'erreur pour que les composants ne continuent pas
+          throw apiError;
+        }
+
         throw apiError;
       }
 
@@ -271,6 +282,16 @@ export async function upload<T>(
       if (!response.ok) {
         const apiError = new ApiError(response.status, data.message || "Une erreur est survenue", data);
         console.error("❌ Upload Error:", apiError.getDebugInfo());
+
+        // 🔐 REDIRECTION AUTOMATIQUE si token expiré ou invalide (401)
+        if (response.status === 401 && typeof window !== 'undefined') {
+          console.log('🔒 Token expiré lors de l\'upload - Redirection vers /login');
+          localStorage.removeItem('token');
+          localStorage.removeItem('auth_token');
+          localStorage.removeItem('user');
+          window.location.href = '/login';
+        }
+
         throw apiError;
       }
 

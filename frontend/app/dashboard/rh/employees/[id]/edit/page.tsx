@@ -38,6 +38,56 @@ export default function EditEmployeePage() {
     dateFinSuspension: "",
   });
 
+  // Liste des emboutisseurs avec leurs préfixes
+  const emboutisseursMap: Record<string, string> = {
+    'SUPER_PLAQUE': 'SP',
+    'EPIG_SARL': 'ES',
+    'BARRY_ET_FILS': 'BEF',
+    'MK_GUINEE_PLAQUE': 'MKGP',
+    'ISB_PLA': 'IP',
+    'AKD': 'AKD',
+    'TRANSIT_224': 'T2',
+    'S': 'S',
+    'GALAXIE_GUINEE': 'GG',
+    'KAECK_CONTEQUE': 'KAC',
+    'BOLIBANA_SARLU': 'BS',
+    'BILHAQ_SIGNALISATION': 'BIS',
+    'FOURA_ET_FILS': 'FEF',
+    'PROFUCO_PLAQUE': 'PP',
+    'AZ_PROJET': 'AP',
+    'SOMBORI_BONFI': 'SB',
+    'SOGBE_GENERALE_SARL': 'SGS',
+    'AKIM': 'A',
+    'PLAQUE_DE_GUINEE': 'PDG',
+    'GOLFE_DE_GUINEE': 'GDG',
+    'BISSIKRI_PLAQUE': 'BP',
+  };
+
+  // Fonction pour obtenir le préfixe de matricule selon le type
+  const getMatriculePrefix = (typeEmploye: string, sousType?: string): string => {
+    switch (typeEmploye) {
+      case 'PERSONNEL_DSD':
+        return 'DSD';
+      case 'STAGIAIRE_DSD':
+        return 'Stage';
+      case 'DNTT':
+        return 'DNTT';
+      case 'DNTT_STAGIAIRE':
+        return 'DNTTST';
+      case 'DEMARCHEUR':
+        return 'CDDO';
+      case 'BANQUE':
+        if (sousType === 'TTLB') return 'TTLB';
+        if (sousType === 'GLOBAL') return 'GL';
+        if (sousType === 'I_CRDIGITAL') return 'CRD';
+        return 'BANQUE';
+      case 'EMBOUTISSEUR':
+        return sousType ? emboutisseursMap[sousType] || '' : '';
+      default:
+        return 'DSD';
+    }
+  };
+
   useEffect(() => {
     if (params.id && typeof params.id === 'string') {
       fetchEmployee();
@@ -138,6 +188,10 @@ export default function EditEmployeePage() {
         }
       }
 
+      // Générer le matricule avec le bon préfixe
+      const prefix = getMatriculePrefix(formData.typeEmploye, formData.sousType);
+      const fullMatricule = prefix ? `${prefix}${formData.matricule}` : formData.matricule;
+
       const employeeData: any = {
         nom: formData.nom,
         prenom: formData.prenom,
@@ -146,7 +200,7 @@ export default function EditEmployeePage() {
         fonction: formData.fonction,
         profil: formData.profil || undefined,
         diplome: formData.diplome || undefined,
-        matricule: `DSD${formData.matricule}`,
+        matricule: fullMatricule,
         type: formData.typeEmploye,
         sousType: formData.sousType || undefined,
         status: formData.status,
@@ -185,8 +239,10 @@ export default function EditEmployeePage() {
 
       // Erreur de matricule dupliqué
       if (errorMessage.includes("matricule") && errorMessage.includes("existe")) {
+        const prefix = getMatriculePrefix(formData.typeEmploye, formData.sousType);
+        const fullMatricule = prefix ? `${prefix}${formData.matricule}` : formData.matricule;
         title = "Matricule déjà existant";
-        description = `Le matricule DSD${formData.matricule} est déjà utilisé par un autre employé. Veuillez en choisir un autre.`;
+        description = `Le matricule ${fullMatricule} est déjà utilisé par un autre employé. Veuillez en choisir un autre.`;
       }
       // Erreur d'email dupliqué
       else if (errorMessage.includes("email") && errorMessage.includes("existe")) {
@@ -356,7 +412,7 @@ export default function EditEmployeePage() {
                   </Label>
                   <Select
                     value={formData.typeEmploye}
-                    onValueChange={(value) => setFormData({ ...formData, typeEmploye: value })}
+                    onValueChange={(value) => setFormData({ ...formData, typeEmploye: value, sousType: "" })}
                   >
                     <SelectTrigger className="h-11 w-full border-2 border-gray-200 focus:border-[#ff8d13] rounded-xl bg-white text-gray-900 font-medium">
                       <SelectValue placeholder="Sélectionner un type" />
@@ -392,6 +448,68 @@ export default function EditEmployeePage() {
                   </Select>
                 </div>
               </div>
+
+              {/* Sous-sélection pour les Banques */}
+              {formData.typeEmploye === 'BANQUE' && (
+                <div className="space-y-2">
+                  <Label htmlFor="sousType" className="text-sm font-semibold text-gray-700">
+                    Type de Banque *
+                  </Label>
+                  <Select
+                    value={formData.sousType}
+                    onValueChange={(value) => setFormData({ ...formData, sousType: value })}
+                  >
+                    <SelectTrigger className="h-11 w-full border-2 border-gray-200 focus:border-[#ff8d13] rounded-xl bg-white text-gray-900 font-medium">
+                      <SelectValue placeholder="Sélectionner une banque" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-white border-2 border-gray-200 shadow-2xl z-50">
+                      <SelectItem value="TTLB" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">TTLB</SelectItem>
+                      <SelectItem value="GLOBAL" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">GLOBAL</SelectItem>
+                      <SelectItem value="I_CRDIGITAL" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">I_CRDIGITAL</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+
+              {/* Sous-sélection pour les Emboutisseurs */}
+              {formData.typeEmploye === 'EMBOUTISSEUR' && (
+                <div className="space-y-2">
+                  <Label htmlFor="sousType" className="text-sm font-semibold text-gray-700">
+                    Nom de l&apos;Emboutisseur *
+                  </Label>
+                  <Select
+                    value={formData.sousType}
+                    onValueChange={(value) => setFormData({ ...formData, sousType: value })}
+                  >
+                    <SelectTrigger className="h-11 w-full border-2 border-gray-200 focus:border-[#ff8d13] rounded-xl bg-white text-gray-900 font-medium">
+                      <SelectValue placeholder="Sélectionner un emboutisseur" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-white border-2 border-gray-200 shadow-2xl z-50 max-h-[300px]">
+                      <SelectItem value="SUPER_PLAQUE" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">SUPER PLAQUE</SelectItem>
+                      <SelectItem value="EPIG_SARL" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">EPIG SARL</SelectItem>
+                      <SelectItem value="BARRY_ET_FILS" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">BARRY ET FILS</SelectItem>
+                      <SelectItem value="MK_GUINEE_PLAQUE" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">M.K GUINEE PLAQUE</SelectItem>
+                      <SelectItem value="ISB_PLA" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">ISB PLA</SelectItem>
+                      <SelectItem value="AKD" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">A.K.D</SelectItem>
+                      <SelectItem value="TRANSIT_224" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">TRANSIT 224</SelectItem>
+                      <SelectItem value="S" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">S</SelectItem>
+                      <SelectItem value="GALAXIE_GUINEE" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">GALAXIE GUINEE</SelectItem>
+                      <SelectItem value="KAECK_CONTEQUE" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">K.AECK CONTEQUE</SelectItem>
+                      <SelectItem value="BOLIBANA_SARLU" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">BOLIBANA SARLU</SelectItem>
+                      <SelectItem value="BILHAQ_SIGNALISATION" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">BILHAQ SIGNALISATION</SelectItem>
+                      <SelectItem value="FOURA_ET_FILS" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">FOURA ET FILS</SelectItem>
+                      <SelectItem value="PROFUCO_PLAQUE" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">PROFUCO PLAQUE</SelectItem>
+                      <SelectItem value="AZ_PROJET" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">AZ PROJET</SelectItem>
+                      <SelectItem value="SOMBORI_BONFI" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">SOMBORI BONFI</SelectItem>
+                      <SelectItem value="SOGBE_GENERALE_SARL" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">SOGBE GENERALE SARL</SelectItem>
+                      <SelectItem value="AKIM" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">AKIM</SelectItem>
+                      <SelectItem value="PLAQUE_DE_GUINEE" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">Plaque de Guinée</SelectItem>
+                      <SelectItem value="GOLFE_DE_GUINEE" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">Golfe de Guinée</SelectItem>
+                      <SelectItem value="BISSIKRI_PLAQUE" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">Bissikri Plaque</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
 
               {/* Champs de suspension - affichés uniquement si le statut est SUSPENDU */}
               {formData.status === "SUSPENDU" && (
@@ -485,9 +603,11 @@ export default function EditEmployeePage() {
                     Matricule *
                   </Label>
                   <div className="flex items-center gap-2">
-                    <div className="h-11 px-4 border-2 border-gray-200 bg-gray-100 rounded-xl flex items-center font-semibold text-gray-700">
-                      DSD
-                    </div>
+                    {getMatriculePrefix(formData.typeEmploye, formData.sousType) && (
+                      <div className="h-11 px-4 border-2 border-gray-200 bg-gray-100 rounded-xl flex items-center font-semibold text-gray-700">
+                        {getMatriculePrefix(formData.typeEmploye, formData.sousType)}
+                      </div>
+                    )}
                     <Input
                       id="matricule"
                       type="text"
@@ -502,9 +622,15 @@ export default function EditEmployeePage() {
                       maxLength={10}
                     />
                   </div>
-                  <p className="text-xs text-gray-500 mt-1">
-                    Le matricule sera: DSD{formData.matricule || "___"}
-                  </p>
+                  {getMatriculePrefix(formData.typeEmploye, formData.sousType) ? (
+                    <p className="text-xs text-gray-500 mt-1">
+                      Le matricule sera: {getMatriculePrefix(formData.typeEmploye, formData.sousType)}{formData.matricule || "___"}
+                    </p>
+                  ) : (
+                    <p className="text-xs text-gray-500 mt-1">
+                      Entrez le matricule complet pour ce type d&apos;employé
+                    </p>
+                  )}
                 </div>
               </div>
 
