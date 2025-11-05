@@ -585,10 +585,10 @@ export default function EmployeesPage() {
                 </div>
                 <div>
                   <Select value={filterType} onValueChange={setFilterType}>
-                    <SelectTrigger className="h-11 border-2 border-gray-200 focus:border-[#ff8d13] rounded-xl">
+                    <SelectTrigger className="border-[#fed7aa]">
                       <SelectValue placeholder="Type" />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="bg-white">
                       <SelectItem value="TOUS">Tous les types</SelectItem>
                       <SelectItem value="PERSONNEL_DSD">Personnel DSD</SelectItem>
                       <SelectItem value="DNTT">DNTT</SelectItem>
@@ -601,10 +601,10 @@ export default function EmployeesPage() {
                 </div>
                 <div>
                   <Select value={filterStatus} onValueChange={setFilterStatus}>
-                    <SelectTrigger className="h-11 border-2 border-gray-200 focus:border-[#ff8d13] rounded-xl">
+                    <SelectTrigger className="border-[#fed7aa]">
                       <SelectValue placeholder="Statut" />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="bg-white">
                       <SelectItem value="TOUS">Tous les statuts</SelectItem>
                       <SelectItem value="ACTIF">Actifs</SelectItem>
                       <SelectItem value="SUSPENDU">Suspendus</SelectItem>

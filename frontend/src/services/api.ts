@@ -4,7 +4,7 @@ import type { ApiResponse } from "@/src/types";
 /**
  * Base API configuration
  */
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://192.168.100.171:4003/api";
 
 /**
  * Custom error class for API errors
@@ -118,9 +118,15 @@ async function fetchAPI<T>(
           localStorage.removeItem('token');
           localStorage.removeItem('auth_token');
           localStorage.removeItem('user');
-          window.location.href = '/login';
-          // On lance quand même l'erreur pour que les composants ne continuent pas
-          throw apiError;
+
+          // Supprimer le cookie aussi
+          document.cookie = 'token=; path=/; max-age=0';
+
+          // Utiliser replace pour une redirection immédiate sans retour possible
+          window.location.replace('/login');
+
+          // Retourner une promesse qui ne se résout jamais pour stopper l'exécution
+          return new Promise(() => {}) as any;
         }
 
         throw apiError;
@@ -289,7 +295,15 @@ export async function upload<T>(
           localStorage.removeItem('token');
           localStorage.removeItem('auth_token');
           localStorage.removeItem('user');
-          window.location.href = '/login';
+
+          // Supprimer le cookie aussi
+          document.cookie = 'token=; path=/; max-age=0';
+
+          // Utiliser replace pour une redirection immédiate sans retour possible
+          window.location.replace('/login');
+
+          // Retourner une promesse qui ne se résout jamais pour stopper l'exécution
+          return new Promise(() => {}) as any;
         }
 
         throw apiError;

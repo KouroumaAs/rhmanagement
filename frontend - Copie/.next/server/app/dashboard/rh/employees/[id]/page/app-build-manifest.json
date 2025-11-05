@@ -1,0 +1,22 @@
+{
+  "pages": {
+    "/dashboard/rh/employees/[id]/page": [
+      "static/chunks/9eaa06af505970e7.js",
+      "static/chunks/43109dd467540ac0.js",
+      "static/chunks/a1824f0bfbf86751.css",
+      "static/chunks/37d52afa57a01948.js",
+      "static/chunks/ec05caf89e2a2f8c.js",
+      "static/chunks/c05ae86cc8a037ca.js",
+      "static/chunks/3d264899d67f2653.js",
+      "static/chunks/03d0d76ed21260f5.js",
+      "static/chunks/cad7c9aba5272cd5.js",
+      "static/chunks/6b616f785e5ac3b8.js",
+      "static/chunks/051f515f4e56662d.js",
+      "static/chunks/67508d9aae881e3c.js",
+      "static/chunks/5e97bc280050cc64.js",
+      "static/chunks/c0f6bf9febd347d3.js",
+      "static/chunks/6140b96923c75b02.js",
+      "static/chunks/turbopack-7647118bf085606f.js"
+    ]
+  }
+}

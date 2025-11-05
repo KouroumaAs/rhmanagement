@@ -20,6 +20,11 @@ dist-ssr
 .env.production.local
 *.env.backup
 
+# ignore envs
+
+frontend/.env
+backend/.env
+
 # Next.js
 frontend/.next/
 frontend/out/

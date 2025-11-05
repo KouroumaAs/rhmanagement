@@ -157,7 +157,7 @@ export const getImageUrl = (photoPath: string | null | undefined): string | null
   // Construire l'URL avec l'API URL de base
   // En production: https://rhmanagement.dsdguinee.com/api + /uploads/...
   // = https://rhmanagement.dsdguinee.com/api/uploads/...
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4003';
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://192.168.100.171:4003/api';
 
   // Enlever le / au début de photoPath si présent pour éviter //
   const cleanPath = photoPath.startsWith('/') ? photoPath.slice(1) : photoPath;

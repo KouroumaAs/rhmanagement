@@ -34,12 +34,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     // Vérifier si un token existe dans le localStorage
-    const storedToken = localStorage.getItem('token');
-    const storedUser = localStorage.getItem('user');
+    // Vérifier que nous sommes bien côté client
+    if (typeof window !== 'undefined') {
+      const storedToken = localStorage.getItem('token');
+      const storedUser = localStorage.getItem('user');
 
-    if (storedToken && storedUser) {
-      setToken(storedToken);
-      setUser(JSON.parse(storedUser));
+      if (storedToken && storedUser) {
+        try {
+          setToken(storedToken);
+          setUser(JSON.parse(storedUser));
+        } catch (error) {
+          console.error('Erreur lors du parsing des données utilisateur:', error);
+          // Nettoyer les données corrompues
+          localStorage.removeItem('token');
+          localStorage.removeItem('user');
+        }
+      }
     }
 
     setIsLoading(false);
