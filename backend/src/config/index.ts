@@ -12,7 +12,7 @@ export const config = {
 
   // JWT
   jwtSecret: process.env.JWT_SECRET || 'your-secret-key-change-in-production',
-  jwtExpire: process.env.JWT_EXPIRE || '7d',
+  jwtExpire: process.env.JWT_EXPIRE || '5d',
 
   // CORS
   allowedOrigins: process.env.ALLOWED_ORIGINS?.split(',') || [
