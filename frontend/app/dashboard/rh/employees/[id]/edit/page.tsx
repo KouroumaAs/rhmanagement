@@ -7,17 +7,22 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeft, Save } from "lucide-react";
+import { ArrowLeft, Save, Upload } from "lucide-react";
 import Link from "next/link";
 import { useToast } from "@/src/hooks/use-toast";
 import { employeeService } from "@/src/services/employee.service";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { getImageUrl } from "@/src/constants";
 
 export default function EditEmployeePage() {
   const params = useParams();
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+  const [currentPhoto, setCurrentPhoto] = useState<string | null>(null);
   const { toast } = useToast();
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL;
 
   const [formData, setFormData] = useState({
     nom: "",
@@ -36,6 +41,7 @@ export default function EditEmployeePage() {
     status: "ACTIF",
     motifSuspension: "",
     dateFinSuspension: "",
+    photo: null as File | null,
   });
 
   // Liste des emboutisseurs avec leurs préfixes
@@ -85,6 +91,18 @@ export default function EditEmployeePage() {
         return sousType ? emboutisseursMap[sousType] || '' : '';
       default:
         return 'DSD';
+    }
+  };
+
+  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setFormData({ ...formData, photo: file });
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPhotoPreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
     }
   };
 
@@ -143,7 +161,13 @@ export default function EditEmployeePage() {
         status: employee.status || "ACTIF",
         motifSuspension: employee.motifSuspension || "",
         dateFinSuspension: employee.dateFinSuspension ? new Date(employee.dateFinSuspension).toISOString().split('T')[0] : "",
+        photo: null,
       });
+
+      // Stocker la photo actuelle
+      if (employee.photo) {
+        setCurrentPhoto(employee.photo);
+      }
     } catch (error: any) {
       console.error('Erreur chargement employé:', error);
       toast({
@@ -192,34 +216,66 @@ export default function EditEmployeePage() {
       const prefix = getMatriculePrefix(formData.typeEmploye, formData.sousType);
       const fullMatricule = prefix ? `${prefix}${formData.matricule}` : formData.matricule;
 
-      const employeeData: any = {
-        nom: formData.nom,
-        prenom: formData.prenom,
-        telephone: formData.telephone,
-        email: formData.email,
-        fonction: formData.fonction,
-        profil: formData.profil || undefined,
-        diplome: formData.diplome || undefined,
-        matricule: fullMatricule,
-        type: formData.typeEmploye,
-        sousType: formData.sousType || undefined,
-        status: formData.status,
-        typeContrat: formData.typeContrat,
-        dateEmbauche: formData.dateEmbauche,
-        dateFinContrat: formData.typeContrat === 'CDI' ? undefined : (formData.dateFinContrat || undefined),
-      };
+      // Créer FormData pour envoyer les données avec la photo
+      const formDataToSend = new FormData();
+      formDataToSend.append('nom', formData.nom);
+      formDataToSend.append('prenom', formData.prenom);
+      formDataToSend.append('telephone', formData.telephone);
+      formDataToSend.append('email', formData.email);
+      formDataToSend.append('fonction', formData.fonction);
+
+      if (formData.profil) {
+        formDataToSend.append('profil', formData.profil);
+      }
+
+      if (formData.diplome) {
+        formDataToSend.append('diplome', formData.diplome);
+      }
+
+      formDataToSend.append('matricule', fullMatricule);
+      formDataToSend.append('type', formData.typeEmploye);
+
+      if (formData.sousType) {
+        formDataToSend.append('sousType', formData.sousType);
+      }
+
+      formDataToSend.append('status', formData.status);
+      formDataToSend.append('typeContrat', formData.typeContrat);
+      formDataToSend.append('dateEmbauche', formData.dateEmbauche);
+
+      if (formData.dateFinContrat && formData.typeContrat !== 'CDI') {
+        formDataToSend.append('dateFinContrat', formData.dateFinContrat);
+      }
 
       // Ajouter les champs de suspension seulement si le statut est SUSPENDU
       if (formData.status === "SUSPENDU") {
-        employeeData.motifSuspension = formData.motifSuspension || null;
-        employeeData.dateFinSuspension = formData.dateFinSuspension || null;
-      } else {
-        // Réinitialiser les champs de suspension si le statut n'est plus SUSPENDU
-        employeeData.motifSuspension = null;
-        employeeData.dateFinSuspension = null;
+        if (formData.motifSuspension) {
+          formDataToSend.append('motifSuspension', formData.motifSuspension);
+        }
+        if (formData.dateFinSuspension) {
+          formDataToSend.append('dateFinSuspension', formData.dateFinSuspension);
+        }
       }
 
-      await employeeService.update(params.id as string, employeeData);
+      // Ajouter la nouvelle photo si elle existe
+      if (formData.photo) {
+        formDataToSend.append('photo', formData.photo);
+      }
+
+      // Envoyer avec fetch au lieu du service
+      const response = await fetch(`${apiUrl}/employees/${params.id}`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        },
+        body: formDataToSend,
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.message || 'Erreur lors de la modification');
+      }
 
       toast({
         title: "Employé modifié",
@@ -312,6 +368,66 @@ export default function EditEmployeePage() {
 
       <main className="container mx-auto px-6 py-8 max-w-4xl">
         <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Photo Upload */}
+          <Card className="shadow-xl border-0 bg-white">
+            <CardHeader className="bg-gradient-to-r from-orange-50 to-orange-50 border-b border-[#fff5ed]">
+              <CardTitle className="text-xl font-bold text-gray-900">Photo de Profil</CardTitle>
+              <CardDescription className="text-gray-600">
+                Modifier la photo de l&apos;employé pour le badge
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="p-6">
+              <div className="flex items-center gap-6">
+                <div className="w-32 h-32 rounded-2xl border-2 border-dashed border-[#fed7aa] bg-violet-50/50 flex items-center justify-center overflow-hidden">
+                  {photoPreview ? (
+                    <img src={photoPreview} alt="Preview" className="w-full h-full object-cover" />
+                  ) : currentPhoto ? (
+                    <Avatar className="w-full h-full rounded-2xl">
+                      <AvatarImage
+                        src={getImageUrl(currentPhoto) || ''}
+                        alt="Photo actuelle"
+                        className="object-cover"
+                      />
+                      <AvatarFallback className="bg-gradient-to-br from-orange-500 to-orange-600 text-white font-bold text-2xl rounded-2xl">
+                        {formData.prenom[0]}{formData.nom[0]}
+                      </AvatarFallback>
+                    </Avatar>
+                  ) : (
+                    <div className="text-center">
+                      <Upload className="w-8 h-8 text-violet-400 mx-auto mb-2" />
+                      <p className="text-xs text-gray-500">Photo</p>
+                    </div>
+                  )}
+                </div>
+                <div className="flex-1">
+                  <input
+                    type="file"
+                    id="photo"
+                    accept="image/*"
+                    onChange={handlePhotoChange}
+                    className="hidden"
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => document.getElementById("photo")?.click()}
+                    className="border-[#fed7aa] hover:bg-violet-50"
+                  >
+                    <Upload className="w-4 h-4 mr-2" />
+                    {currentPhoto || photoPreview ? 'Modifier la photo' : 'Ajouter une photo'}
+                  </Button>
+                  <p className="text-sm text-gray-500 mt-2">Format: JPG, PNG (Max: 5MB)</p>
+                  {currentPhoto && !photoPreview && (
+                    <p className="text-xs text-green-600 mt-1">Photo actuelle affichée</p>
+                  )}
+                  {photoPreview && (
+                    <p className="text-xs text-orange-600 mt-1">Nouvelle photo sélectionnée</p>
+                  )}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
           {/* Personal Information */}
           <Card className="shadow-xl border-0 bg-white">
             <CardHeader className="bg-gradient-to-r from-orange-50 to-orange-50 border-b border-[#fff5ed]">
