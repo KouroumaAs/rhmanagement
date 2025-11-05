@@ -1,5 +1,5 @@
 import dotenv from 'dotenv';
-
+import path from 'path';
 dotenv.config();
 console.log(process.env.APP_URL);
 export const config = {
@@ -11,8 +11,8 @@ export const config = {
   mongodbUri: process.env.MONGODB_URI || 'mongodb://localhost:27017/rh-management',
 
   // JWT
-  jwtSecret: process.env.JWT_SECRET || 'your-secret-key-change-in-production',
-  jwtExpire: process.env.JWT_EXPIRE || '7d',
+  jwtSecret: process.env.JWT_SECRET || 'Mariame2024@DSDGuinee',
+  jwtExpire: process.env.JWT_EXPIRE || '5d',
 
   // CORS
   allowedOrigins: process.env.ALLOWED_ORIGINS?.split(',') || [
@@ -26,7 +26,7 @@ export const config = {
   
   // File Upload
   maxFileSize: parseInt(process.env.MAX_FILE_SIZE || '5242880'), // 5MB
-  uploadPath: process.env.UPLOAD_PATH || './uploads',
+ uploadPath: process.env.UPLOAD_PATH || path.join(__dirname, '../../uploads'),
 
   // App
   appName: process.env.APP_NAME || 'RH Management DSD Guinée',

@@ -5,6 +5,8 @@ import morgan from 'morgan';
 import { config } from './config';
 import { errorHandler } from './middleware/errorHandler';
 import routes from './routes';
+import path from 'path';
+import { badgeService } from './services';
 
 const app: Application = express();
 
@@ -67,15 +69,50 @@ if (config.nodeEnv === 'development') {
 }
 
 /**
- * Static Files - Servir sur /uploads ET /api/uploads pour compatibilité avec nginx
+ * Verification Route - Direct access without /api/ prefix
  */
-app.use('/uploads', express.static(config.uploadPath));
-app.use('/api/uploads', express.static(config.uploadPath));
+app.get('/verify', async (req, res) => {
+  try {
+    const { qr } = req.query;
+    if (!qr || typeof qr !== 'string') {
+      return res.status(400).json({
+        success: false,
+        message: 'QR code requis',
+      });
+    }
+    
+    // Utiliser directement le service de vérification
+    const result = await badgeService.verifyQRCode(qr);
+    
+    console.log('📤 Réponse verify envoyée:', JSON.stringify({ success: true, ...result }));
+    
+    res.status(200).json({
+      success: true,
+      ...result,
+    });
+    return;
+  } catch (error) {
+    console.error('Erreur lors de la vérification:', error);
+    if (!res.headersSent) {
+      res.status(500).json({
+        success: false,
+        message: 'Erreur interne du serveur',
+      });
+    }
+    return;
+  }
+});
 
 /**
  * API Routes
  */
 app.use('/api', routes);
+
+/**
+ * Static Files - Servir sur /uploads ET /api/uploads APRÈS les routes API
+ */
+app.use('/uploads', express.static(path.resolve(config.uploadPath)));
+app.use('/api/uploads', express.static(path.resolve(config.uploadPath)));
 
 /**
  * Root Route
