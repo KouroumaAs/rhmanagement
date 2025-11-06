@@ -15,7 +15,7 @@ export type EmployeeType =
   | 'DNTT_STAGIAIRE'
   | 'DEMARCHEUR';
 
-export type BanqueType = 'TTLB' | 'GLOBAL' | 'I_CRDIGITAL';
+export type BanqueType = 'TTLB' | 'GLOBAL' | 'CRDIGITAL';
 
 export type BadgeStatus = 'EN_ATTENTE' | 'IMPRIME' | 'REIMPRESSION';
 

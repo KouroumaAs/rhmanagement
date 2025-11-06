@@ -69,7 +69,7 @@ const employeeSchema = new Schema<IEmployee>(
     sousType: {
       type: String,
       default: null,
-      // Pour BANQUE: TTLB, GLOBAL, I_CRDIGITAL
+      // Pour BANQUE: TTLB, GLOBAL, CRDIGITAL
       // Pour EMBOUTISSEUR: nom de l'emboutisseur
     },
     status: {

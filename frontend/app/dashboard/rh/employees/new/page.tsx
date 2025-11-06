@@ -94,7 +94,7 @@ export default function NewEmployeePage() {
       case 'BANQUE':
         if (sousType === 'TTLB') return 'TTLB';
         if (sousType === 'GLOBAL') return 'GL';
-        if (sousType === 'I_CRDIGITAL') return 'CRD';
+        if (sousType === 'CRDIGITAL') return 'CRD';
         return 'BANQUE';
       case 'EMBOUTISSEUR':
         return sousType ? emboutisseursMap[sousType] || '' : '';
@@ -627,7 +627,7 @@ export default function NewEmployeePage() {
                     <SelectContent className="bg-white border-2 border-gray-200 shadow-2xl z-50">
                       <SelectItem value="TTLB" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">TTLB</SelectItem>
                       <SelectItem value="GLOBAL" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">GLOBAL</SelectItem>
-                      <SelectItem value="I_CRDIGITAL" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">I_CRDIGITAL</SelectItem>
+                      <SelectItem value="CRDIGITAL" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">CRDIGITAL</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
