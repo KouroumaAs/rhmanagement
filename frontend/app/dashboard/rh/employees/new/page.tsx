@@ -125,6 +125,9 @@ export default function NewEmployeePage() {
     setIsSubmitting(true);
     setFieldErrors({}); // Réinitialiser les erreurs
 
+    // Vérifier si c'est un type DNTT ou DNTT_STAGIAIRE
+    const isDNTTType = formData.typeEmploye === 'DNTT' || formData.typeEmploye === 'DNTT_STAGIAIRE';
+
     try {
       // Validation du téléphone
       if (formData.telephone && !VALIDATION.PHONE_REGEX.test(formData.telephone)) {
@@ -138,7 +141,7 @@ export default function NewEmployeePage() {
         return;
       }
 
-      // Validation: âge minimum 18 ans
+      // Validation: âge minimum 18 ans (uniquement si dateNaissance est fournie)
       if (formData.dateNaissance) {
         const dateNaissance = new Date(formData.dateNaissance);
         const today = new Date();
@@ -163,8 +166,8 @@ export default function NewEmployeePage() {
         }
       }
 
-      // Validation: date de fin obligatoire pour CDD et STAGE
-      if ((formData.typeContrat === 'CDD' || formData.typeContrat === 'STAGE') && !formData.dateFinContrat) {
+      // Validation: date de fin obligatoire pour CDD et STAGE (sauf pour DNTT)
+      if (!isDNTTType && (formData.typeContrat === 'CDD' || formData.typeContrat === 'STAGE') && !formData.dateFinContrat) {
         setFieldErrors({ dateFinContrat: "La date de fin est obligatoire pour les CDD et STAGE" });
         toast({
           variant: "destructive",
@@ -175,7 +178,7 @@ export default function NewEmployeePage() {
         return;
       }
 
-      // Validation: date de fin doit être supérieure à date d'embauche
+      // Validation: date de fin doit être supérieure à date d'embauche (si les deux sont fournies)
       if (formData.dateFinContrat && formData.dateEmbauche) {
         const dateDebut = new Date(formData.dateEmbauche);
         const dateFin = new Date(formData.dateFinContrat);
@@ -469,7 +472,7 @@ export default function NewEmployeePage() {
 
               <div className="space-y-2">
                 <Label htmlFor="dateNaissance" className="text-sm font-semibold text-gray-700">
-                  Date de Naissance *
+                  Date de Naissance {(formData.typeEmploye !== 'DNTT' && formData.typeEmploye !== 'DNTT_STAGIAIRE') && '*'}
                 </Label>
                 <Input
                   id="dateNaissance"
@@ -480,7 +483,7 @@ export default function NewEmployeePage() {
                     setFieldErrors({ ...fieldErrors, dateNaissance: undefined });
                   }}
                   className={`h-11 border-2 ${fieldErrors.dateNaissance ? 'border-red-500 focus:border-red-500' : 'border-gray-200 focus:border-[#ff8d13]'} focus:ring-4 focus:ring-violet-600/10 transition-all rounded-xl`}
-                  required
+                  required={formData.typeEmploye !== 'DNTT' && formData.typeEmploye !== 'DNTT_STAGIAIRE'}
                 />
                 {fieldErrors.dateNaissance ? (
                   <p className="text-sm text-red-600 flex items-center gap-1">
@@ -489,7 +492,7 @@ export default function NewEmployeePage() {
                   </p>
                 ) : (
                   <p className="text-xs text-gray-500">
-                    Âge minimum requis : 18 ans
+                    {(formData.typeEmploye === 'DNTT' || formData.typeEmploye === 'DNTT_STAGIAIRE') ? 'Facultatif pour DNTT' : 'Âge minimum requis : 18 ans'}
                   </p>
                 )}
               </div>
@@ -536,7 +539,7 @@ export default function NewEmployeePage() {
 
                 <div className="space-y-2">
                   <Label htmlFor="email" className="text-sm font-semibold text-gray-700">
-                    Email *
+                    Email {(formData.typeEmploye !== 'DNTT' && formData.typeEmploye !== 'DNTT_STAGIAIRE') && '*'}
                   </Label>
                   <Input
                     id="email"
@@ -548,14 +551,16 @@ export default function NewEmployeePage() {
                     }}
                     placeholder="exemple@email.com"
                     className={`h-11 border-2 ${fieldErrors.email ? 'border-red-500 focus:border-red-500' : 'border-gray-200 focus:border-[#ff8d13]'} focus:ring-4 focus:ring-violet-600/10 transition-all rounded-xl`}
-                    required
+                    required={formData.typeEmploye !== 'DNTT' && formData.typeEmploye !== 'DNTT_STAGIAIRE'}
                   />
-                  {fieldErrors.email && (
+                  {fieldErrors.email ? (
                     <p className="text-sm text-red-600 flex items-center gap-1">
                       <span>⚠</span>
                       {fieldErrors.email}
                     </p>
-                  )}
+                  ) : (formData.typeEmploye === 'DNTT' || formData.typeEmploye === 'DNTT_STAGIAIRE') ? (
+                    <p className="text-xs text-gray-500">Facultatif pour DNTT</p>
+                  ) : null}
                 </div>
               </div>
 
@@ -673,33 +678,34 @@ export default function NewEmployeePage() {
                 </div>
               )}
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                <div className="space-y-2">
-                  <Label htmlFor="fonction" className="text-sm font-semibold text-gray-700">
-                    Fonction *
-                  </Label>
-                  <Input
-                    id="fonction"
-                    value={formData.fonction}
-                    onChange={(e) => {
-                      setFormData({ ...formData, fonction: e.target.value });
-                      setFieldErrors({ ...fieldErrors, fonction: undefined });
-                    }}
-                    placeholder="Ex: Développeur, Comptable, etc."
-                    className={`h-11 border-2 ${fieldErrors.fonction ? 'border-red-500 focus:border-red-500' : 'border-gray-200 focus:border-[#ff8d13]'} focus:ring-4 focus:ring-[#ff8d13]/10 transition-all rounded-xl`}
-                    required
-                  />
-                  {fieldErrors.fonction && (
-                    <p className="text-sm text-red-600 flex items-center gap-1">
-                      <span>⚠</span>
-                      {fieldErrors.fonction}
-                    </p>
-                  )}
-                </div>
+              <div className="space-y-2">
+                <Label htmlFor="fonction" className="text-sm font-semibold text-gray-700">
+                  Fonction *
+                </Label>
+                <Input
+                  id="fonction"
+                  value={formData.fonction}
+                  onChange={(e) => {
+                    setFormData({ ...formData, fonction: e.target.value });
+                    setFieldErrors({ ...fieldErrors, fonction: undefined });
+                  }}
+                  placeholder="Ex: Développeur, Comptable, etc."
+                  className={`h-11 border-2 ${fieldErrors.fonction ? 'border-red-500 focus:border-red-500' : 'border-gray-200 focus:border-[#ff8d13]'} focus:ring-4 focus:ring-[#ff8d13]/10 transition-all rounded-xl`}
+                  required
+                />
+                {fieldErrors.fonction && (
+                  <p className="text-sm text-red-600 flex items-center gap-1">
+                    <span>⚠</span>
+                    {fieldErrors.fonction}
+                  </p>
+                )}
+              </div>
 
+              {/* Profil - masqué pour DNTT */}
+              {formData.typeEmploye !== 'DNTT' && formData.typeEmploye !== 'DNTT_STAGIAIRE' && (
                 <div className="space-y-2">
                   <Label htmlFor="profil" className="text-sm font-semibold text-gray-700">
-                    Profil
+                    Profil (facultatif)
                   </Label>
                   <Input
                     id="profil"
@@ -709,31 +715,34 @@ export default function NewEmployeePage() {
                     className="h-11 border-2 border-gray-200 focus:border-[#ff8d13] focus:ring-4 focus:ring-[#ff8d13]/10 transition-all rounded-xl"
                   />
                 </div>
-              </div>
+              )}
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                <div className="space-y-2">
-                  <Label htmlFor="diplome" className="text-sm font-semibold text-gray-700">
-                    Diplôme
-                  </Label>
-                  <Select
-                    value={formData.diplome}
-                    onValueChange={(value) => setFormData({ ...formData, diplome: value })}
-                  >
-                    <SelectTrigger className="h-11 w-full border-2 border-gray-200 focus:border-[#ff8d13] rounded-xl bg-white text-gray-900 font-medium">
-                      <SelectValue placeholder="Sélectionner un diplôme" />
-                    </SelectTrigger>
-                    <SelectContent className="bg-white border-2 border-gray-200 shadow-2xl z-50">
-                      <SelectItem value="BAC" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">BAC</SelectItem>
-                      <SelectItem value="BTS" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">BTS</SelectItem>
-                      <SelectItem value="Licence 1" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">Licence 1</SelectItem>
-                      <SelectItem value="Licence 2" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">Licence 2</SelectItem>
-                      <SelectItem value="Licence 3" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">Licence 3</SelectItem>
-                      <SelectItem value="Master 1" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">Master 1</SelectItem>
-                      <SelectItem value="Master 2" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">Master 2</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
+                {/* Diplôme - masqué pour DNTT */}
+                {formData.typeEmploye !== 'DNTT' && formData.typeEmploye !== 'DNTT_STAGIAIRE' && (
+                  <div className="space-y-2">
+                    <Label htmlFor="diplome" className="text-sm font-semibold text-gray-700">
+                      Diplôme (facultatif)
+                    </Label>
+                    <Select
+                      value={formData.diplome}
+                      onValueChange={(value) => setFormData({ ...formData, diplome: value })}
+                    >
+                      <SelectTrigger className="h-11 w-full border-2 border-gray-200 focus:border-[#ff8d13] rounded-xl bg-white text-gray-900 font-medium">
+                        <SelectValue placeholder="Sélectionner un diplôme" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-white border-2 border-gray-200 shadow-2xl z-50">
+                        <SelectItem value="BAC" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">BAC</SelectItem>
+                        <SelectItem value="BTS" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">BTS</SelectItem>
+                        <SelectItem value="Licence 1" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">Licence 1</SelectItem>
+                        <SelectItem value="Licence 2" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">Licence 2</SelectItem>
+                        <SelectItem value="Licence 3" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">Licence 3</SelectItem>
+                        <SelectItem value="Master 1" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">Master 1</SelectItem>
+                        <SelectItem value="Master 2" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">Master 2</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
 
                 <div className="space-y-2">
                   <Label htmlFor="matricule" className="text-sm font-semibold text-gray-700">
@@ -777,88 +786,93 @@ export default function NewEmployeePage() {
                 </div>
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="typeContrat" className="text-sm font-semibold text-gray-700">
-                  Type de Contrat *
-                </Label>
-                <Select
-                  value={formData.typeContrat}
-                  onValueChange={(value: "CDI" | "CDD" | "STAGE") => {
-                    setFormData({ ...formData, typeContrat: value, dateFinContrat: value === 'CDI' ? '' : formData.dateFinContrat });
-                    setFieldErrors({ ...fieldErrors, dateFinContrat: undefined });
-                  }}
-                >
-                  <SelectTrigger className="h-11 w-full border-2 border-gray-200 focus:border-[#ff8d13] rounded-xl bg-white text-gray-900 font-medium">
-                    <SelectValue placeholder="Sélectionner le type" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-white border-2 border-gray-200 shadow-2xl z-50">
-                    <SelectItem value="CDI" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">CDI - Contrat à Durée Indéterminée</SelectItem>
-                    <SelectItem value="CDD" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">CDD - Contrat à Durée Déterminée</SelectItem>
-                    <SelectItem value="STAGE" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">STAGE - Convention de Stage</SelectItem>
-                  </SelectContent>
-                </Select>
-                <p className="text-xs text-gray-500 mt-1">
-                  {formData.typeContrat === 'CDI' ? 'Pas de date de fin pour les CDI' : 'Date de fin obligatoire'}
-                </p>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                <div className="space-y-2">
-                  <Label htmlFor="dateEmbauche" className="text-sm font-semibold text-gray-700">
-                    Date d&apos;Embauche *
-                  </Label>
-                  <Input
-                    id="dateEmbauche"
-                    type="date"
-                    value={formData.dateEmbauche}
-                    onChange={(e) => {
-                      setFormData({ ...formData, dateEmbauche: e.target.value });
-                      setFieldErrors({ ...fieldErrors, dateEmbauche: undefined });
-                    }}
-                    className={`h-11 border-2 ${fieldErrors.dateEmbauche ? 'border-red-500 focus:border-red-500' : 'border-gray-200 focus:border-[#ff8d13]'} focus:ring-4 focus:ring-[#ff8d13]/10 transition-all rounded-xl`}
-                    required
-                  />
-                  {fieldErrors.dateEmbauche && (
-                    <p className="text-sm text-red-600 flex items-center gap-1">
-                      <span>⚠</span>
-                      {fieldErrors.dateEmbauche}
-                    </p>
-                  )}
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="dateFinContrat" className="text-sm font-semibold text-gray-700">
-                    Date de Fin de Contrat {formData.typeContrat !== 'CDI' && '*'}
-                  </Label>
-                  <Input
-                    id="dateFinContrat"
-                    type="date"
-                    value={formData.dateFinContrat}
-                    onChange={(e) => {
-                      setFormData({ ...formData, dateFinContrat: e.target.value });
-                      setFieldErrors({ ...fieldErrors, dateFinContrat: undefined });
-                    }}
-                    min={formData.dateEmbauche || undefined}
-                    disabled={formData.typeContrat === 'CDI'}
-                    className={`h-11 border-2 ${fieldErrors.dateFinContrat ? 'border-red-500 focus:border-red-500' : 'border-gray-200 focus:border-[#ff8d13]'} focus:ring-4 focus:ring-violet-600/10 transition-all rounded-xl ${formData.typeContrat === 'CDI' ? 'bg-gray-100 cursor-not-allowed' : ''}`}
-                    required={formData.typeContrat !== 'CDI'}
-                  />
-                  {fieldErrors.dateFinContrat ? (
-                    <p className="text-sm text-red-600 flex items-center gap-1">
-                      <span>⚠</span>
-                      {fieldErrors.dateFinContrat}
-                    </p>
-                  ) : formData.typeContrat === 'CDI' ? (
+              {/* Type de contrat et dates - masqués pour DNTT */}
+              {formData.typeEmploye !== 'DNTT' && formData.typeEmploye !== 'DNTT_STAGIAIRE' && (
+                <>
+                  <div className="space-y-2">
+                    <Label htmlFor="typeContrat" className="text-sm font-semibold text-gray-700">
+                      Type de Contrat *
+                    </Label>
+                    <Select
+                      value={formData.typeContrat}
+                      onValueChange={(value: "CDI" | "CDD" | "STAGE") => {
+                        setFormData({ ...formData, typeContrat: value, dateFinContrat: value === 'CDI' ? '' : formData.dateFinContrat });
+                        setFieldErrors({ ...fieldErrors, dateFinContrat: undefined });
+                      }}
+                    >
+                      <SelectTrigger className="h-11 w-full border-2 border-gray-200 focus:border-[#ff8d13] rounded-xl bg-white text-gray-900 font-medium">
+                        <SelectValue placeholder="Sélectionner le type" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-white border-2 border-gray-200 shadow-2xl z-50">
+                        <SelectItem value="CDI" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">CDI - Contrat à Durée Indéterminée</SelectItem>
+                        <SelectItem value="CDD" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">CDD - Contrat à Durée Déterminée</SelectItem>
+                        <SelectItem value="STAGE" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">STAGE - Convention de Stage</SelectItem>
+                      </SelectContent>
+                    </Select>
                     <p className="text-xs text-gray-500 mt-1">
-                      Pas de date de fin pour les CDI
+                      {formData.typeContrat === 'CDI' ? 'Pas de date de fin pour les CDI' : 'Date de fin obligatoire'}
                     </p>
-                  ) : formData.dateEmbauche ? (
-                    <p className="text-xs text-gray-500 mt-1">
-                      Doit être après le {new Date(formData.dateEmbauche).toLocaleDateString('fr-FR')}
-                    </p>
-                  ) : null}
-                </div>
-              </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <div className="space-y-2">
+                      <Label htmlFor="dateEmbauche" className="text-sm font-semibold text-gray-700">
+                        Date d&apos;Embauche *
+                      </Label>
+                      <Input
+                        id="dateEmbauche"
+                        type="date"
+                        value={formData.dateEmbauche}
+                        onChange={(e) => {
+                          setFormData({ ...formData, dateEmbauche: e.target.value });
+                          setFieldErrors({ ...fieldErrors, dateEmbauche: undefined });
+                        }}
+                        className={`h-11 border-2 ${fieldErrors.dateEmbauche ? 'border-red-500 focus:border-red-500' : 'border-gray-200 focus:border-[#ff8d13]'} focus:ring-4 focus:ring-[#ff8d13]/10 transition-all rounded-xl`}
+                        required
+                      />
+                      {fieldErrors.dateEmbauche && (
+                        <p className="text-sm text-red-600 flex items-center gap-1">
+                          <span>⚠</span>
+                          {fieldErrors.dateEmbauche}
+                        </p>
+                      )}
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="dateFinContrat" className="text-sm font-semibold text-gray-700">
+                        Date de Fin de Contrat {formData.typeContrat !== 'CDI' && '*'}
+                      </Label>
+                      <Input
+                        id="dateFinContrat"
+                        type="date"
+                        value={formData.dateFinContrat}
+                        onChange={(e) => {
+                          setFormData({ ...formData, dateFinContrat: e.target.value });
+                          setFieldErrors({ ...fieldErrors, dateFinContrat: undefined });
+                        }}
+                        min={formData.dateEmbauche || undefined}
+                        disabled={formData.typeContrat === 'CDI'}
+                        className={`h-11 border-2 ${fieldErrors.dateFinContrat ? 'border-red-500 focus:border-red-500' : 'border-gray-200 focus:border-[#ff8d13]'} focus:ring-4 focus:ring-violet-600/10 transition-all rounded-xl ${formData.typeContrat === 'CDI' ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                        required={formData.typeContrat !== 'CDI'}
+                      />
+                      {fieldErrors.dateFinContrat ? (
+                        <p className="text-sm text-red-600 flex items-center gap-1">
+                          <span>⚠</span>
+                          {fieldErrors.dateFinContrat}
+                        </p>
+                      ) : formData.typeContrat === 'CDI' ? (
+                        <p className="text-xs text-gray-500 mt-1">
+                          Pas de date de fin pour les CDI
+                        </p>
+                      ) : formData.dateEmbauche ? (
+                        <p className="text-xs text-gray-500 mt-1">
+                          Doit être après le {new Date(formData.dateEmbauche).toLocaleDateString('fr-FR')}
+                        </p>
+                      ) : null}
+                    </div>
+                  </div>
+                </>
+              )}
             </CardContent>
           </Card>
 

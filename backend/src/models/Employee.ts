@@ -21,8 +21,12 @@ const employeeSchema = new Schema<IEmployee>(
     },
     email: {
       type: String,
-      required: [true, 'L\'email est requis'],
+      required: function (this: IEmployee) {
+        // Email facultatif pour DNTT et DNTT_STAGIAIRE
+        return this.type !== 'DNTT' && this.type !== 'DNTT_STAGIAIRE';
+      },
       unique: true,
+      sparse: true, // Permet d'avoir des valeurs null/undefined pour unique
       trim: true,
       lowercase: true,
       match: [/^[^\s@]+@[^\s@]+\.[^\s@]+$/, 'Format d\'email invalide'],
@@ -82,7 +86,10 @@ const employeeSchema = new Schema<IEmployee>(
     },
     dateEmbauche: {
       type: Date,
-      required: [true, "La date d'embauche est requise"],
+      required: function (this: IEmployee) {
+        // Date d'embauche facultative pour DNTT et DNTT_STAGIAIRE
+        return this.type !== 'DNTT' && this.type !== 'DNTT_STAGIAIRE';
+      },
     },
     typeContrat: {
       type: String,
@@ -95,6 +102,8 @@ const employeeSchema = new Schema<IEmployee>(
     dateFinContrat: {
       type: Date,
       required: function (this: IEmployee) {
+        // Facultatif pour DNTT et DNTT_STAGIAIRE
+        if (this.type === 'DNTT' || this.type === 'DNTT_STAGIAIRE') return false;
         // Date de fin requise pour CDD et STAGE, pas pour CDI
         return this.typeContrat === 'CDD' || this.typeContrat === 'STAGE';
       },
@@ -102,6 +111,8 @@ const employeeSchema = new Schema<IEmployee>(
         validator: function (this: IEmployee, value: Date) {
           // Si pas de valeur et CDI, c'est valide
           if (!value && this.typeContrat === 'CDI') return true;
+          // Facultatif pour DNTT
+          if (!value && (this.type === 'DNTT' || this.type === 'DNTT_STAGIAIRE')) return true;
           // Si pas de dateEmbauche, skip la validation (pendant les mises à jour partielles)
           if (!this.dateEmbauche) return true;
           // Si CDD ou STAGE, la date de fin doit être après la date d'embauche
