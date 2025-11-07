@@ -496,7 +496,7 @@ export default function EditEmployeePage() {
 
                 <div className="space-y-2">
                   <Label htmlFor="email" className="text-sm font-semibold text-gray-700">
-                    Email *
+                    Email (facultatif)
                   </Label>
                   <Input
                     id="email"
@@ -505,7 +505,6 @@ export default function EditEmployeePage() {
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                     placeholder="exemple@email.com"
                     className="h-11 border-2 border-gray-200 focus:border-[#ff8d13] focus:ring-4 focus:ring-violet-600/10 transition-all rounded-xl"
-                    required
                   />
                 </div>
               </div>

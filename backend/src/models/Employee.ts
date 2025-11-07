@@ -21,10 +21,7 @@ const employeeSchema = new Schema<IEmployee>(
     },
     email: {
       type: String,
-      required: function (this: IEmployee) {
-        // Email facultatif pour DNTT et DNTT_STAGIAIRE
-        return this.type !== 'DNTT' && this.type !== 'DNTT_STAGIAIRE';
-      },
+      required: false, // Email facultatif pour tous les employés
       unique: true,
       sparse: true, // Permet d'avoir des valeurs null/undefined pour unique
       trim: true,

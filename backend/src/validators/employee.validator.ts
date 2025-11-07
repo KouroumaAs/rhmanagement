@@ -33,6 +33,14 @@ export const createEmployeeSchema = z.object({
       .regex(/^(\+224\s?)?6\d{2}(\s?\d{2}){3}$/, 'Format accepté: 6xxxxxxxx ou +224 6xx xx xx xx')
       .trim(),
 
+    email: z
+      .string()
+      .email('Format d\'email invalide')
+      .trim()
+      .toLowerCase()
+      .optional()
+      .or(z.literal('')),
+
     fonction: z
       .string({ required_error: 'La fonction est requise' })
       .min(2, 'La fonction doit contenir au moins 2 caractères')
@@ -108,6 +116,14 @@ export const updateEmployeeSchema = z.object({
       .regex(/^(\+224\s?)?6\d{2}(\s?\d{2}){3}$/, 'Format accepté: 6xxxxxxxx ou +224 6xx xx xx xx')
       .trim()
       .optional(),
+
+    email: z
+      .string()
+      .email('Format d\'email invalide')
+      .trim()
+      .toLowerCase()
+      .optional()
+      .or(z.literal('')),
 
     fonction: z
       .string()

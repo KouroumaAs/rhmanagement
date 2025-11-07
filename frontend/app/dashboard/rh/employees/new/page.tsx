@@ -539,7 +539,7 @@ export default function NewEmployeePage() {
 
                 <div className="space-y-2">
                   <Label htmlFor="email" className="text-sm font-semibold text-gray-700">
-                    Email {(formData.typeEmploye !== 'DNTT' && formData.typeEmploye !== 'DNTT_STAGIAIRE') && '*'}
+                    Email (facultatif)
                   </Label>
                   <Input
                     id="email"
@@ -551,16 +551,13 @@ export default function NewEmployeePage() {
                     }}
                     placeholder="exemple@email.com"
                     className={`h-11 border-2 ${fieldErrors.email ? 'border-red-500 focus:border-red-500' : 'border-gray-200 focus:border-[#ff8d13]'} focus:ring-4 focus:ring-violet-600/10 transition-all rounded-xl`}
-                    required={formData.typeEmploye !== 'DNTT' && formData.typeEmploye !== 'DNTT_STAGIAIRE'}
                   />
-                  {fieldErrors.email ? (
+                  {fieldErrors.email && (
                     <p className="text-sm text-red-600 flex items-center gap-1">
                       <span>⚠</span>
                       {fieldErrors.email}
                     </p>
-                  ) : (formData.typeEmploye === 'DNTT' || formData.typeEmploye === 'DNTT_STAGIAIRE') ? (
-                    <p className="text-xs text-gray-500">Facultatif pour DNTT</p>
-                  ) : null}
+                  )}
                 </div>
               </div>
 
