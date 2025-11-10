@@ -429,7 +429,7 @@ export default function PrintBadgePage() {
                   margin: 0,
                   lineHeight: "1"
                 }}>
-                  +224669611681
+                  624700470
                 </p>
               </div>
 
@@ -575,7 +575,7 @@ export default function PrintBadgePage() {
                   margin: 0,
                   lineHeight: "1"
                 }}>
-                  +224 623 41 87 95
+                  624700470
                 </p>
               </div>
 
