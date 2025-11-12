@@ -234,14 +234,16 @@ class EmployeeService {
     }
     console.log('✅ [CREATE EMPLOYEE] Matricule disponible');
 
-    // Check if email already exists
-    const existingEmail = await Employee.findOne({ email: dto.email });
-    if (existingEmail) {
-      console.log('❌ [CREATE EMPLOYEE] Email existe déjà:', dto.email);
-      const error: any = new Error('Cet email existe déjà');
-      error.statusCode = 400;
-      error.field = 'email';
-      throw error;
+    // Check if email already exists (only if email is provided)
+    if (dto.email && dto.email.trim() !== '') {
+      const existingEmail = await Employee.findOne({ email: dto.email });
+      if (existingEmail) {
+        console.log('❌ [CREATE EMPLOYEE] Email existe déjà:', dto.email);
+        const error: any = new Error('Cet email existe déjà');
+        error.statusCode = 400;
+        error.field = 'email';
+        throw error;
+      }
     }
 
     // Préparer les données avec le chemin de la photo si elle existe
@@ -314,8 +316,8 @@ class EmployeeService {
       }
     }
 
-    // If updating email, check it doesn't exist
-    if (dto.email && dto.email !== employee.email) {
+    // If updating email, check it doesn't exist (only if email is provided and not empty)
+    if (dto.email && dto.email.trim() !== '' && dto.email !== employee.email) {
       const existingEmail = await Employee.findOne({ email: dto.email });
       if (existingEmail) {
         const error: any = new Error('Cet email existe déjà');

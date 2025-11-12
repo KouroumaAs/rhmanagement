@@ -3,7 +3,7 @@ import { EmployeeType, EmployeeStatus, ContractType } from '../types';
 export class CreateEmployeeDto {
   nom!: string;
   prenom!: string;
-  email!: string;
+  email?: string;
   telephone!: string;
   fonction!: string;
   profil?: string;
@@ -48,7 +48,7 @@ export class EmployeeResponseDto {
   id!: string;
   nom!: string;
   prenom!: string;
-  email!: string;
+  email?: string;
   telephone!: string;
   fonction!: string;
   profil?: string;
