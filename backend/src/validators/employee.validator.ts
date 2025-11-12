@@ -34,12 +34,12 @@ export const createEmployeeSchema = z.object({
       .trim(),
 
     email: z
-      .string()
-      .email('Format d\'email invalide')
-      .trim()
-      .toLowerCase()
+      .union([
+        z.string().email('Format d\'email invalide').trim().toLowerCase(),
+        z.literal(''),
+      ])
       .optional()
-      .or(z.literal('')),
+      .transform((val) => val === '' || val === undefined ? undefined : val),
 
     fonction: z
       .string({ required_error: 'La fonction est requise' })
@@ -118,12 +118,12 @@ export const updateEmployeeSchema = z.object({
       .optional(),
 
     email: z
-      .string()
-      .email('Format d\'email invalide')
-      .trim()
-      .toLowerCase()
+      .union([
+        z.string().email('Format d\'email invalide').trim().toLowerCase(),
+        z.literal(''),
+      ])
       .optional()
-      .or(z.literal('')),
+      .transform((val) => val === '' || val === undefined ? undefined : val),
 
     fonction: z
       .string()
