@@ -47,12 +47,27 @@ export const createEmployeeSchema = z.object({
       .max(100, 'La fonction doit contenir au maximum 100 caractères')
       .trim(),
 
+    profil: z
+      .union([z.string().trim(), z.literal('')])
+      .optional()
+      .transform((val) => val === '' || val === undefined ? undefined : val),
+
+    diplome: z
+      .union([z.string().trim(), z.literal('')])
+      .optional()
+      .transform((val) => val === '' || val === undefined ? undefined : val),
+
     matricule: z
       .string({ required_error: 'Le matricule est requis' })
       .min(3, 'Le matricule doit contenir au moins 3 caractères')
       .trim(),
 
     type: employeeTypeEnum,
+
+    sousType: z
+      .union([z.string().trim(), z.literal('')])
+      .optional()
+      .transform((val) => val === '' || val === undefined ? undefined : val),
 
     typeContrat: contractTypeEnum.default('CDD'),
 
@@ -71,7 +86,10 @@ export const createEmployeeSchema = z.object({
       .transform((date) => date ? new Date(date) : undefined)
       .optional(),
 
-    photo: z.string().url('URL de photo invalide').optional(),
+    photo: z
+      .union([z.string().url('URL de photo invalide'), z.literal('')])
+      .optional()
+      .transform((val) => val === '' || val === undefined ? undefined : val),
   })
   .refine((data) => {
     // Si CDD ou STAGE, la date de fin est obligatoire
@@ -132,6 +150,16 @@ export const updateEmployeeSchema = z.object({
       .trim()
       .optional(),
 
+    profil: z
+      .union([z.string().trim(), z.literal('')])
+      .optional()
+      .transform((val) => val === '' || val === undefined ? undefined : val),
+
+    diplome: z
+      .union([z.string().trim(), z.literal('')])
+      .optional()
+      .transform((val) => val === '' || val === undefined ? undefined : val),
+
     matricule: z
       .string()
       .min(3, 'Le matricule doit contenir au moins 3 caractères')
@@ -139,6 +167,11 @@ export const updateEmployeeSchema = z.object({
       .optional(),
 
     type: employeeTypeEnum.optional(),
+
+    sousType: z
+      .union([z.string().trim(), z.literal('')])
+      .optional()
+      .transform((val) => val === '' || val === undefined ? undefined : val),
 
     typeContrat: contractTypeEnum.optional(),
 
@@ -158,9 +191,25 @@ export const updateEmployeeSchema = z.object({
       .transform((date) => date ? new Date(date) : undefined)
       .optional(),
 
-    photo: z.string().url('URL de photo invalide').optional(),
+    photo: z
+      .union([z.string().url('URL de photo invalide'), z.literal('')])
+      .optional()
+      .transform((val) => val === '' || val === undefined ? undefined : val),
 
     status: employeeStatusEnum.optional(),
+
+    motifSuspension: z
+      .union([z.string().trim(), z.literal('')])
+      .optional()
+      .transform((val) => val === '' || val === undefined ? undefined : val),
+
+    dateFinSuspension: z
+      .string()
+      .refine((date) => !date || !isNaN(Date.parse(date)), {
+        message: "Format de date invalide",
+      })
+      .transform((date) => date ? new Date(date) : undefined)
+      .optional(),
   }),
 });
 

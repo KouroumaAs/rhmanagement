@@ -27,6 +27,9 @@ async function checkEmailIndex() {
 
     // Get Employee collection
     const db = mongoose.connection.db;
+    if (!db) {
+      throw new Error('Database connection not established');
+    }
     const collection = db.collection('employees');
 
     // Get all indexes
