@@ -1,5 +1,13 @@
 import { z } from 'zod';
 
+// Helper to transform empty strings to undefined
+const emptyStringToUndefined = z.preprocess((val) => {
+  if (val === '' || val === 'undefined' || val === 'null' || val === null) {
+    return undefined;
+  }
+  return val;
+}, z.string().email('Format d\'email invalide').trim().toLowerCase().optional());
+
 const employeeTypeEnum = z.enum([
   'PERSONNEL_DSD',
   'DNTT',
@@ -33,13 +41,7 @@ export const createEmployeeSchema = z.object({
       .regex(/^(\+224\s?)?6\d{2}(\s?\d{2}){3}$/, 'Format accepté: 6xxxxxxxx ou +224 6xx xx xx xx')
       .trim(),
 
-    email: z
-      .union([
-        z.string().email('Format d\'email invalide').trim().toLowerCase(),
-        z.literal(''),
-      ])
-      .optional()
-      .transform((val) => val === '' || val === undefined ? undefined : val),
+    email: emptyStringToUndefined,
 
     fonction: z
       .string({ required_error: 'La fonction est requise' })
@@ -135,13 +137,7 @@ export const updateEmployeeSchema = z.object({
       .trim()
       .optional(),
 
-    email: z
-      .union([
-        z.string().email('Format d\'email invalide').trim().toLowerCase(),
-        z.literal(''),
-      ])
-      .optional()
-      .transform((val) => val === '' || val === undefined ? undefined : val),
+    email: emptyStringToUndefined,
 
     fonction: z
       .string()
