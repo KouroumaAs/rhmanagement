@@ -74,11 +74,24 @@ export const createEmployeeSchema = z.object({
     typeContrat: contractTypeEnum.default('CDD'),
 
     dateEmbauche: z
-      .string({ required_error: "La date d'embauche est requise" })
-      .refine((date) => !isNaN(Date.parse(date)), {
+      .string()
+      .optional()
+      .transform((val) => {
+        // Transformer les chaînes vides ou invalides en undefined
+        if (!val || val === '' || val === 'undefined' || val === 'null') {
+          return undefined;
+        }
+        return val;
+      })
+      .refine((val) => {
+        // Si undefined, c'est valide (optionnel)
+        if (val === undefined) return true;
+        // Si c'est une string, vérifier que c'est une date valide
+        return !isNaN(Date.parse(val));
+      }, {
         message: "Format de date invalide",
       })
-      .transform((date) => new Date(date)),
+      .transform((val) => val ? new Date(val) : undefined),
 
     dateFinContrat: z
       .string()
@@ -92,6 +105,16 @@ export const createEmployeeSchema = z.object({
       .union([z.string().url('URL de photo invalide'), z.literal('')])
       .optional()
       .transform((val) => val === '' || val === undefined ? undefined : val),
+  })
+  .refine((data) => {
+    // dateEmbauche est obligatoire uniquement pour PERSONNEL_DSD
+    if (data.type === 'PERSONNEL_DSD' && !data.dateEmbauche) {
+      return false;
+    }
+    return true;
+  }, {
+    message: "La date d'embauche est obligatoire pour le personnel DSD",
+    path: ['dateEmbauche'],
   })
   .refine((data) => {
     // Si CDD ou STAGE, la date de fin est obligatoire

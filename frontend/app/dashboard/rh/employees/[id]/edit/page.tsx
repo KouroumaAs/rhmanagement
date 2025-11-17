@@ -221,7 +221,12 @@ export default function EditEmployeePage() {
       formDataToSend.append('nom', formData.nom);
       formDataToSend.append('prenom', formData.prenom);
       formDataToSend.append('telephone', formData.telephone);
-      formDataToSend.append('email', formData.email);
+
+      // N'envoyer l'email que s'il est fourni et non vide
+      if (formData.email && formData.email.trim() !== '') {
+        formDataToSend.append('email', formData.email);
+      }
+
       formDataToSend.append('fonction', formData.fonction);
 
       if (formData.profil) {
@@ -241,7 +246,11 @@ export default function EditEmployeePage() {
 
       formDataToSend.append('status', formData.status);
       formDataToSend.append('typeContrat', formData.typeContrat);
-      formDataToSend.append('dateEmbauche', formData.dateEmbauche);
+
+      // Envoyer dateEmbauche seulement si elle est fournie et non vide
+      if (formData.dateEmbauche && formData.dateEmbauche.trim() !== '') {
+        formDataToSend.append('dateEmbauche', formData.dateEmbauche);
+      }
 
       if (formData.dateFinContrat && formData.typeContrat !== 'CDI') {
         formDataToSend.append('dateFinContrat', formData.dateFinContrat);
@@ -774,7 +783,7 @@ export default function EditEmployeePage() {
 
                 <div className="space-y-2">
                   <Label htmlFor="dateEmbauche" className="text-sm font-semibold text-gray-700">
-                    Date d'Embauche *
+                    Date d&apos;Embauche {formData.typeEmploye === 'PERSONNEL_DSD' && '*'}
                   </Label>
                   <Input
                     id="dateEmbauche"
@@ -782,8 +791,13 @@ export default function EditEmployeePage() {
                     value={formData.dateEmbauche}
                     onChange={(e) => setFormData({ ...formData, dateEmbauche: e.target.value })}
                     className="h-11 border-2 border-gray-200 focus:border-[#ff8d13] focus:ring-4 focus:ring-[#ff8d13]/10 transition-all rounded-xl"
-                    required
+                    required={formData.typeEmploye === 'PERSONNEL_DSD'}
                   />
+                  {formData.typeEmploye !== 'PERSONNEL_DSD' && (
+                    <p className="text-xs text-gray-500">
+                      Facultatif pour ce type d&apos;employé
+                    </p>
+                  )}
                 </div>
               </div>
 

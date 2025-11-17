@@ -84,8 +84,8 @@ const employeeSchema = new Schema<IEmployee>(
     dateEmbauche: {
       type: Date,
       required: function (this: IEmployee) {
-        // Date d'embauche facultative pour DNTT et DNTT_STAGIAIRE
-        return this.type !== 'DNTT' && this.type !== 'DNTT_STAGIAIRE';
+        // Date d'embauche obligatoire uniquement pour PERSONNEL_DSD
+        return this.type === 'PERSONNEL_DSD';
       },
     },
     typeContrat: {

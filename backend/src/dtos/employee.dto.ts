@@ -12,7 +12,7 @@ export class CreateEmployeeDto {
   type!: EmployeeType;
   sousType?: string;
   typeContrat!: ContractType;
-  dateEmbauche!: Date;
+  dateEmbauche?: Date;
   dateFinContrat?: Date;
   photo?: string;
 

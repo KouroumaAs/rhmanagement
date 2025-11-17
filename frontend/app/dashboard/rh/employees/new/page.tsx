@@ -212,7 +212,12 @@ export default function NewEmployeePage() {
       formDataToSend.append('nom', formData.nom);
       formDataToSend.append('prenom', formData.prenom);
       formDataToSend.append('telephone', formData.telephone);
-      formDataToSend.append('email', formData.email);
+
+      // N'envoyer l'email que s'il est fourni et non vide
+      if (formData.email && formData.email.trim() !== '') {
+        formDataToSend.append('email', formData.email);
+      }
+
       formDataToSend.append('fonction', formData.fonction);
 
       if (formData.profil) {
@@ -235,7 +240,11 @@ export default function NewEmployeePage() {
       }
 
       formDataToSend.append('typeContrat', formData.typeContrat);
-      formDataToSend.append('dateEmbauche', formData.dateEmbauche);
+
+      // Envoyer dateEmbauche seulement si elle est fournie et non vide
+      if (formData.dateEmbauche && formData.dateEmbauche.trim() !== '') {
+        formDataToSend.append('dateEmbauche', formData.dateEmbauche);
+      }
 
       if (formData.dateFinContrat) {
         formDataToSend.append('dateFinContrat', formData.dateFinContrat);
@@ -814,7 +823,7 @@ export default function NewEmployeePage() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                     <div className="space-y-2">
                       <Label htmlFor="dateEmbauche" className="text-sm font-semibold text-gray-700">
-                        Date d&apos;Embauche *
+                        Date d&apos;Embauche {formData.typeEmploye === 'PERSONNEL_DSD' && '*'}
                       </Label>
                       <Input
                         id="dateEmbauche"
@@ -825,14 +834,18 @@ export default function NewEmployeePage() {
                           setFieldErrors({ ...fieldErrors, dateEmbauche: undefined });
                         }}
                         className={`h-11 border-2 ${fieldErrors.dateEmbauche ? 'border-red-500 focus:border-red-500' : 'border-gray-200 focus:border-[#ff8d13]'} focus:ring-4 focus:ring-[#ff8d13]/10 transition-all rounded-xl`}
-                        required
+                        required={formData.typeEmploye === 'PERSONNEL_DSD'}
                       />
-                      {fieldErrors.dateEmbauche && (
+                      {fieldErrors.dateEmbauche ? (
                         <p className="text-sm text-red-600 flex items-center gap-1">
                           <span>⚠</span>
                           {fieldErrors.dateEmbauche}
                         </p>
-                      )}
+                      ) : formData.typeEmploye !== 'PERSONNEL_DSD' ? (
+                        <p className="text-xs text-gray-500">
+                          Facultatif pour ce type d&apos;employé
+                        </p>
+                      ) : null}
                     </div>
 
                     <div className="space-y-2">

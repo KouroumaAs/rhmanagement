@@ -23,7 +23,7 @@ export interface IEmployee extends Document {
   adresse?: string;
   dateNaissance?: Date;
   dateFinContrat?: Date;
-  dateEmbauche: Date;
+  dateEmbauche?: Date;
   typeContrat: ContractType;
   // dateFinContrat?: Date;
   fonction: string;
