@@ -74,24 +74,21 @@ export const createEmployeeSchema = z.object({
     typeContrat: contractTypeEnum.default('CDD'),
 
     dateEmbauche: z
-      .string()
-      .optional()
-      .transform((val) => {
+      .preprocess((val) => {
+        console.log('🔍 [VALIDATOR] dateEmbauche reçu:', val, 'Type:', typeof val);
         // Transformer les chaînes vides ou invalides en undefined
         if (!val || val === '' || val === 'undefined' || val === 'null') {
+          console.log('✅ [VALIDATOR] dateEmbauche vide -> undefined');
           return undefined;
         }
+        console.log('✅ [VALIDATOR] dateEmbauche valide:', val);
         return val;
-      })
-      .refine((val) => {
-        // Si undefined, c'est valide (optionnel)
-        if (val === undefined) return true;
-        // Si c'est une string, vérifier que c'est une date valide
-        return !isNaN(Date.parse(val));
-      }, {
-        message: "Format de date invalide",
-      })
-      .transform((val) => val ? new Date(val) : undefined),
+      }, z.union([
+        z.string().refine((val) => !isNaN(Date.parse(val)), {
+          message: "Format de date invalide",
+        }).transform((val) => new Date(val)),
+        z.undefined()
+      ])),
 
     dateFinContrat: z
       .string()
@@ -107,20 +104,38 @@ export const createEmployeeSchema = z.object({
       .transform((val) => val === '' || val === undefined ? undefined : val),
   })
   .refine((data) => {
+    console.log('🔍 [VALIDATOR REFINE] Données complètes:', JSON.stringify({
+      type: data.type,
+      dateEmbauche: data.dateEmbauche,
+      typeContrat: data.typeContrat
+    }, null, 2));
     // dateEmbauche est obligatoire uniquement pour PERSONNEL_DSD
     if (data.type === 'PERSONNEL_DSD' && !data.dateEmbauche) {
+      console.log('❌ [VALIDATOR] dateEmbauche manquante pour PERSONNEL_DSD');
       return false;
     }
+    console.log('✅ [VALIDATOR] Validation dateEmbauche OK');
     return true;
   }, {
     message: "La date d'embauche est obligatoire pour le personnel DSD",
     path: ['dateEmbauche'],
   })
   .refine((data) => {
-    // Si CDD ou STAGE, la date de fin est obligatoire
+    console.log('🔍 [VALIDATOR REFINE dateFinContrat] Type:', data.type, 'TypeContrat:', data.typeContrat, 'dateFinContrat:', data.dateFinContrat);
+
+    // Pour DNTT et DNTT_STAGIAIRE, la date de fin est facultative
+    if (data.type === 'DNTT' || data.type === 'DNTT_STAGIAIRE') {
+      console.log('✅ [VALIDATOR] dateFinContrat facultative pour DNTT');
+      return true;
+    }
+
+    // Si CDD ou STAGE, la date de fin est obligatoire (sauf pour DNTT)
     if ((data.typeContrat === 'CDD' || data.typeContrat === 'STAGE') && !data.dateFinContrat) {
+      console.log('❌ [VALIDATOR] dateFinContrat manquante pour CDD/STAGE');
       return false;
     }
+
+    console.log('✅ [VALIDATOR] Validation dateFinContrat OK');
     return true;
   }, {
     message: "La date de fin de contrat est obligatoire pour les CDD et STAGE",
