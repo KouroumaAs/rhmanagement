@@ -58,7 +58,7 @@ export class EmployeeResponseDto {
   sousType?: string;
   typeContrat!: ContractType;
   status!: EmployeeStatus;
-  dateEmbauche!: Date;
+  dateEmbauche?: Date;
   dateFinContrat?: Date;
   motifSuspension?: string;
   dateFinSuspension?: Date;
