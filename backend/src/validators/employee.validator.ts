@@ -71,7 +71,7 @@ export const createEmployeeSchema = z.object({
       .optional()
       .transform((val) => val === '' || val === undefined ? undefined : val),
 
-    typeContrat: contractTypeEnum.default('CDD'),
+    typeContrat: contractTypeEnum.optional(),
 
     dateEmbauche: z
       .preprocess((val) => {

@@ -160,7 +160,7 @@ class EmployeeService {
           sousType: emp.sousType,
           typeContrat: emp.typeContrat,
           status: emp.status,
-          dateEmbauche: emp.dateEmbauche || new Date(),
+          dateEmbauche: emp.dateEmbauche,
           dateFinContrat: emp.dateFinContrat,
           motifSuspension: emp.motifSuspension,
           dateFinSuspension: emp.dateFinSuspension,
@@ -211,7 +211,7 @@ class EmployeeService {
       sousType: employee.sousType,
       typeContrat: employee.typeContrat,
       status: employee.status,
-      dateEmbauche: employee.dateEmbauche || new Date(),
+      dateEmbauche: employee.dateEmbauche,
       dateFinContrat: employee.dateFinContrat,
       motifSuspension: employee.motifSuspension,
       dateFinSuspension: employee.dateFinSuspension,
@@ -252,6 +252,14 @@ class EmployeeService {
       status: 'ACTIF',
     };
 
+    // Pour DNTT et DNTT_STAGIAIRE, forcer typeContrat et dateEmbauche à undefined
+    if (dto.type === 'DNTT' || dto.type === 'DNTT_STAGIAIRE') {
+      employeeData.typeContrat = undefined;
+      employeeData.dateEmbauche = undefined;
+      employeeData.dateFinContrat = undefined;
+      console.log('🔧 [CREATE EMPLOYEE] DNTT détecté - typeContrat, dateEmbauche et dateFinContrat définis à undefined');
+    }
+
     if (file) {
       // Enregistrer le chemin relatif de la photo
       employeeData.photo = `/uploads/employees/${file.filename}`;
@@ -280,7 +288,7 @@ class EmployeeService {
         sousType: employee.sousType,
         typeContrat: employee.typeContrat,
         status: employee.status,
-        dateEmbauche: employee.dateEmbauche || new Date(),
+        dateEmbauche: employee.dateEmbauche,
         dateFinContrat: employee.dateFinContrat,
         motifSuspension: employee.motifSuspension,
         dateFinSuspension: employee.dateFinSuspension,
@@ -338,6 +346,15 @@ class EmployeeService {
     // Préparer les données de mise à jour
     const updateData: any = { ...dto };
 
+    // Pour DNTT et DNTT_STAGIAIRE, forcer typeContrat, dateEmbauche et dateFinContrat à undefined
+    const employeeType = dto.type || employee.type;
+    if (employeeType === 'DNTT' || employeeType === 'DNTT_STAGIAIRE') {
+      updateData.typeContrat = undefined;
+      updateData.dateEmbauche = undefined;
+      updateData.dateFinContrat = undefined;
+      console.log('🔧 [UPDATE EMPLOYEE] DNTT détecté - typeContrat, dateEmbauche et dateFinContrat définis à undefined');
+    }
+
     // Ajouter la photo si un fichier est uploadé
     if (file) {
       updateData.photo = `/uploads/employees/${file.filename}`;
@@ -390,7 +407,7 @@ class EmployeeService {
       sousType: updatedEmployee.sousType,
       typeContrat: updatedEmployee.typeContrat,
       status: updatedEmployee.status,
-      dateEmbauche: updatedEmployee.dateEmbauche || new Date(),
+      dateEmbauche: updatedEmployee.dateEmbauche,
       dateFinContrat: updatedEmployee.dateFinContrat,
       motifSuspension: updatedEmployee.motifSuspension,
       dateFinSuspension: updatedEmployee.dateFinSuspension,
@@ -451,7 +468,7 @@ class EmployeeService {
       sousType: employee.sousType,
       typeContrat: employee.typeContrat,
       status: employee.status,
-      dateEmbauche: employee.dateEmbauche || new Date(),
+      dateEmbauche: employee.dateEmbauche,
       dateFinContrat: employee.dateFinContrat,
       motifSuspension: employee.motifSuspension,
       dateFinSuspension: employee.dateFinSuspension,

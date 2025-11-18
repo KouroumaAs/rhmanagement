@@ -94,7 +94,10 @@ const employeeSchema = new Schema<IEmployee>(
         values: ['CDI', 'CDD', 'STAGE'],
         message: '{VALUE} n\'est pas un type de contrat valide',
       },
-      default: 'CDD',
+      required: function (this: IEmployee) {
+        // Type de contrat facultatif pour DNTT et DNTT_STAGIAIRE
+        return this.type !== 'DNTT' && this.type !== 'DNTT_STAGIAIRE';
+      },
     },
     dateFinContrat: {
       type: Date,
