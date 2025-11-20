@@ -234,8 +234,8 @@ export default function ImpressionPage() {
 
       // Obtenir l'URL de base sans /api
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://192.168.100.171:4003/api';
-      const baseUrl = apiUrl.replace('/api', '');
-      const photoUrl = `${baseUrl}${badge.employee.photo}`;
+      const baseUrl = apiUrl;
+      const photoUrl = `${baseUrl}/${badge.employee.photo}`;
 
       // Télécharger la photo
       const response = await fetch(photoUrl);
