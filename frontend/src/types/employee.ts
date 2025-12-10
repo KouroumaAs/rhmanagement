@@ -2,7 +2,7 @@
  * Types pour les employés
  */
 
-export type EmployeeStatus = 'ACTIF' | 'SUSPENDU' | 'TERMINE';
+export type EmployeeStatus = 'ACTIF' | 'SUSPENDU' | 'TERMINE' | 'BLOQUE';
 
 export type ContractType = 'CDI' | 'CDD' | 'STAGE';
 

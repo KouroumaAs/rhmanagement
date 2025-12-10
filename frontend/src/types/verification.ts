@@ -6,7 +6,7 @@ export interface EmployeeVerificationData {
   matricule: string;
   prenom?: string;
   nom?: string;
-  status?: 'ACTIF' | 'SUSPENDU' | 'TERMINE';
+  status?: 'ACTIF' | 'SUSPENDU' | 'TERMINE' | 'BLOQUE';
   telephone?: string;
   fonction?: string;
   dateFinContrat?: string;

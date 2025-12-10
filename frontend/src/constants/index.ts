@@ -2,33 +2,33 @@ import { EmployeeType, EmployeeStatus, BadgeStatus, UserRole } from "@/src/types
 
 // Employee Type Labels and Colors
 export const EMPLOYEE_TYPE_LABELS: Record<EmployeeType, string> = {
-  PERSONNELS_DSD: "Personnels DSD Guinée",
+  PERSONNEL_DSD: "Personnels DSD Guinée",
   DNTT: "DNTT",
-  STAGIAIRES_DSD: "Stagiaires DSD Guinée",
-  BANQUES: "Banques",
-  MAISONS_PLAQUE: "Maisons de Plaque",
-  DNTT_STAGIAIRES: "DNTT Stagiaires",
-  DEMARCHEURS: "Collectif des Démarcheurs",
+  STAGIAIRE_DSD: "Stagiaires DSD Guinée",
+  BANQUE: "Banques",
+  EMBOUTISSEUR: "Emboutisseurs",
+  DNTT_STAGIAIRE: "DNTT Stagiaires",
+  DEMARCHEUR: "Collectif des Démarcheurs",
 };
 
 export const EMPLOYEE_TYPE_COLORS: Record<EmployeeType, string> = {
-  PERSONNELS_DSD: "bg-[#ff8d13]",
+  PERSONNEL_DSD: "bg-[#ff8d13]",
   DNTT: "bg-blue-600",
-  STAGIAIRES_DSD: "bg-green-600",
-  BANQUES: "bg-purple-600",
-  MAISONS_PLAQUE: "bg-pink-600",
-  DNTT_STAGIAIRES: "bg-teal-600",
-  DEMARCHEURS: "bg-amber-600",
+  STAGIAIRE_DSD: "bg-green-600",
+  BANQUE: "bg-purple-600",
+  EMBOUTISSEUR: "bg-pink-600",
+  DNTT_STAGIAIRE: "bg-teal-600",
+  DEMARCHEUR: "bg-amber-600",
 };
 
 export const EMPLOYEE_TYPE_BADGE_TITLES: Record<EmployeeType, string> = {
-  PERSONNELS_DSD: "PERSONNELS DSD GUINEE",
+  PERSONNEL_DSD: "PERSONNELS DSD GUINEE",
   DNTT: "DNTT",
-  STAGIAIRES_DSD: "STAGIAIRES DSD GUINEE",
-  BANQUES: "BANQUES",
-  MAISONS_PLAQUE: "MAISONS DE PLAQUE",
-  DNTT_STAGIAIRES: "DNTT STAGIAIRES",
-  DEMARCHEURS: "COLLECTIF DES DEMARCHEURS",
+  STAGIAIRE_DSD: "STAGIAIRES DSD GUINEE",
+  BANQUE: "BANQUES",
+  EMBOUTISSEUR: "EMBOUTISSEURS",
+  DNTT_STAGIAIRE: "DNTT STAGIAIRES",
+  DEMARCHEUR: "COLLECTIF DES DEMARCHEURS",
 };
 
 // Employee Status
@@ -36,23 +36,27 @@ export const EMPLOYEE_STATUS_LABELS: Record<EmployeeStatus, string> = {
   ACTIF: "Actif",
   SUSPENDU: "Suspendu",
   TERMINE: "Terminé",
+  BLOQUE: "Bloqué",
 };
 
 export const EMPLOYEE_STATUS_COLORS: Record<EmployeeStatus, string> = {
   ACTIF: "bg-green-500",
   SUSPENDU: "bg-[#ff8d13]",
   TERMINE: "bg-gray-500",
+  BLOQUE: "bg-red-600",
 };
 
 // Badge Status
 export const BADGE_STATUS_LABELS: Record<BadgeStatus, string> = {
   EN_ATTENTE: "En attente",
   IMPRIME: "Imprimé",
+  REIMPRESSION: "Réimpression autorisée",
 };
 
 export const BADGE_STATUS_COLORS: Record<BadgeStatus, string> = {
   EN_ATTENTE: "bg-[#ff8d13]",
   IMPRIME: "bg-green-500",
+  REIMPRESSION: "bg-amber-500",
 };
 
 // User Roles
@@ -157,7 +161,7 @@ export const getImageUrl = (photoPath: string | null | undefined): string | null
   // Construire l'URL avec l'API URL de base
   // En production: https://rhmanagement.dsdguinee.com/api + /uploads/...
   // = https://rhmanagement.dsdguinee.com/api/uploads/...
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://192.168.100.171:4003/api';
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://192.168.100.55:4003/api';
 
   // Enlever le / au début de photoPath si présent pour éviter //
   const cleanPath = photoPath.startsWith('/') ? photoPath.slice(1) : photoPath;

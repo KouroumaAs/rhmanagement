@@ -67,21 +67,44 @@ export const badgesService = {
   },
 
   /**
-   * Verify badge by QR code - Retourne uniquement le matricule
+   * Verify badge by QR code - Retourne les informations de l'employé
    */
   async verify(qrCode: string): Promise<{
     success: boolean;
+    valid?: boolean;
+    status?: string;
     employee?: {
       matricule: string;
+      nom?: string;
+      prenom?: string;
+      fonction?: string;
+      status?: string;
     };
   }> {
-    console.log('🔍 Appel API verify avec qrCode:', qrCode);
-    // Route publique, pas besoin de token
-    return get<{
-      employee?: {
-        matricule: string;
-      };
-    }>(`${API_ENDPOINTS.BADGES}/verify/${qrCode}`) as any;
+    console.log('🔍 [badgesService.verify] Appel API verify avec qrCode:', qrCode);
+    const endpoint = `${API_ENDPOINTS.BADGES}/verify/${qrCode}`;
+    console.log('🔍 [badgesService.verify] Endpoint complet:', endpoint);
+
+    try {
+      // Route publique, pas besoin de token
+      const result = await get<{
+        valid?: boolean;
+        status?: string;
+        employee?: {
+          matricule: string;
+          nom?: string;
+          prenom?: string;
+          fonction?: string;
+          status?: string;
+        };
+      }>(endpoint);
+
+      console.log('✅ [badgesService.verify] Réponse reçue:', result);
+      return result;
+    } catch (error) {
+      console.error('❌ [badgesService.verify] Erreur:', error);
+      throw error;
+    }
   },
 
   /**

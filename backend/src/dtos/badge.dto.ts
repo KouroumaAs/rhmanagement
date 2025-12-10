@@ -60,8 +60,14 @@ export class QRCodeResponseDto {
 }
 
 export class VerifyQRCodeResponseDto {
+  valid?: boolean;
+  status?: string;
   employee?: {
     matricule: string;
+    nom?: string;
+    prenom?: string;
+    fonction?: string;
+    status?: string;
   };
 }
 

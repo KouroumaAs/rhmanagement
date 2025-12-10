@@ -10,7 +10,7 @@ export type EmployeeType =
   | 'DNTT_STAGIAIRE'
   | 'DEMARCHEUR';
 
-export type EmployeeStatus = 'ACTIF' | 'SUSPENDU' | 'TERMINE';
+export type EmployeeStatus = 'ACTIF' | 'SUSPENDU' | 'TERMINE' | 'BLOQUE';
 
 export type ContractType = 'CDI' | 'CDD' | 'STAGE';
 

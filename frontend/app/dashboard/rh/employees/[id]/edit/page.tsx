@@ -252,8 +252,11 @@ export default function EditEmployeePage() {
         formDataToSend.append('dateEmbauche', formData.dateEmbauche);
       }
 
-      if (formData.dateFinContrat && formData.typeContrat !== 'CDI') {
+      if (formData.typeContrat !== 'CDI' && formData.dateFinContrat) {
         formDataToSend.append('dateFinContrat', formData.dateFinContrat);
+      } else if (formData.typeContrat === 'CDI') {
+        // Envoyer null pour effacer la date de fin si on passe à CDI
+        formDataToSend.append('dateFinContrat', '');
       }
 
       // Ajouter les champs de suspension seulement si le statut est SUSPENDU
@@ -801,32 +804,29 @@ export default function EditEmployeePage() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                <div className="space-y-2">
-                  <Label htmlFor="dateFinContrat" className="text-sm font-semibold text-gray-700">
-                    Date de Fin de Contrat {formData.typeContrat !== 'CDI' && '*'}
-                  </Label>
-                  <Input
-                    id="dateFinContrat"
-                    type="date"
-                    value={formData.dateFinContrat}
-                    onChange={(e) => setFormData({ ...formData, dateFinContrat: e.target.value })}
-                    min={formData.dateEmbauche || undefined}
-                    disabled={formData.typeContrat === 'CDI'}
-                    className={`h-11 border-2 border-gray-200 focus:border-[#ff8d13] focus:ring-4 focus:ring-violet-600/10 transition-all rounded-xl ${formData.typeContrat === 'CDI' ? 'bg-gray-100 cursor-not-allowed' : ''}`}
-                    required={formData.typeContrat !== 'CDI'}
-                  />
-                  {formData.dateEmbauche && formData.typeContrat !== 'CDI' ? (
-                    <p className="text-xs text-gray-500 mt-1">
-                      Doit être après le {new Date(formData.dateEmbauche).toLocaleDateString('fr-FR')}
-                    </p>
-                  ) : formData.typeContrat === 'CDI' ? (
-                    <p className="text-xs text-green-600 mt-1">
-                      Les contrats CDI n'ont pas de date de fin
-                    </p>
-                  ) : null}
+              {formData.typeContrat !== 'CDI' && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                  <div className="space-y-2">
+                    <Label htmlFor="dateFinContrat" className="text-sm font-semibold text-gray-700">
+                      Date de Fin de Contrat *
+                    </Label>
+                    <Input
+                      id="dateFinContrat"
+                      type="date"
+                      value={formData.dateFinContrat}
+                      onChange={(e) => setFormData({ ...formData, dateFinContrat: e.target.value })}
+                      min={formData.dateEmbauche || undefined}
+                      className="h-11 border-2 border-gray-200 focus:border-[#ff8d13] focus:ring-4 focus:ring-violet-600/10 transition-all rounded-xl"
+                      required
+                    />
+                    {formData.dateEmbauche && (
+                      <p className="text-xs text-gray-500 mt-1">
+                        Doit être après le {new Date(formData.dateEmbauche).toLocaleDateString('fr-FR')}
+                      </p>
+                    )}
+                  </div>
                 </div>
-              </div>
+              )}
             </CardContent>
           </Card>
 

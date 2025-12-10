@@ -32,6 +32,12 @@ const nextConfig: NextConfig = {
         pathname: '/uploads/**',
       },
       {
+        protocol: 'http',
+        hostname: '192.168.100.55',
+        port: '4003',
+        pathname: '/uploads/**',
+      },
+      {
         protocol: 'https',
         hostname: 'rhmanagement.dsdguinee.com',
         pathname: '/api/uploads/**',

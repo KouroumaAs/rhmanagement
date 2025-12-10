@@ -278,7 +278,7 @@ class EmployeeService {
         id: employee._id.toString(),
         nom: employee.nom,
         prenom: employee.prenom,
-        email: employee.email,
+        email: employee.email,    
         telephone: employee.telephone,
         fonction: employee.fonction,
         profil: employee.profil,
@@ -500,7 +500,7 @@ class EmployeeService {
     // Check if badge already exists for this employee
     const existingBadge = await Badge.findOne({
       employee: employeeId,
-      status: { $in: ['EN_ATTENTE', 'IMPRIME'] },
+      status: { $in: ['EN_ATTENTE', 'IMPRIME', 'REIMPRESSION'] },
     });
     console.log('📝 Service - Badge existant:', existingBadge ? 'OUI' : 'NON');
 
@@ -531,12 +531,21 @@ class EmployeeService {
   };
 
   getEmployeeStats = async (): Promise<EmployeeStatsDto> => {
-    const [total, active, suspended, terminated, byType, recentEmployees] = await Promise.all([
+    // Calculer la date dans 30 jours
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const thirtyDaysFromNow = new Date(today);
+    thirtyDaysFromNow.setDate(thirtyDaysFromNow.getDate() + 30);
+
+    const [total, active, suspended, terminated, byType, recentEmployees, contractsExpiringSoon] = await Promise.all([
       Employee.countDocuments(),
       Employee.countDocuments({ status: 'ACTIF' }),
       Employee.countDocuments({ status: 'SUSPENDU' }),
       Employee.countDocuments({ status: 'TERMINE' }),
       Employee.aggregate([
+        {
+          $match: { status: 'ACTIF' }
+        },
         {
           $group: {
             _id: '$type',
@@ -545,6 +554,11 @@ class EmployeeService {
         },
       ]),
       Employee.find().sort('-createdAt').limit(5).select('nom prenom email telephone type status createdAt'),
+      // Compter les contrats expirés ou qui expirent dans 30 jours (employés actifs uniquement)
+      Employee.countDocuments({
+        status: 'ACTIF',
+        dateFinContrat: { $lte: thirtyDaysFromNow },
+      }),
     ]);
 
     return {
@@ -575,6 +589,7 @@ class EmployeeService {
         createdAt: emp.createdAt,
         updatedAt: emp.updatedAt,
       })),
+      contractsExpiringSoon,
     };
   };
 }

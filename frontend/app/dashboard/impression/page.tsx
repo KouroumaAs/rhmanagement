@@ -92,7 +92,7 @@ export default function ImpressionPage() {
 
   const fetchBadgeStats = async () => {
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://192.168.100.171:5000/api';
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://192.168.100.171:4003/api';
       const response = await fetch(`${apiUrl}/badges/stats`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('token')}`,
@@ -574,12 +574,18 @@ export default function ImpressionPage() {
 
   const getBadgeTitle = (type: string, sousType?: string) => {
     const titles: Record<string, string> = {
+      PERSONNEL_DSD: "PERSONNELS DSD GUINEE",
       PERSONNELS_DSD: "PERSONNELS DSD GUINEE",
       DNTT: "DNTT",
+      STAGIAIRE_DSD: "STAGIAIRES DSD GUINEE",
       STAGIAIRES_DSD: "STAGIAIRES DSD GUINEE",
+      BANQUE: "BANQUE",
       BANQUES: "BANQUE",
+      EMBOUTISSEUR: "EMBOUTISSEUR",
       MAISONS_PLAQUE: "EMBOUTISSEUR",
+      DNTT_STAGIAIRE: "DNTT STAGIAIRES",
       DNTT_STAGIAIRES: "DNTT STAGIAIRES",
+      DEMARCHEUR: "COLLECTIF DES DEMARCHEURS",
       DEMARCHEURS: "COLLECTIF DES DEMARCHEURS",
     };
     const title = titles[type] || type;
@@ -611,22 +617,34 @@ export default function ImpressionPage() {
 
   const getTypeBadge = (type: string, sousType?: string) => {
     const typeLabels: Record<string, string> = {
-      PERSONNELS_DSD: "Personnels DSD",
+      PERSONNEL_DSD: "Personnel DSD",
+      PERSONNELS_DSD: "Personnel DSD",
       DNTT: "DNTT",
-      STAGIAIRES_DSD: "Stagiaires DSD",
+      STAGIAIRE_DSD: "Stagiaire DSD",
+      STAGIAIRES_DSD: "Stagiaire DSD",
+      BANQUE: "Banque",
       BANQUES: "Banque",
+      EMBOUTISSEUR: "Emboutisseur",
       MAISONS_PLAQUE: "Emboutisseur",
-      DNTT_STAGIAIRES: "DNTT Stagiaires",
-      DEMARCHEURS: "Démarcheurs",
+      DNTT_STAGIAIRE: "DNTT Stagiaire",
+      DNTT_STAGIAIRES: "DNTT Stagiaire",
+      DEMARCHEUR: "Démarcheur",
+      DEMARCHEURS: "Démarcheur",
     };
 
     const colors: Record<string, string> = {
+      PERSONNEL_DSD: "bg-[#ff8d13]",
       PERSONNELS_DSD: "bg-[#ff8d13]",
       DNTT: "bg-blue-600",
+      STAGIAIRE_DSD: "bg-green-600",
       STAGIAIRES_DSD: "bg-green-600",
+      BANQUE: "bg-purple-600",
       BANQUES: "bg-purple-600",
+      EMBOUTISSEUR: "bg-pink-600",
       MAISONS_PLAQUE: "bg-pink-600",
+      DNTT_STAGIAIRE: "bg-teal-600",
       DNTT_STAGIAIRES: "bg-teal-600",
+      DEMARCHEUR: "bg-amber-600",
       DEMARCHEURS: "bg-amber-600",
     };
 
@@ -747,13 +765,13 @@ export default function ImpressionPage() {
                   </SelectTrigger>
                   <SelectContent className="bg-white max-h-[300px]">
                     <SelectItem value="TOUS" className="text-base font-semibold py-3 cursor-pointer hover:bg-[#fff5ed]">Tous les types</SelectItem>
-                    <SelectItem value="PERSONNELS_DSD" className="text-base font-semibold py-3 cursor-pointer hover:bg-[#fff5ed]">Personnels DSD</SelectItem>
+                    <SelectItem value="PERSONNEL_DSD" className="text-base font-semibold py-3 cursor-pointer hover:bg-[#fff5ed]">Personnel DSD</SelectItem>
                     <SelectItem value="DNTT" className="text-base font-semibold py-3 cursor-pointer hover:bg-blue-50">DNTT</SelectItem>
-                    <SelectItem value="STAGIAIRES_DSD" className="text-base font-semibold py-3 cursor-pointer hover:bg-green-50">Stagiaires DSD</SelectItem>
-                    <SelectItem value="BANQUES" className="text-base font-semibold py-3 cursor-pointer hover:bg-purple-50">Banques</SelectItem>
-                    <SelectItem value="MAISONS_PLAQUE" className="text-base font-semibold py-3 cursor-pointer hover:bg-pink-50">Maisons de Plaque</SelectItem>
-                    <SelectItem value="DNTT_STAGIAIRES" className="text-base font-semibold py-3 cursor-pointer hover:bg-teal-50">DNTT Stagiaires</SelectItem>
-                    <SelectItem value="DEMARCHEURS" className="text-base font-semibold py-3 cursor-pointer hover:bg-amber-50">Démarcheurs</SelectItem>
+                    <SelectItem value="STAGIAIRE_DSD" className="text-base font-semibold py-3 cursor-pointer hover:bg-green-50">Stagiaire DSD</SelectItem>
+                    <SelectItem value="BANQUE" className="text-base font-semibold py-3 cursor-pointer hover:bg-purple-50">Banque</SelectItem>
+                    <SelectItem value="EMBOUTISSEUR" className="text-base font-semibold py-3 cursor-pointer hover:bg-pink-50">Maison de Plaque</SelectItem>
+                    <SelectItem value="DNTT_STAGIAIRE" className="text-base font-semibold py-3 cursor-pointer hover:bg-teal-50">DNTT Stagiaire</SelectItem>
+                    <SelectItem value="DEMARCHEUR" className="text-base font-semibold py-3 cursor-pointer hover:bg-amber-50">Démarcheur</SelectItem>
                   </SelectContent>
                 </Select>
 

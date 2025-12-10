@@ -9,6 +9,7 @@ export interface DashboardStats {
     terminated: number;
     byType: Array<{ _id: string; count: number }>;
     recent: any[];
+    contractsExpiringSoon: number;
   };
   users: {
     total: number;
@@ -37,10 +38,16 @@ class DashboardService {
     const userRole = user?.role;
 
     try {
+      console.log('📊 [Dashboard] Starting stats fetch...');
+      console.log('📊 [Dashboard] EMPLOYEE_STATS endpoint:', API_ENDPOINTS.EMPLOYEE_STATS);
+      console.log('📊 [Dashboard] API_BASE_URL from constants:', process.env.NEXT_PUBLIC_API_URL || 'http://192.168.100.171:4003/api');
+
       // Fetch employee stats
+      console.log('📊 [Dashboard] Fetching employee stats...');
       const employeeStatsResponse = await get<any>(API_ENDPOINTS.EMPLOYEE_STATS, {
         headers: { Authorization: `Bearer ${token}` },
       });
+      console.log('📊 [Dashboard] Employee stats received:', employeeStatsResponse);
 
       // Fetch user stats only if ADMIN
       let userStatsData = {

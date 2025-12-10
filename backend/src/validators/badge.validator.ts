@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-const badgeStatusEnum = z.enum(['EN_ATTENTE', 'IMPRIME', 'ANNULE']);
+const badgeStatusEnum = z.enum(['EN_ATTENTE', 'IMPRIME', 'REIMPRESSION']);
 
 const badgeTypeEnum = z.enum([
   'PERSONNEL_DSD',

@@ -96,4 +96,5 @@ export class EmployeeStatsDto {
   terminated!: number;
   byType!: Array<{ _id: string; count: number }>;
   recent!: EmployeeResponseDto[];
+  contractsExpiringSoon!: number;
 }

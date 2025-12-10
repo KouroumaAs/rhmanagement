@@ -18,7 +18,7 @@ const employeeTypeEnum = z.enum([
   'DEMARCHEUR',
 ]);
 
-const employeeStatusEnum = z.enum(['ACTIF', 'SUSPENDU', 'TERMINE']);
+const employeeStatusEnum = z.enum(['ACTIF', 'SUSPENDU', 'TERMINE', 'BLOQUE']);
 
 const contractTypeEnum = z.enum(['CDI', 'CDD', 'STAGE']);
 

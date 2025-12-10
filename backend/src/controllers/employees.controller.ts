@@ -166,13 +166,18 @@ class EmployeesController {
    */
   getEmployeeStats = async (_req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
+      console.log('📊 [Controller] getEmployeeStats called');
+      const startTime = Date.now();
       const result = await employeeService.getEmployeeStats();
+      const duration = Date.now() - startTime;
+      console.log(`📊 [Controller] getEmployeeStats completed in ${duration}ms`);
 
       res.status(200).json({
         success: true,
         data: result,
       });
     } catch (error: any) {
+      console.error('❌ [Controller] getEmployeeStats error:', error);
       next(error);
     }
   };

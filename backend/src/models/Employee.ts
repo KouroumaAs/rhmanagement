@@ -76,7 +76,7 @@ const employeeSchema = new Schema<IEmployee>(
     status: {
       type: String,
       enum: {
-        values: ['ACTIF', 'SUSPENDU', 'TERMINE'],
+        values: ['ACTIF', 'SUSPENDU', 'TERMINE', 'BLOQUE'],
         message: '{VALUE} n\'est pas un statut valide',
       },
       default: 'ACTIF',
