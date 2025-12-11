@@ -223,7 +223,12 @@ export default function ImpressionPage() {
 
   const downloadPhoto = async (badge: any) => {
     try {
+      console.log('🖼️ Tentative de téléchargement photo pour:', badge);
+      console.log('🖼️ Employee data:', badge.employee);
+      console.log('🖼️ Photo path:', badge.employee?.photo);
+
       if (!badge.employee?.photo) {
+        console.warn('⚠️ Aucune photo disponible pour cet employé');
         toast({
           variant: "destructive",
           title: "Erreur",
@@ -234,11 +239,25 @@ export default function ImpressionPage() {
 
       // Obtenir l'URL de base sans /api
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://192.168.100.171:4003/api';
-      const baseUrl = apiUrl;
-      const photoUrl = `${baseUrl}/${badge.employee.photo}`;
+      // Retirer /api de l'URL si présent
+      const baseUrl = apiUrl.replace(/\/api$/, '');
+      // Enlever le slash initial du photo path s'il existe pour éviter le double slash
+      const photoPath = badge.employee.photo.startsWith('/') ? badge.employee.photo.substring(1) : badge.employee.photo;
+      const photoUrl = `${baseUrl}/${photoPath}`;
+
+      console.log('🖼️ API URL:', apiUrl);
+      console.log('🖼️ Base URL (sans /api):', baseUrl);
+      console.log('🖼️ Photo path original:', badge.employee.photo);
+      console.log('🖼️ Photo path nettoyé:', photoPath);
+      console.log('🖼️ URL finale de la photo:', photoUrl);
 
       // Télécharger la photo
       const response = await fetch(photoUrl);
+
+      if (!response.ok) {
+        throw new Error(`Erreur HTTP: ${response.status}`);
+      }
+
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
 
@@ -256,11 +275,11 @@ export default function ImpressionPage() {
         description: `La photo de ${badge.employee?.prenom} ${badge.employee?.nom} a été téléchargée`,
       });
     } catch (error) {
-      console.error("Erreur lors du téléchargement de la photo:", error);
+      console.error("❌ Erreur lors du téléchargement de la photo:", error);
       toast({
         variant: "destructive",
         title: "Erreur",
-        description: "Impossible de télécharger la photo",
+        description: "Impossible de télécharger la photo. Vérifiez la console pour plus de détails.",
       });
     }
   };
@@ -932,53 +951,62 @@ export default function ImpressionPage() {
                       <TableCell>{getStatusBadge(request.status, request.printCount)}</TableCell>
                       <TableCell>
                         <div className="flex items-center justify-end gap-2">
-                          {request.status === "REIMPRESSION" ? (
+                          {/* Bouton Imprimer/Réimprimer */}
+                          {request.status === "REIMPRESSION" || request.status === "EN_ATTENTE" ? (
                             <Link href={`/dashboard/impression/badges/${request.id}/print`}>
                               <Button
                                 size="sm"
                                 className="gap-2 bg-gradient-to-r from-[#ff8d13] to-[#ff8d13] hover:from-[#e67d0f] hover:to-[#ff8d13] shadow-md"
                               >
                                 <Printer className="w-4 h-4" />
-                                Réimprimer
+                                {request.status === "REIMPRESSION" ? "Réimprimer" : "Imprimer"}
                               </Button>
                             </Link>
                           ) : (
                             <Button
                               size="sm"
                               className="gap-2 bg-gradient-to-r from-[#ff8d13] to-[#ff8d13] hover:from-[#e67d0f] hover:to-[#ff8d13] shadow-md"
-                              disabled={request.status === "IMPRIME"}
-                              onClick={() => {
-                                if (request.status === "EN_ATTENTE") {
-                                  window.location.href = `/dashboard/impression/badges/${request.id}/print`;
-                                }
-                              }}
+                              disabled={true}
                             >
                               <Printer className="w-4 h-4" />
-                              {request.status === "EN_ATTENTE" ? "Imprimer" : request.status === "IMPRIME" ? "Imprimé" : "Réimprimer"}
+                              Imprimé
                             </Button>
                           )}
+
+                          {/* Boutons de téléchargement - Désactivés si imprimé */}
                           <Button
                             size="sm"
                             variant="outline"
-                            className="gap-2 border-green-200 hover:bg-green-50 text-green-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                            className={`gap-2 ${request.status === "IMPRIME" ? "border-gray-200 text-gray-400 cursor-not-allowed" : "border-green-200 hover:bg-green-50 text-green-600"}`}
                             onClick={() => downloadQRCode(request)}
-                            title="Télécharger le QR code"
                             disabled={request.status === "IMPRIME"}
+                            title={request.status === "IMPRIME" ? "Téléchargement désactivé - Badge déjà imprimé" : "Télécharger le QR code"}
                           >
                             <Download className="w-4 h-4" />
                             QR Code
                           </Button>
-                          {request.employee?.photo && (
+                          {request.employee?.photo ? (
                             <Button
                               size="sm"
                               variant="outline"
-                              className="gap-2 border-blue-200 hover:bg-blue-50 text-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                              className={`gap-2 ${request.status === "IMPRIME" ? "border-gray-200 text-gray-400 cursor-not-allowed" : "border-blue-200 hover:bg-blue-50 text-blue-600"}`}
                               onClick={() => downloadPhoto(request)}
-                              title="Télécharger la photo"
                               disabled={request.status === "IMPRIME"}
+                              title={request.status === "IMPRIME" ? "Téléchargement désactivé - Badge déjà imprimé" : "Télécharger la photo"}
                             >
                               <Image className="w-4 h-4" />
                               Photo
+                            </Button>
+                          ) : (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="gap-2 border-gray-200 text-gray-400 cursor-not-allowed"
+                              disabled
+                              title="Aucune photo disponible - Ajoutez une photo à l'employé"
+                            >
+                              <Image className="w-4 h-4" />
+                              Pas de photo
                             </Button>
                           )}
                         </div>
