@@ -143,28 +143,75 @@ function VerifyContent() {
         </Card>
 
         {/* Result Card */}
-        {result && statusInfo && (
-          <Card className={`shadow-2xl border-2 ${statusInfo.borderColor} ${statusInfo.bgColor}`}>
-            <CardContent className="p-8 space-y-6">
-              {/* Employee Info */}
-              {result.employee && (
-                <div className="space-y-4">
-                  <div className="flex items-center justify-center">
-                    <div className="text-center">
-                      <p className="text-xs font-semibold text-gray-500 uppercase mb-2">Matricule</p>
-                      <p className="text-3xl font-bold text-gray-900">{result.employee.matricule}</p>
+        {result && (
+          <>
+            {result.employee && statusInfo ? (
+              <Card className={`shadow-2xl border-2 ${statusInfo.borderColor} ${statusInfo.bgColor}`}>
+                <CardContent className="p-8 space-y-6">
+                  {/* Employee Info */}
+                  {result.employee && (
+                <div className="space-y-6">
+                  {/* Status Badge */}
+                  <div className="flex justify-center">
+                    <Badge className={`px-4 py-2 text-lg font-bold ${
+                      result.employee.status === 'ACTIF' ? 'bg-green-500' :
+                      result.employee.status === 'SUSPENDU' ? 'bg-orange-500' :
+                      'bg-gray-500'
+                    } text-white`}>
+                      {result.employee.status || 'N/A'}
+                    </Badge>
+                  </div>
+
+                  {/* Main Info Grid */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {/* Matricule */}
+                    <div className="text-center md:text-left p-4 bg-white rounded-lg border-2 border-orange-100">
+                      <p className="text-xs font-semibold text-gray-500 uppercase mb-1">Matricule</p>
+                      <p className="text-2xl font-bold text-gray-900">{result.employee.matricule}</p>
                     </div>
+
+                    {/* Fonction */}
+                    <div className="text-center md:text-left p-4 bg-white rounded-lg border-2 border-orange-100">
+                      <p className="text-xs font-semibold text-gray-500 uppercase mb-1">Fonction</p>
+                      <p className="text-2xl font-bold text-gray-900">{result.employee.fonction || 'N/A'}</p>
+                    </div>
+
+                    {/* Nom */}
+                    <div className="text-center md:text-left p-4 bg-white rounded-lg border-2 border-orange-100">
+                      <p className="text-xs font-semibold text-gray-500 uppercase mb-1">Nom</p>
+                      <p className="text-2xl font-bold text-gray-900">{result.employee.nom || 'N/A'}</p>
+                    </div>
+
+                    {/* Prénom */}
+                    <div className="text-center md:text-left p-4 bg-white rounded-lg border-2 border-orange-100">
+                      <p className="text-xs font-semibold text-gray-500 uppercase mb-1">Prénom</p>
+                      <p className="text-2xl font-bold text-gray-900">{result.employee.prenom || 'N/A'}</p>
+                    </div>
+                  </div>
+
+                  {/* Full Name Display */}
+                  <div className="text-center p-6 bg-gradient-to-r from-orange-50 to-amber-50 rounded-xl border-2 border-orange-200">
+                    <p className="text-sm font-semibold text-gray-600 uppercase mb-2">Employé</p>
+                    <p className="text-3xl font-bold bg-gradient-to-r from-[#ff8d13] to-[#ff8d13] bg-clip-text text-transparent">
+                      {result.employee.prenom} {result.employee.nom}
+                    </p>
                   </div>
                 </div>
               )}
-              {result && !result.employee && (
-                <div className="text-center">
-                  <XCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
-                  <p className="text-xl font-semibold text-gray-900">Matricule non trouvé</p>
-                </div>
-              )}
-            </CardContent>
-          </Card>
+                </CardContent>
+              </Card>
+            ) : (
+              <Card className="shadow-2xl border-2 border-red-200 bg-red-50">
+                <CardContent className="p-8">
+                  <div className="text-center">
+                    <XCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
+                    <p className="text-xl font-semibold text-gray-900 mb-2">Matricule non trouvé</p>
+                    <p className="text-gray-600">Aucun employé ne correspond à ce code QR.</p>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+          </>
         )}
       </div>
     </div>

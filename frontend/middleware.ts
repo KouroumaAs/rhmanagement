@@ -5,6 +5,11 @@ import type { NextRequest } from 'next/server';
 const PUBLIC_ROUTES = ['/login', '/register', '/forgot-password', '/verify'];
 
 export function middleware(request: NextRequest) {
+  // Middleware désactivé temporairement - AuthContext gère l'authentification
+  // Cela évite les conflits entre cookie (middleware) et localStorage (AuthContext)
+  return NextResponse.next();
+
+  /* Code désactivé pour éviter les boucles de redirection
   const { pathname } = request.nextUrl;
 
   // Vérifier si la route est publique
@@ -29,6 +34,7 @@ export function middleware(request: NextRequest) {
   }
 
   return NextResponse.next();
+  */
 }
 
 // Configurer les chemins pour lesquels le middleware doit s'exécuter

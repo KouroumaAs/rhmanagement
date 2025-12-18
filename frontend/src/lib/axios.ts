@@ -2,7 +2,7 @@ import axios from 'axios';
 
 // Configuration axios
 const axiosInstance = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api',
+  baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://192.168.100.171:4003/api',
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',
@@ -37,8 +37,21 @@ axiosInstance.interceptors.response.use(
         // Token expiré ou invalide
         if (typeof window !== 'undefined') {
           localStorage.removeItem('token');
+          localStorage.removeItem('auth_token');
           localStorage.removeItem('user');
-          window.location.href = '/login';
+
+          // Supprimer le cookie aussi
+          document.cookie = 'token=; path=/; max-age=0';
+
+          // Utiliser replace pour une redirection immédiate sans retour possible
+          window.location.replace('/login');
+
+          // Retourner une promesse rejetée pour stopper l'exécution
+          return Promise.reject({
+            status: 401,
+            message: 'Session expirée. Redirection...',
+            redirecting: true
+          });
         }
       }
 

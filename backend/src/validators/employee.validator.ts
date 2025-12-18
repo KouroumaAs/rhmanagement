@@ -1,16 +1,24 @@
 import { z } from 'zod';
 
+// Helper to transform empty strings to undefined
+const emptyStringToUndefined = z.preprocess((val) => {
+  if (val === '' || val === 'undefined' || val === 'null' || val === null) {
+    return undefined;
+  }
+  return val;
+}, z.string().email('Format d\'email invalide').trim().toLowerCase().optional());
+
 const employeeTypeEnum = z.enum([
-  'PERSONNELS_DSD',
+  'PERSONNEL_DSD',
   'DNTT',
-  'STAGIAIRES_DSD',
-  'BANQUES',
-  'MAISONS_PLAQUE',
-  'DNTT_STAGIAIRES',
-  'DEMARCHEURS',
+  'STAGIAIRE_DSD',
+  'BANQUE',
+  'EMBOUTISSEUR',
+  'DNTT_STAGIAIRE',
+  'DEMARCHEUR',
 ]);
 
-const employeeStatusEnum = z.enum(['ACTIF', 'SUSPENDU', 'TERMINE']);
+const employeeStatusEnum = z.enum(['ACTIF', 'SUSPENDU', 'TERMINE', 'BLOQUE']);
 
 const contractTypeEnum = z.enum(['CDI', 'CDD', 'STAGE']);
 
@@ -33,11 +41,23 @@ export const createEmployeeSchema = z.object({
       .regex(/^(\+224\s?)?6\d{2}(\s?\d{2}){3}$/, 'Format accepté: 6xxxxxxxx ou +224 6xx xx xx xx')
       .trim(),
 
+    email: emptyStringToUndefined,
+
     fonction: z
       .string({ required_error: 'La fonction est requise' })
       .min(2, 'La fonction doit contenir au moins 2 caractères')
       .max(100, 'La fonction doit contenir au maximum 100 caractères')
       .trim(),
+
+    profil: z
+      .union([z.string().trim(), z.literal('')])
+      .optional()
+      .transform((val) => val === '' || val === undefined ? undefined : val),
+
+    diplome: z
+      .union([z.string().trim(), z.literal('')])
+      .optional()
+      .transform((val) => val === '' || val === undefined ? undefined : val),
 
     matricule: z
       .string({ required_error: 'Le matricule est requis' })
@@ -46,14 +66,29 @@ export const createEmployeeSchema = z.object({
 
     type: employeeTypeEnum,
 
-    typeContrat: contractTypeEnum.default('CDD'),
+    sousType: z
+      .union([z.string().trim(), z.literal('')])
+      .optional()
+      .transform((val) => val === '' || val === undefined ? undefined : val),
+
+    typeContrat: contractTypeEnum.optional(),
 
     dateEmbauche: z
-      .string({ required_error: "La date d'embauche est requise" })
-      .refine((date) => !isNaN(Date.parse(date)), {
-        message: "Format de date invalide",
-      })
-      .transform((date) => new Date(date)),
+      .preprocess((val) => {
+        console.log('🔍 [VALIDATOR] dateEmbauche reçu:', val, 'Type:', typeof val);
+        // Transformer les chaînes vides ou invalides en undefined
+        if (!val || val === '' || val === 'undefined' || val === 'null') {
+          console.log('✅ [VALIDATOR] dateEmbauche vide -> undefined');
+          return undefined;
+        }
+        console.log('✅ [VALIDATOR] dateEmbauche valide:', val);
+        return val;
+      }, z.union([
+        z.string().refine((val) => !isNaN(Date.parse(val)), {
+          message: "Format de date invalide",
+        }).transform((val) => new Date(val)),
+        z.undefined()
+      ])),
 
     dateFinContrat: z
       .string()
@@ -63,13 +98,44 @@ export const createEmployeeSchema = z.object({
       .transform((date) => date ? new Date(date) : undefined)
       .optional(),
 
-    photo: z.string().url('URL de photo invalide').optional(),
+    photo: z
+      .union([z.string().url('URL de photo invalide'), z.literal('')])
+      .optional()
+      .transform((val) => val === '' || val === undefined ? undefined : val),
   })
   .refine((data) => {
-    // Si CDD ou STAGE, la date de fin est obligatoire
-    if ((data.typeContrat === 'CDD' || data.typeContrat === 'STAGE') && !data.dateFinContrat) {
+    console.log('🔍 [VALIDATOR REFINE] Données complètes:', JSON.stringify({
+      type: data.type,
+      dateEmbauche: data.dateEmbauche,
+      typeContrat: data.typeContrat
+    }, null, 2));
+    // dateEmbauche est obligatoire uniquement pour PERSONNEL_DSD
+    if (data.type === 'PERSONNEL_DSD' && !data.dateEmbauche) {
+      console.log('❌ [VALIDATOR] dateEmbauche manquante pour PERSONNEL_DSD');
       return false;
     }
+    console.log('✅ [VALIDATOR] Validation dateEmbauche OK');
+    return true;
+  }, {
+    message: "La date d'embauche est obligatoire pour le personnel DSD",
+    path: ['dateEmbauche'],
+  })
+  .refine((data) => {
+    console.log('🔍 [VALIDATOR REFINE dateFinContrat] Type:', data.type, 'TypeContrat:', data.typeContrat, 'dateFinContrat:', data.dateFinContrat);
+
+    // Pour DNTT et DNTT_STAGIAIRE, la date de fin est facultative
+    if (data.type === 'DNTT' || data.type === 'DNTT_STAGIAIRE') {
+      console.log('✅ [VALIDATOR] dateFinContrat facultative pour DNTT');
+      return true;
+    }
+
+    // Si CDD ou STAGE, la date de fin est obligatoire (sauf pour DNTT)
+    if ((data.typeContrat === 'CDD' || data.typeContrat === 'STAGE') && !data.dateFinContrat) {
+      console.log('❌ [VALIDATOR] dateFinContrat manquante pour CDD/STAGE');
+      return false;
+    }
+
+    console.log('✅ [VALIDATOR] Validation dateFinContrat OK');
     return true;
   }, {
     message: "La date de fin de contrat est obligatoire pour les CDD et STAGE",
@@ -109,12 +175,24 @@ export const updateEmployeeSchema = z.object({
       .trim()
       .optional(),
 
+    email: emptyStringToUndefined,
+
     fonction: z
       .string()
       .min(2, 'La fonction doit contenir au moins 2 caractères')
       .max(100, 'La fonction doit contenir au maximum 100 caractères')
       .trim()
       .optional(),
+
+    profil: z
+      .union([z.string().trim(), z.literal('')])
+      .optional()
+      .transform((val) => val === '' || val === undefined ? undefined : val),
+
+    diplome: z
+      .union([z.string().trim(), z.literal('')])
+      .optional()
+      .transform((val) => val === '' || val === undefined ? undefined : val),
 
     matricule: z
       .string()
@@ -123,6 +201,11 @@ export const updateEmployeeSchema = z.object({
       .optional(),
 
     type: employeeTypeEnum.optional(),
+
+    sousType: z
+      .union([z.string().trim(), z.literal('')])
+      .optional()
+      .transform((val) => val === '' || val === undefined ? undefined : val),
 
     typeContrat: contractTypeEnum.optional(),
 
@@ -142,9 +225,25 @@ export const updateEmployeeSchema = z.object({
       .transform((date) => date ? new Date(date) : undefined)
       .optional(),
 
-    photo: z.string().url('URL de photo invalide').optional(),
+    photo: z
+      .union([z.string().url('URL de photo invalide'), z.literal('')])
+      .optional()
+      .transform((val) => val === '' || val === undefined ? undefined : val),
 
     status: employeeStatusEnum.optional(),
+
+    motifSuspension: z
+      .union([z.string().trim(), z.literal('')])
+      .optional()
+      .transform((val) => val === '' || val === undefined ? undefined : val),
+
+    dateFinSuspension: z
+      .string()
+      .refine((date) => !date || !isNaN(Date.parse(date)), {
+        message: "Format de date invalide",
+      })
+      .transform((date) => date ? new Date(date) : undefined)
+      .optional(),
   }),
 });
 

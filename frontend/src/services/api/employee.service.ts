@@ -9,7 +9,7 @@ export type EmployeeType =
   | 'DNTT_STAGIAIRES'
   | 'DEMARCHEURS';
 
-export type EmployeeStatus = 'ACTIF' | 'SUSPENDU' | 'TERMINE';
+export type EmployeeStatus = 'ACTIF' | 'SUSPENDU' | 'TERMINE' | 'BLOQUE';
 
 export interface CreateEmployeeDto {
   nom: string;

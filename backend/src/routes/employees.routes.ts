@@ -4,6 +4,8 @@ import { protect, authorize } from '../middleware/auth';
 import { validate } from '../middleware/validate';
 import { upload } from '../middleware/upload';
 import {
+  createEmployeeSchema,
+  updateEmployeeSchema,
   updateEmployeeStatusSchema,
   employeeQuerySchema,
 } from '../validators';
@@ -40,6 +42,7 @@ router
   .get(validate(employeeQuerySchema), employeesController.getAllEmployees)
   .post(
     upload.single('photo'),
+    validate(createEmployeeSchema),
     employeesController.createEmployee
   );
 
@@ -48,6 +51,7 @@ router
   .get(employeesController.getEmployeeById)
   .put(
     upload.single('photo'),
+    validate(updateEmployeeSchema),
     employeesController.updateEmployee
   )
   .delete(authorize('RH', 'ADMIN'), employeesController.deleteEmployee); // ASSISTANT_RH ne peut pas supprimer

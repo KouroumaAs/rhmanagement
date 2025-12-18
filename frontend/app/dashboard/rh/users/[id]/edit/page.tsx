@@ -34,7 +34,8 @@ export default function EditUserPage() {
     try {
       setIsLoading(true);
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:5000/api/auth/users`, {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://192.168.100.171:4003/api';
+      const response = await fetch(`${apiUrl}/auth/users`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -72,7 +73,8 @@ export default function EditUserPage() {
 
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:5000/api/auth/users/${params.id}`, {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://192.168.100.171:4003/api';
+      const response = await fetch(`${apiUrl}/auth/users/${params.id}`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,

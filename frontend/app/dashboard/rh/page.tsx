@@ -51,11 +51,8 @@ export default function DashboardRH() {
 
       // Calculate stats with safe defaults
       const byType = data.employees?.byType || [];
-      const personnelsDSD = byType.find((t: any) => t._id === 'PERSONNELS_DSD')?.count || 0;
-      const demarcheurs = byType.find((t: any) => t._id === 'DEMARCHEURS')?.count || 0;
-
-      // Calculate contracts expiring soon (30 days)
-      const contractsExpiring = 0; // TODO: Implement logic
+      const personnelsDSD = byType.find((t: any) => t._id === 'PERSONNEL_DSD')?.count || 0;
+      const demarcheurs = byType.find((t: any) => t._id === 'DEMARCHEUR')?.count || 0;
 
       setStats({
         totalEmployees: data.employees?.total || 0,
@@ -63,7 +60,7 @@ export default function DashboardRH() {
         personnelsDSD,
         demarcheurs,
         badgesEnAttente: data.badges?.enAttente || 0,
-        contractsExpiring,
+        contractsExpiring: data.employees?.contractsExpiringSoon || 0,
         totalUsers: data.users?.total || 0,
         activeUsers: data.users?.active || 0,
         inactiveUsers: data.users?.inactive || 0,
@@ -137,23 +134,23 @@ export default function DashboardRH() {
 
   const getTypeBadge = (type: string) => {
     const typeLabels: Record<string, string> = {
-      PERSONNELS_DSD: "Personnels DSD",
+      PERSONNEL_DSD: "Personnels DSD",
       DNTT: "DNTT",
-      STAGIAIRES_DSD: "Stagiaires DSD",
-      BANQUES: "Banques",
-      MAISONS_PLAQUE: "Maisons de Plaque",
-      DNTT_STAGIAIRES: "DNTT Stagiaires",
-      DEMARCHEURS: "Démarcheurs",
+      STAGIAIRE_DSD: "Stagiaires DSD",
+      BANQUE: "Banques",
+      EMBOUTISSEUR: "Emboutisseurs",
+      DNTT_STAGIAIRE: "DNTT Stagiaires",
+      DEMARCHEUR: "Démarcheurs",
     };
 
     const colors: Record<string, string> = {
-      PERSONNELS_DSD: "bg-[#ff8d13]",
+      PERSONNEL_DSD: "bg-[#ff8d13]",
       DNTT: "bg-blue-600",
-      STAGIAIRES_DSD: "bg-green-600",
-      BANQUES: "bg-purple-600",
-      MAISONS_PLAQUE: "bg-pink-600",
-      DNTT_STAGIAIRES: "bg-teal-600",
-      DEMARCHEURS: "bg-amber-600",
+      STAGIAIRE_DSD: "bg-green-600",
+      BANQUE: "bg-purple-600",
+      EMBOUTISSEUR: "bg-pink-600",
+      DNTT_STAGIAIRE: "bg-teal-600",
+      DEMARCHEUR: "bg-amber-600",
     };
 
     return (
@@ -465,7 +462,7 @@ export default function DashboardRH() {
                   </div>
                   <div>
                     <div className="font-bold">Contrats Expirés</div>
-                    <p className="text-sm font-normal text-white/90 mt-1">0 contrats à renouveler</p>
+                    <p className="text-sm font-normal text-white/90 mt-1">{stats.contractsExpiring} contrat{stats.contractsExpiring !== 1 ? 's' : ''} à renouveler</p>
                   </div>
                 </CardTitle>
               </CardHeader>

@@ -1,15 +1,15 @@
 import { z } from 'zod';
 
-const badgeStatusEnum = z.enum(['EN_ATTENTE', 'IMPRIME', 'ANNULE']);
+const badgeStatusEnum = z.enum(['EN_ATTENTE', 'IMPRIME', 'REIMPRESSION']);
 
 const badgeTypeEnum = z.enum([
-  'PERSONNELS_DSD',
+  'PERSONNEL_DSD',
   'DNTT',
-  'STAGIAIRES_DSD',
-  'BANQUES',
-  'MAISONS_PLAQUE',
-  'DNTT_STAGIAIRES',
-  'DEMARCHEURS',
+  'STAGIAIRE_DSD',
+  'BANQUE',
+  'EMBOUTISSEUR',
+  'DNTT_STAGIAIRE',
+  'DEMARCHEUR',
 ]);
 
 export const badgeQuerySchema = z.object({

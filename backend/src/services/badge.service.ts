@@ -304,17 +304,42 @@ class BadgeService {
 
     console.log('🔍 Vérification du matricule:', matricule);
 
-    // Find employee by matricule
-    const employee = await Employee.findOne({ matricule });
+    // Find employee by matricule (case-insensitive search)
+    const employee = await Employee.findOne({
+      matricule: { $regex: new RegExp(`^${matricule.trim()}$`, 'i') }
+    });
 
     if (!employee) {
-      return {};
+      console.log('❌ Aucun employé trouvé avec le matricule:', matricule);
+      // Chercher tous les matricules pour déboguer
+      const allEmployees = await Employee.find({}).select('matricule').limit(10);
+      console.log('📋 Exemples de matricules en base:', allEmployees.map(e => e.matricule));
+      return {
+        valid: false,
+        status: 'INVALID',
+      };
     }
 
-    // Return only matricule
+    console.log('✅ Employé trouvé:', {
+      matricule: employee.matricule,
+      nom: employee.nom,
+      prenom: employee.prenom,
+      status: employee.status
+    });
+
+    // Déterminer si le badge est valide (employé ACTIF uniquement)
+    const isValid = employee.status === 'ACTIF';
+
+    // Return employee details
     return {
+      valid: isValid,
+      status: employee.status,
       employee: {
         matricule: employee.matricule,
+        nom: employee.nom,
+        prenom: employee.prenom,
+        fonction: employee.fonction,
+        status: employee.status,
       },
     };
   };
@@ -392,7 +417,7 @@ class BadgeService {
 
     const [total, pending, printed, cancelled, printedToday, byType, recentPrinted] = await Promise.all([
       Badge.countDocuments(),
-      Badge.countDocuments({ status: 'EN_ATTENTE' }),
+      Badge.countDocuments({ status: { $in: ['EN_ATTENTE', 'REIMPRESSION'] } }),
       Badge.countDocuments({ status: 'IMPRIME' }),
       Badge.countDocuments({ status: 'ANNULE' }),
       Badge.countDocuments({

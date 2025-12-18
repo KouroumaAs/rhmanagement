@@ -4,7 +4,7 @@ import type { ApiResponse } from "@/src/types";
 /**
  * Base API configuration
  */
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://192.168.100.55:4003/api";
 
 /**
  * Custom error class for API errors
@@ -111,6 +111,23 @@ async function fetchAPI<T>(
 
         // Log detailed error in console
         console.error("❌ API Error:", apiError.getDebugInfo());
+
+        // 🔐 REDIRECTION AUTOMATIQUE si token expiré ou invalide (401)
+        if (response.status === 401 && typeof window !== 'undefined') {
+          console.log('🔒 Token expiré ou invalide - Redirection vers /login');
+          localStorage.removeItem('token');
+          localStorage.removeItem('auth_token');
+          localStorage.removeItem('user');
+
+          // Supprimer le cookie aussi
+          document.cookie = 'token=; path=/; max-age=0';
+
+          // Utiliser replace pour une redirection immédiate sans retour possible
+          window.location.replace('/login');
+
+          // Retourner une promesse qui ne se résout jamais pour stopper l'exécution
+          return new Promise(() => {}) as any;
+        }
 
         throw apiError;
       }
@@ -271,6 +288,24 @@ export async function upload<T>(
       if (!response.ok) {
         const apiError = new ApiError(response.status, data.message || "Une erreur est survenue", data);
         console.error("❌ Upload Error:", apiError.getDebugInfo());
+
+        // 🔐 REDIRECTION AUTOMATIQUE si token expiré ou invalide (401)
+        if (response.status === 401 && typeof window !== 'undefined') {
+          console.log('🔒 Token expiré lors de l\'upload - Redirection vers /login');
+          localStorage.removeItem('token');
+          localStorage.removeItem('auth_token');
+          localStorage.removeItem('user');
+
+          // Supprimer le cookie aussi
+          document.cookie = 'token=; path=/; max-age=0';
+
+          // Utiliser replace pour une redirection immédiate sans retour possible
+          window.location.replace('/login');
+
+          // Retourner une promesse qui ne se résout jamais pour stopper l'exécution
+          return new Promise(() => {}) as any;
+        }
+
         throw apiError;
       }
 

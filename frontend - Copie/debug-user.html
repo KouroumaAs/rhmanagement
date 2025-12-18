@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug User</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        pre {
+            background: #f4f4f4;
+            padding: 15px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+        .info {
+            margin: 10px 0;
+            padding: 10px;
+            background: #e3f2fd;
+            border-left: 4px solid #2196F3;
+        }
+        .error {
+            margin: 10px 0;
+            padding: 10px;
+            background: #ffebee;
+            border-left: 4px solid #f44336;
+        }
+        .success {
+            margin: 10px 0;
+            padding: 10px;
+            background: #e8f5e9;
+            border-left: 4px solid #4caf50;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Debug - Utilisateur Connecté</h1>
+
+        <h2>Token JWT:</h2>
+        <pre id="token"></pre>
+
+        <h2>Utilisateur:</h2>
+        <pre id="user"></pre>
+
+        <h2>Rôle:</h2>
+        <div id="role"></div>
+
+        <h2>Headers de la requête:</h2>
+        <div id="headers"></div>
+
+        <button onclick="testRegister()" style="padding: 10px 20px; background: #2196F3; color: white; border: none; border-radius: 4px; cursor: pointer; margin-top: 20px;">
+            Tester la requête /register
+        </button>
+
+        <div id="result" style="margin-top: 20px;"></div>
+    </div>
+
+    <script>
+        // Afficher le token
+        const token = localStorage.getItem('token');
+        document.getElementById('token').textContent = token || '❌ Aucun token trouvé';
+
+        // Afficher l'utilisateur
+        const userStr = localStorage.getItem('user');
+        const user = userStr ? JSON.parse(userStr) : null;
+        document.getElementById('user').textContent = userStr || '❌ Aucun utilisateur trouvé';
+
+        // Afficher le rôle
+        if (user) {
+            const roleClass = user.role === 'ADMIN' || user.role === 'RH' ? 'success' : 'error';
+            document.getElementById('role').innerHTML = `
+                <div class="${roleClass}">
+                    <strong>Rôle actuel:</strong> ${user.role}
+                    <br>
+                    <strong>Autorisé pour /register:</strong> ${user.role === 'ADMIN' || user.role === 'RH' ? '✅ OUI' : '❌ NON'}
+                </div>
+            `;
+        } else {
+            document.getElementById('role').innerHTML = '<div class="error">❌ Utilisateur non connecté</div>';
+        }
+
+        // Afficher les headers
+        if (token) {
+            document.getElementById('headers').innerHTML = `
+                <div class="info">
+                    <strong>Authorization:</strong> Bearer ${token.substring(0, 20)}...
+                </div>
+            `;
+        } else {
+            document.getElementById('headers').innerHTML = '<div class="error">❌ Pas de header Authorization</div>';
+        }
+
+        // Tester la requête
+        async function testRegister() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = '<div class="info">⏳ Test en cours...</div>';
+
+            try {
+                const response = await fetch('http://192.168.100.171:5000/api/auth/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + token
+                    },
+                    body: JSON.stringify({
+                        nom: 'Test',
+                        prenom: 'User',
+                        email: 'test@test.com',
+                        telephone: '622334455',
+                        password: 'password123',
+                        role: 'RH'
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    resultDiv.innerHTML = `<div class="success">✅ Succès: ${JSON.stringify(data, null, 2)}</div>`;
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="error">
+                            <strong>❌ Erreur ${response.status}:</strong>
+                            <pre>${JSON.stringify(data, null, 2)}</pre>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">❌ Erreur: ${error.message}</div>`;
+            }
+        }
+    </script>
+</body>
+</html>

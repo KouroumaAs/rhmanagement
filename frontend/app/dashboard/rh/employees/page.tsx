@@ -263,7 +263,7 @@ export default function EmployeesPage() {
     }
   };
 
-  const handleUpdateStatus = async (employeeId: string, newStatus: 'ACTIF' | 'SUSPENDU' | 'TERMINE') => {
+  const handleUpdateStatus = async (employeeId: string, newStatus: 'ACTIF' | 'SUSPENDU' | 'TERMINE' | 'BLOQUE') => {
     const employee = employees.find(e => e.id === employeeId);
 
     if (!employee) return;
@@ -282,7 +282,8 @@ export default function EmployeesPage() {
     const statusLabels = {
       ACTIF: "Actif",
       SUSPENDU: "Suspendu",
-      TERMINE: "Terminé"
+      TERMINE: "Terminé",
+      BLOQUE: "Bloqué"
     };
 
     const confirmed = confirm(
@@ -394,6 +395,7 @@ export default function EmployeesPage() {
       ACTIF: { label: "Actif", className: "bg-green-500 text-white font-semibold" },
       SUSPENDU: { label: "Suspendu", className: "bg-orange-500 text-white font-semibold" },
       TERMINE: { label: "Terminé", className: "bg-gray-500 text-white font-semibold" },
+      BLOQUE: { label: "Bloqué", className: "bg-red-600 text-white font-semibold" },
     };
     const variant = variants[status] || variants.TERMINE;
     return (
@@ -585,10 +587,10 @@ export default function EmployeesPage() {
                 </div>
                 <div>
                   <Select value={filterType} onValueChange={setFilterType}>
-                    <SelectTrigger className="h-11 border-2 border-gray-200 focus:border-[#ff8d13] rounded-xl">
+                    <SelectTrigger className="border-[#fed7aa]">
                       <SelectValue placeholder="Type" />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="bg-white">
                       <SelectItem value="TOUS">Tous les types</SelectItem>
                       <SelectItem value="PERSONNEL_DSD">Personnel DSD</SelectItem>
                       <SelectItem value="DNTT">DNTT</SelectItem>
@@ -601,10 +603,10 @@ export default function EmployeesPage() {
                 </div>
                 <div>
                   <Select value={filterStatus} onValueChange={setFilterStatus}>
-                    <SelectTrigger className="h-11 border-2 border-gray-200 focus:border-[#ff8d13] rounded-xl">
+                    <SelectTrigger className="border-[#fed7aa]">
                       <SelectValue placeholder="Statut" />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="bg-white">
                       <SelectItem value="TOUS">Tous les statuts</SelectItem>
                       <SelectItem value="ACTIF">Actifs</SelectItem>
                       <SelectItem value="SUSPENDU">Suspendus</SelectItem>
@@ -735,7 +737,12 @@ export default function EmployeesPage() {
                     </TableRow>
                   ) : (
                     employees.map((employee) => (
-                      <TableRow key={employee.id} className="border-b border-orange-50 hover:bg-[#fff5ed]/50 transition-colors">
+                      <TableRow
+                        key={employee.id}
+                        className={`border-b border-orange-50 hover:bg-[#fff5ed]/50 transition-colors ${
+                          employee.status === 'BLOQUE' ? 'bg-gray-100 opacity-60' : ''
+                        }`}
+                      >
                         <TableCell>
                           <button
                             type="button"
@@ -970,15 +977,37 @@ export default function EmployeesPage() {
                                 Modifier
                               </Button>
                             </Link>
-                            {user?.role !== 'ASSISTANT_RH' && (
+                            {employee.status === 'BLOQUE' ? (
                               <Button
                                 size="sm"
                                 variant="outline"
-                                className="border-red-200 text-red-600 hover:bg-red-50 gap-2"
-                                onClick={() => handleDelete(employee.id)}
+                                className="border-green-200 text-green-600 hover:bg-green-50 gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                                onClick={() => handleUpdateStatus(employee.id, 'ACTIF')}
+                                disabled={user?.role !== 'ADMIN' && user?.role !== 'RH'}
+                                title={
+                                  (user?.role !== 'ADMIN' && user?.role !== 'RH')
+                                    ? 'Seuls les RH et ADMIN peuvent débloquer des employés'
+                                    : 'Débloquer cet employé et le remettre actif'
+                                }
                               >
-                                <Trash2 className="w-4 h-4" />
-                                Supprimer
+                                <CheckCircle className="w-4 h-4" />
+                                Débloquer
+                              </Button>
+                            ) : (
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="border-red-200 text-red-600 hover:bg-red-50 gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                                onClick={() => handleUpdateStatus(employee.id, 'BLOQUE')}
+                                disabled={user?.role !== 'ADMIN' && user?.role !== 'RH'}
+                                title={
+                                  (user?.role !== 'ADMIN' && user?.role !== 'RH')
+                                    ? 'Seuls les RH et ADMIN peuvent bloquer des employés'
+                                    : 'Bloquer cet employé'
+                                }
+                              >
+                                <Ban className="w-4 h-4" />
+                                Bloquer
                               </Button>
                             )}
                           </div>

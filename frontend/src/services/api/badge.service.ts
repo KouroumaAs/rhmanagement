@@ -1,6 +1,6 @@
 import axios from '@/src/lib/axios';
 
-export type BadgeStatus = 'EN_ATTENTE' | 'IMPRIME' | 'LIVRE' | 'ANNULE';
+export type BadgeStatus = 'EN_ATTENTE' | 'IMPRIME' | 'REIMPRESSION';
 
 export interface PrintBadgeDto {
   employeeId: string;

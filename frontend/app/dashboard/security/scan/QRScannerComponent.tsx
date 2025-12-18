@@ -22,6 +22,7 @@ export default function QRScannerComponent() {
   const [isMounted, setIsMounted] = useState(false);
   const [cameras, setCameras] = useState<MediaDeviceInfo[]>([]);
   const [selectedCamera, setSelectedCamera] = useState<string>("");
+  const [scannerStatus, setScannerStatus] = useState<string>("Inactif");
   const videoRef = useRef<HTMLVideoElement>(null);
   const codeReaderRef = useRef<BrowserMultiFormatReader | null>(null);
   const isMountedRef = useRef<boolean>(true);
@@ -61,42 +62,46 @@ export default function QRScannerComponent() {
       logger.log('🔍 Type:', typeof qrCode);
 
       const response = await badgesService.verify(qrCode);
-      logger.log('✅ Réponse API:', response);
-      const data = response.data;
+      logger.log('✅ Réponse API complète:', response);
 
       // Vérifier à nouveau si le composant est toujours monté avant de mettre à jour l'état
       if (!isMountedRef.current) return;
 
-      if (data) {
+      // Les données sont directement dans response, pas dans response.data
+      if (response) {
+        logger.log('📊 Données extraites - valid:', response.valid, 'status:', response.status, 'employee:', response.employee);
+
         // Adapter les données de l'API au format VerificationResult
         const adaptedResult: VerificationResult = {
-          verified: data.valid,
-          message: data.valid ? "Badge valide" : "Badge invalide",
-          employee: data.employee ? {
-            matricule: data.employee.matricule || '',
-            prenom: data.employee.name?.split(' ')[0] || '',
-            nom: data.employee.name?.split(' ').slice(1).join(' ') || '',
-            status: data.status === 'ACTIVE' ? 'ACTIF' : data.status === 'EXPIRED' ? 'TERMINE' : 'SUSPENDU',
-            telephone: data.employee.telephone,
-            fonction: data.employee.fonction,
+          verified: response.valid || false,
+          message: response.valid ? "Badge valide" : "Badge invalide",
+          employee: response.employee ? {
+            matricule: response.employee.matricule || '',
+            prenom: response.employee.prenom || '',
+            nom: response.employee.nom || '',
+            status: response.employee.status || 'ACTIF',
+            fonction: response.employee.fonction,
             dateFinContrat: undefined
           } : undefined
         };
-        
+
+        logger.log('✅ Résultat adapté:', adaptedResult);
         setVerificationResult(adaptedResult);
 
-        if (data.valid) {
+        if (response.valid) {
           toast({
             title: "✅ Badge Valide",
-            description: `Accès autorisé - Statut: ${data.status}`,
+            description: `Accès autorisé - Statut: ${response.employee?.status || 'ACTIF'}`,
           });
         } else {
           toast({
             variant: "destructive",
             title: "❌ Badge Invalide",
-            description: "Ce badge ne peut pas être utilisé",
+            description: response.employee ? `L'employé a le statut: ${response.employee.status}` : "Ce badge n'existe pas dans le système",
           });
         }
+      } else {
+        logger.error('❌ Réponse vide ou invalide');
       }
     } catch (error: any) {
       logger.error('Erreur vérification:', error);
@@ -130,22 +135,45 @@ export default function QRScannerComponent() {
   const startScanning = async (cameraId?: string) => {
     try {
       logger.log('📷 Démarrage du scanner...');
+      console.log('📷 Démarrage du scanner...'); // Log console aussi
+
+      // Alert visuelle pour mobile
+      setScannerStatus("Initialisation...");
+      toast({
+        title: "📷 Initialisation...",
+        description: "Démarrage de la caméra",
+      });
+
       if (!codeReaderRef.current) {
         codeReaderRef.current = new BrowserMultiFormatReader();
+        logger.log('📷 BrowserMultiFormatReader créé');
+        console.log('📷 BrowserMultiFormatReader créé');
       }
+
+      setScannerStatus("Recherche des caméras...");
+      logger.log('📷 Tentative de liste des caméras...');
+      console.log('📷 Tentative de liste des caméras...');
 
       const videoInputDevices = await codeReaderRef.current.listVideoInputDevices();
       logger.log('📷 Caméras disponibles:', videoInputDevices.length);
       logger.log('📷 Liste des caméras:', videoInputDevices);
+      console.log('📷 Caméras disponibles:', videoInputDevices.length);
+      console.log('📷 Liste des caméras:', videoInputDevices);
 
       if (videoInputDevices.length === 0) {
         toast({
           variant: "destructive",
-          title: "Erreur",
-          description: "Aucune caméra disponible",
+          title: "❌ Erreur",
+          description: "Aucune caméra disponible. Vérifiez les permissions.",
         });
         return;
       }
+
+      // Notification du nombre de caméras trouvées
+      toast({
+        title: "✅ Caméras trouvées",
+        description: `${videoInputDevices.length} caméra(s) détectée(s)`,
+      });
 
       setCameras(videoInputDevices);
 
@@ -175,22 +203,35 @@ export default function QRScannerComponent() {
 
       logger.log('📷 Caméra sélectionnée:', selectedDeviceId);
       logger.log('📷 Démarrage de la détection...');
+      console.log('📷 Caméra sélectionnée:', selectedDeviceId);
 
       // Vérifier que l'élément vidéo existe avant de l'utiliser (correction problème #17)
       if (!videoRef.current) {
         toast({
           variant: "destructive",
-          title: "Erreur",
+          title: "❌ Erreur",
           description: "Élément vidéo non disponible",
         });
         setIsScanning(false);
         return;
       }
 
+      // Toast pour indiquer que le scan est prêt
+      setScannerStatus("✅ Prêt - Scannez le QR code");
+      toast({
+        title: "📸 Scanner prêt !",
+        description: "Présentez le QR code devant la caméra",
+      });
+
       codeReaderRef.current.decodeFromVideoDevice(
         selectedDeviceId,
         videoRef.current,
         (result, error) => {
+          // Gérer les erreurs du scanner
+          if (error && error.name !== 'NotFoundException') {
+            console.error('❌ Erreur scanner ZXing:', error);
+          }
+
           // Vérifier si le composant est toujours monté
           if (!isMountedRef.current) {
             logger.warn('⚠️ QR détecté mais composant démonté');
@@ -204,25 +245,71 @@ export default function QRScannerComponent() {
           }
 
           if (result) {
-            const qrCode = result.getText().trim();
-            logger.log('✅ QR Code scanné avec succès:', qrCode);
-            logger.log('✅ Longueur:', qrCode.length);
+            setScannerStatus("🎯 QR Code détecté !");
+            const scannedText = result.getText().trim();
+            logger.log('========================================');
+            logger.log('✅ QR Code scanné avec succès:', scannedText);
+            logger.log('✅ Longueur:', scannedText.length);
+            logger.log('✅ Type:', typeof scannedText);
+            console.log('✅ QR Code scanné:', scannedText); // Log aussi dans console normale
+
+            // Extraire le matricule si c'est une URL, sinon utiliser le texte brut
+            let matricule = scannedText;
+            try {
+              // Vérifier si c'est une URL
+              logger.log('🔍 Vérification si c\'est une URL...');
+              console.log('🔍 Contient verify?qr=:', scannedText.includes('verify?qr='));
+              console.log('🔍 Contient verify/?qr=:', scannedText.includes('verify/?qr='));
+
+              if (scannedText.includes('verify?qr=') || scannedText.includes('verify/?qr=')) {
+                logger.log('✅ URL détectée, extraction du paramètre qr...');
+                const url = new URL(scannedText);
+                const qrParam = url.searchParams.get('qr');
+                logger.log('📋 Paramètre qr extrait:', qrParam);
+                console.log('📋 Paramètre qr extrait:', qrParam);
+                if (qrParam) {
+                  matricule = qrParam;
+                  logger.log('✅ Matricule extrait de l\'URL:', matricule);
+                  console.log('✅ Matricule extrait:', matricule);
+                } else {
+                  logger.log('⚠️ Paramètre qr vide ou null');
+                  console.warn('⚠️ Paramètre qr vide');
+                }
+              } else {
+                logger.log('ℹ️ Pas une URL verify, utilisation du texte brut comme matricule');
+                console.log('ℹ️ Texte brut utilisé:', scannedText);
+              }
+            } catch (e) {
+              logger.error('❌ Erreur lors du parsing de l\'URL:', e);
+              console.error('❌ Erreur parsing:', e);
+              logger.log('⚠️ Utilisation du texte brut comme matricule');
+            }
+
+            logger.log('🎯 Matricule final à vérifier:', matricule);
+            console.log('🎯 MATRICULE FINAL:', matricule);
+            logger.log('========================================');
 
             // Arrêter le scan immédiatement pour éviter les scans multiples
             stopScanning();
 
             toast({
               title: "✅ QR Code détecté !",
-              description: `Code: ${qrCode}`,
+              description: `Code: ${matricule}`,
             });
 
-            verifyQRCode(qrCode);
+            logger.log('🚀 Appel de verifyQRCode avec:', matricule);
+            console.log('🚀 Vérification du matricule:', matricule);
+            verifyQRCode(matricule);
           }
         }
       );
       logger.log('📷 Scanner actif et en attente de QR code...');
+      console.log('📷 Scanner actif et en attente de QR code...');
     } catch (error: any) {
-      logger.error('Erreur scan:', error);
+      logger.error('❌ Erreur scan:', error);
+      console.error('❌ Erreur scan complète:', error);
+      console.error('❌ Message erreur:', error.message);
+      console.error('❌ Stack:', error.stack);
       toast({
         variant: "destructive",
         title: "Erreur de scan",
@@ -251,6 +338,7 @@ export default function QRScannerComponent() {
       }
 
       setIsScanning(false);
+      setScannerStatus("Inactif");
       isProcessingRef.current = false;
       logger.log('✅ Scanner arrêté');
     } catch (error) {
@@ -321,6 +409,13 @@ export default function QRScannerComponent() {
               </CardHeader>
               <CardContent className="p-6">
                 <div className="space-y-4">
+                  {/* Affichage du statut du scanner */}
+                  <div className="text-center p-3 bg-blue-50 rounded-lg border border-blue-200">
+                    <p className="text-sm font-semibold text-blue-900">
+                      📡 Statut: <span className="text-blue-600">{scannerStatus}</span>
+                    </p>
+                  </div>
+
                   {!isScanning ? (
                     <Button
                       onClick={() => startScanning()}

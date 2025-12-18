@@ -21,8 +21,9 @@ const employeeSchema = new Schema<IEmployee>(
     },
     email: {
       type: String,
-      required: [true, 'L\'email est requis'],
+      required: false, // Email facultatif pour tous les employés
       unique: true,
+      sparse: true, // Permet d'avoir des valeurs null/undefined pour unique
       trim: true,
       lowercase: true,
       match: [/^[^\s@]+@[^\s@]+\.[^\s@]+$/, 'Format d\'email invalide'],
@@ -69,20 +70,23 @@ const employeeSchema = new Schema<IEmployee>(
     sousType: {
       type: String,
       default: null,
-      // Pour BANQUE: TTLB, GLOBAL, I_CRDIGITAL
+      // Pour BANQUE: TTLB, GLOBAL, CRDIGITAL
       // Pour EMBOUTISSEUR: nom de l'emboutisseur
     },
     status: {
       type: String,
       enum: {
-        values: ['ACTIF', 'SUSPENDU', 'TERMINE'],
+        values: ['ACTIF', 'SUSPENDU', 'TERMINE', 'BLOQUE'],
         message: '{VALUE} n\'est pas un statut valide',
       },
       default: 'ACTIF',
     },
     dateEmbauche: {
       type: Date,
-      required: [true, "La date d'embauche est requise"],
+      required: function (this: IEmployee) {
+        // Date d'embauche obligatoire uniquement pour PERSONNEL_DSD
+        return this.type === 'PERSONNEL_DSD';
+      },
     },
     typeContrat: {
       type: String,
@@ -90,11 +94,16 @@ const employeeSchema = new Schema<IEmployee>(
         values: ['CDI', 'CDD', 'STAGE'],
         message: '{VALUE} n\'est pas un type de contrat valide',
       },
-      default: 'CDD',
+      required: function (this: IEmployee) {
+        // Type de contrat facultatif pour DNTT et DNTT_STAGIAIRE
+        return this.type !== 'DNTT' && this.type !== 'DNTT_STAGIAIRE';
+      },
     },
     dateFinContrat: {
       type: Date,
       required: function (this: IEmployee) {
+        // Facultatif pour DNTT et DNTT_STAGIAIRE
+        if (this.type === 'DNTT' || this.type === 'DNTT_STAGIAIRE') return false;
         // Date de fin requise pour CDD et STAGE, pas pour CDI
         return this.typeContrat === 'CDD' || this.typeContrat === 'STAGE';
       },
@@ -102,6 +111,8 @@ const employeeSchema = new Schema<IEmployee>(
         validator: function (this: IEmployee, value: Date) {
           // Si pas de valeur et CDI, c'est valide
           if (!value && this.typeContrat === 'CDI') return true;
+          // Facultatif pour DNTT
+          if (!value && (this.type === 'DNTT' || this.type === 'DNTT_STAGIAIRE')) return true;
           // Si pas de dateEmbauche, skip la validation (pendant les mises à jour partielles)
           if (!this.dateEmbauche) return true;
           // Si CDD ou STAGE, la date de fin doit être après la date d'embauche

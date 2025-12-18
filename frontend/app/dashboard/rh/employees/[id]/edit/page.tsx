@@ -7,17 +7,22 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeft, Save } from "lucide-react";
+import { ArrowLeft, Save, Upload } from "lucide-react";
 import Link from "next/link";
 import { useToast } from "@/src/hooks/use-toast";
 import { employeeService } from "@/src/services/employee.service";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { getImageUrl } from "@/src/constants";
 
 export default function EditEmployeePage() {
   const params = useParams();
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+  const [currentPhoto, setCurrentPhoto] = useState<string | null>(null);
   const { toast } = useToast();
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL;
 
   const [formData, setFormData] = useState({
     nom: "",
@@ -32,7 +37,70 @@ export default function EditEmployeePage() {
     status: "ACTIF",
     motifSuspension: "",
     dateFinSuspension: "",
+    photo: null as File | null,
   });
+
+  // Liste des emboutisseurs avec leurs préfixes
+  const emboutisseursMap: Record<string, string> = {
+    'SUPER_PLAQUE': 'SP',
+    'EPIG_SARL': 'ES',
+    'BARRY_ET_FILS': 'BEF',
+    'MK_GUINEE_PLAQUE': 'MKGP',
+    'ISB_PLA': 'IP',
+    'AKD': 'AKD',
+    'TRANSIT_224': 'T2',
+    'S': 'S',
+    'GALAXIE_GUINEE': 'GG',
+    'KAECK_CONTEQUE': 'KAC',
+    'BOLIBANA_SARLU': 'BS',
+    'BILHAQ_SIGNALISATION': 'BIS',
+    'FOURA_ET_FILS': 'FEF',
+    'PROFUCO_PLAQUE': 'PP',
+    'AZ_PROJET': 'AP',
+    'SOMBORI_BONFI': 'SB',
+    'SOGBE_GENERALE_SARL': 'SGS',
+    'AKIM': 'A',
+    'PLAQUE_DE_GUINEE': 'PDG',
+    'GOLFE_DE_GUINEE': 'GDG',
+    'BISSIKRI_PLAQUE': 'BP',
+  };
+
+  // Fonction pour obtenir le préfixe de matricule selon le type
+  const getMatriculePrefix = (typeEmploye: string, sousType?: string): string => {
+    switch (typeEmploye) {
+      case 'PERSONNEL_DSD':
+        return 'DSD';
+      case 'STAGIAIRE_DSD':
+        return 'Stage';
+      case 'DNTT':
+        return 'DNTT';
+      case 'DNTT_STAGIAIRE':
+        return 'DNTTST';
+      case 'DEMARCHEUR':
+        return 'CDDO';
+      case 'BANQUE':
+        if (sousType === 'TTLB') return 'TTLB';
+        if (sousType === 'GLOBAL') return 'GL';
+        if (sousType === 'CRDIGITAL') return 'CRD';
+        return 'BANQUE';
+      case 'EMBOUTISSEUR':
+        return sousType ? emboutisseursMap[sousType] || '' : '';
+      default:
+        return 'DSD';
+    }
+  };
+
+  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setFormData({ ...formData, photo: file });
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPhotoPreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   useEffect(() => {
     if (params.id && typeof params.id === 'string') {
@@ -86,7 +154,13 @@ export default function EditEmployeePage() {
         status: employee.status || "ACTIF",
         motifSuspension: employee.motifSuspension || "",
         dateFinSuspension: employee.dateFinSuspension ? new Date(employee.dateFinSuspension).toISOString().split('T')[0] : "",
+        photo: null,
       });
+
+      // Stocker la photo actuelle
+      if (employee.photo) {
+        setCurrentPhoto(employee.photo);
+      }
     } catch (error: any) {
       console.error('Erreur chargement employé:', error);
       toast({
@@ -120,30 +194,82 @@ export default function EditEmployeePage() {
         }
       }
 
-      const employeeData: any = {
-        nom: formData.nom,
-        prenom: formData.prenom,
-        telephone: formData.telephone,
-        email: formData.email,
-        fonction: formData.fonction,
-        matricule: `DSD${formData.matricule}`,
-        type: formData.typeEmploye,
-        status: formData.status,
-        dateEmbauche: formData.dateEmbauche,
-        dateFinContrat: formData.dateFinContrat || undefined,
-      };
+      // Générer le matricule avec le bon préfixe
+      const prefix = getMatriculePrefix(formData.typeEmploye, formData.sousType);
+      const fullMatricule = prefix ? `${prefix}${formData.matricule}` : formData.matricule;
+
+      // Créer FormData pour envoyer les données avec la photo
+      const formDataToSend = new FormData();
+      formDataToSend.append('nom', formData.nom);
+      formDataToSend.append('prenom', formData.prenom);
+      formDataToSend.append('telephone', formData.telephone);
+
+      // N'envoyer l'email que s'il est fourni et non vide
+      if (formData.email && formData.email.trim() !== '') {
+        formDataToSend.append('email', formData.email);
+      }
+
+      formDataToSend.append('fonction', formData.fonction);
+
+      if (formData.profil) {
+        formDataToSend.append('profil', formData.profil);
+      }
+
+      if (formData.diplome) {
+        formDataToSend.append('diplome', formData.diplome);
+      }
+
+      formDataToSend.append('matricule', fullMatricule);
+      formDataToSend.append('type', formData.typeEmploye);
+
+      if (formData.sousType) {
+        formDataToSend.append('sousType', formData.sousType);
+      }
+
+      formDataToSend.append('status', formData.status);
+      formDataToSend.append('typeContrat', formData.typeContrat);
+
+      // Envoyer dateEmbauche seulement si elle est fournie et non vide
+      if (formData.dateEmbauche && formData.dateEmbauche.trim() !== '') {
+        formDataToSend.append('dateEmbauche', formData.dateEmbauche);
+      }
+
+      if (formData.typeContrat !== 'CDI' && formData.dateFinContrat) {
+        formDataToSend.append('dateFinContrat', formData.dateFinContrat);
+      } else if (formData.typeContrat === 'CDI') {
+        // Envoyer null pour effacer la date de fin si on passe à CDI
+        formDataToSend.append('dateFinContrat', '');
+      }
 
       // Ajouter les champs de suspension seulement si le statut est SUSPENDU
       if (formData.status === "SUSPENDU") {
-        employeeData.motifSuspension = formData.motifSuspension || null;
-        employeeData.dateFinSuspension = formData.dateFinSuspension || null;
-      } else {
-        // Réinitialiser les champs de suspension si le statut n'est plus SUSPENDU
-        employeeData.motifSuspension = null;
-        employeeData.dateFinSuspension = null;
+        if (formData.motifSuspension) {
+          formDataToSend.append('motifSuspension', formData.motifSuspension);
+        }
+        if (formData.dateFinSuspension) {
+          formDataToSend.append('dateFinSuspension', formData.dateFinSuspension);
+        }
       }
 
-      await employeeService.update(params.id as string, employeeData);
+      // Ajouter la nouvelle photo si elle existe
+      if (formData.photo) {
+        formDataToSend.append('photo', formData.photo);
+      }
+
+      // Envoyer avec fetch au lieu du service
+      const response = await fetch(`${apiUrl}/employees/${params.id}`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        },
+        body: formDataToSend,
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.message || 'Erreur lors de la modification');
+      }
 
       toast({
         title: "Employé modifié",
@@ -163,8 +289,10 @@ export default function EditEmployeePage() {
 
       // Erreur de matricule dupliqué
       if (errorMessage.includes("matricule") && errorMessage.includes("existe")) {
+        const prefix = getMatriculePrefix(formData.typeEmploye, formData.sousType);
+        const fullMatricule = prefix ? `${prefix}${formData.matricule}` : formData.matricule;
         title = "Matricule déjà existant";
-        description = `Le matricule DSD${formData.matricule} est déjà utilisé par un autre employé. Veuillez en choisir un autre.`;
+        description = `Le matricule ${fullMatricule} est déjà utilisé par un autre employé. Veuillez en choisir un autre.`;
       }
       // Erreur d'email dupliqué
       else if (errorMessage.includes("email") && errorMessage.includes("existe")) {
@@ -234,6 +362,66 @@ export default function EditEmployeePage() {
 
       <main className="container mx-auto px-6 py-8 max-w-4xl">
         <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Photo Upload */}
+          <Card className="shadow-xl border-0 bg-white">
+            <CardHeader className="bg-gradient-to-r from-orange-50 to-orange-50 border-b border-[#fff5ed]">
+              <CardTitle className="text-xl font-bold text-gray-900">Photo de Profil</CardTitle>
+              <CardDescription className="text-gray-600">
+                Modifier la photo de l&apos;employé pour le badge
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="p-6">
+              <div className="flex items-center gap-6">
+                <div className="w-32 h-32 rounded-2xl border-2 border-dashed border-[#fed7aa] bg-violet-50/50 flex items-center justify-center overflow-hidden">
+                  {photoPreview ? (
+                    <img src={photoPreview} alt="Preview" className="w-full h-full object-cover" />
+                  ) : currentPhoto ? (
+                    <Avatar className="w-full h-full rounded-2xl">
+                      <AvatarImage
+                        src={getImageUrl(currentPhoto) || ''}
+                        alt="Photo actuelle"
+                        className="object-cover"
+                      />
+                      <AvatarFallback className="bg-gradient-to-br from-orange-500 to-orange-600 text-white font-bold text-2xl rounded-2xl">
+                        {formData.prenom[0]}{formData.nom[0]}
+                      </AvatarFallback>
+                    </Avatar>
+                  ) : (
+                    <div className="text-center">
+                      <Upload className="w-8 h-8 text-violet-400 mx-auto mb-2" />
+                      <p className="text-xs text-gray-500">Photo</p>
+                    </div>
+                  )}
+                </div>
+                <div className="flex-1">
+                  <input
+                    type="file"
+                    id="photo"
+                    accept="image/*"
+                    onChange={handlePhotoChange}
+                    className="hidden"
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => document.getElementById("photo")?.click()}
+                    className="border-[#fed7aa] hover:bg-violet-50"
+                  >
+                    <Upload className="w-4 h-4 mr-2" />
+                    {currentPhoto || photoPreview ? 'Modifier la photo' : 'Ajouter une photo'}
+                  </Button>
+                  <p className="text-sm text-gray-500 mt-2">Format: JPG, PNG (Max: 5MB)</p>
+                  {currentPhoto && !photoPreview && (
+                    <p className="text-xs text-green-600 mt-1">Photo actuelle affichée</p>
+                  )}
+                  {photoPreview && (
+                    <p className="text-xs text-orange-600 mt-1">Nouvelle photo sélectionnée</p>
+                  )}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
           {/* Personal Information */}
           <Card className="shadow-xl border-0 bg-white">
             <CardHeader className="bg-gradient-to-r from-orange-50 to-orange-50 border-b border-[#fff5ed]">
@@ -302,7 +490,7 @@ export default function EditEmployeePage() {
 
                 <div className="space-y-2">
                   <Label htmlFor="email" className="text-sm font-semibold text-gray-700">
-                    Email *
+                    Email (facultatif)
                   </Label>
                   <Input
                     id="email"
@@ -311,7 +499,6 @@ export default function EditEmployeePage() {
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                     placeholder="exemple@email.com"
                     className="h-11 border-2 border-gray-200 focus:border-[#ff8d13] focus:ring-4 focus:ring-violet-600/10 transition-all rounded-xl"
-                    required
                   />
                 </div>
               </div>
@@ -334,7 +521,7 @@ export default function EditEmployeePage() {
                   </Label>
                   <Select
                     value={formData.typeEmploye}
-                    onValueChange={(value) => setFormData({ ...formData, typeEmploye: value })}
+                    onValueChange={(value) => setFormData({ ...formData, typeEmploye: value, sousType: "" })}
                   >
                     <SelectTrigger className="h-11 w-full border-2 border-gray-200 focus:border-[#ff8d13] rounded-xl bg-white text-gray-900 font-medium">
                       <SelectValue placeholder="Sélectionner un type" />
@@ -370,6 +557,68 @@ export default function EditEmployeePage() {
                   </Select>
                 </div>
               </div>
+
+              {/* Sous-sélection pour les Banques */}
+              {formData.typeEmploye === 'BANQUE' && (
+                <div className="space-y-2">
+                  <Label htmlFor="sousType" className="text-sm font-semibold text-gray-700">
+                    Type de Banque *
+                  </Label>
+                  <Select
+                    value={formData.sousType}
+                    onValueChange={(value) => setFormData({ ...formData, sousType: value })}
+                  >
+                    <SelectTrigger className="h-11 w-full border-2 border-gray-200 focus:border-[#ff8d13] rounded-xl bg-white text-gray-900 font-medium">
+                      <SelectValue placeholder="Sélectionner une banque" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-white border-2 border-gray-200 shadow-2xl z-50">
+                      <SelectItem value="TTLB" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">TTLB</SelectItem>
+                      <SelectItem value="GLOBAL" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">GLOBAL</SelectItem>
+                      <SelectItem value="CRDIGITAL" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">CRDIGITAL</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+
+              {/* Sous-sélection pour les Emboutisseurs */}
+              {formData.typeEmploye === 'EMBOUTISSEUR' && (
+                <div className="space-y-2">
+                  <Label htmlFor="sousType" className="text-sm font-semibold text-gray-700">
+                    Nom de l&apos;Emboutisseur *
+                  </Label>
+                  <Select
+                    value={formData.sousType}
+                    onValueChange={(value) => setFormData({ ...formData, sousType: value })}
+                  >
+                    <SelectTrigger className="h-11 w-full border-2 border-gray-200 focus:border-[#ff8d13] rounded-xl bg-white text-gray-900 font-medium">
+                      <SelectValue placeholder="Sélectionner un emboutisseur" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-white border-2 border-gray-200 shadow-2xl z-50 max-h-[300px]">
+                      <SelectItem value="SUPER_PLAQUE" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">SUPER PLAQUE</SelectItem>
+                      <SelectItem value="EPIG_SARL" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">EPIG SARL</SelectItem>
+                      <SelectItem value="BARRY_ET_FILS" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">BARRY ET FILS</SelectItem>
+                      <SelectItem value="MK_GUINEE_PLAQUE" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">M.K GUINEE PLAQUE</SelectItem>
+                      <SelectItem value="ISB_PLA" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">ISB PLA</SelectItem>
+                      <SelectItem value="AKD" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">A.K.D</SelectItem>
+                      <SelectItem value="TRANSIT_224" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">TRANSIT 224</SelectItem>
+                      <SelectItem value="S" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">S</SelectItem>
+                      <SelectItem value="GALAXIE_GUINEE" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">GALAXIE GUINEE</SelectItem>
+                      <SelectItem value="KAECK_CONTEQUE" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">K.AECK CONTEQUE</SelectItem>
+                      <SelectItem value="BOLIBANA_SARLU" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">BOLIBANA SARLU</SelectItem>
+                      <SelectItem value="BILHAQ_SIGNALISATION" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">BILHAQ SIGNALISATION</SelectItem>
+                      <SelectItem value="FOURA_ET_FILS" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">FOURA ET FILS</SelectItem>
+                      <SelectItem value="PROFUCO_PLAQUE" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">PROFUCO PLAQUE</SelectItem>
+                      <SelectItem value="AZ_PROJET" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">AZ PROJET</SelectItem>
+                      <SelectItem value="SOMBORI_BONFI" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">SOMBORI BONFI</SelectItem>
+                      <SelectItem value="SOGBE_GENERALE_SARL" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">SOGBE GENERALE SARL</SelectItem>
+                      <SelectItem value="AKIM" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">AKIM</SelectItem>
+                      <SelectItem value="PLAQUE_DE_GUINEE" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">Plaque de Guinée</SelectItem>
+                      <SelectItem value="GOLFE_DE_GUINEE" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">Golfe de Guinée</SelectItem>
+                      <SelectItem value="BISSIKRI_PLAQUE" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">Bissikri Plaque</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
 
               {/* Champs de suspension - affichés uniquement si le statut est SUSPENDU */}
               {formData.status === "SUSPENDU" && (
@@ -425,9 +674,11 @@ export default function EditEmployeePage() {
                     Matricule *
                   </Label>
                   <div className="flex items-center gap-2">
-                    <div className="h-11 px-4 border-2 border-gray-200 bg-gray-100 rounded-xl flex items-center font-semibold text-gray-700">
-                      DSD
-                    </div>
+                    {getMatriculePrefix(formData.typeEmploye, formData.sousType) && (
+                      <div className="h-11 px-4 border-2 border-gray-200 bg-gray-100 rounded-xl flex items-center font-semibold text-gray-700">
+                        {getMatriculePrefix(formData.typeEmploye, formData.sousType)}
+                      </div>
+                    )}
                     <Input
                       id="matricule"
                       type="text"
@@ -442,16 +693,22 @@ export default function EditEmployeePage() {
                       maxLength={10}
                     />
                   </div>
-                  <p className="text-xs text-gray-500 mt-1">
-                    Le matricule sera: DSD{formData.matricule || "___"}
-                  </p>
+                  {getMatriculePrefix(formData.typeEmploye, formData.sousType) ? (
+                    <p className="text-xs text-gray-500 mt-1">
+                      Le matricule sera: {getMatriculePrefix(formData.typeEmploye, formData.sousType)}{formData.matricule || "___"}
+                    </p>
+                  ) : (
+                    <p className="text-xs text-gray-500 mt-1">
+                      Entrez le matricule complet pour ce type d&apos;employé
+                    </p>
+                  )}
                 </div>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 <div className="space-y-2">
                   <Label htmlFor="dateEmbauche" className="text-sm font-semibold text-gray-700">
-                    Date d'Embauche *
+                    Date d&apos;Embauche {formData.typeEmploye === 'PERSONNEL_DSD' && '*'}
                   </Label>
                   <Input
                     id="dateEmbauche"
@@ -459,30 +716,39 @@ export default function EditEmployeePage() {
                     value={formData.dateEmbauche}
                     onChange={(e) => setFormData({ ...formData, dateEmbauche: e.target.value })}
                     className="h-11 border-2 border-gray-200 focus:border-[#ff8d13] focus:ring-4 focus:ring-[#ff8d13]/10 transition-all rounded-xl"
-                    required
+                    required={formData.typeEmploye === 'PERSONNEL_DSD'}
                   />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="dateFinContrat" className="text-sm font-semibold text-gray-700">
-                    Date de Fin de Contrat *
-                  </Label>
-                  <Input
-                    id="dateFinContrat"
-                    type="date"
-                    value={formData.dateFinContrat}
-                    onChange={(e) => setFormData({ ...formData, dateFinContrat: e.target.value })}
-                    min={formData.dateEmbauche || undefined}
-                    className="h-11 border-2 border-gray-200 focus:border-[#ff8d13] focus:ring-4 focus:ring-violet-600/10 transition-all rounded-xl"
-                    required
-                  />
-                  {formData.dateEmbauche && (
-                    <p className="text-xs text-gray-500 mt-1">
-                      Doit être après le {new Date(formData.dateEmbauche).toLocaleDateString('fr-FR')}
+                  {formData.typeEmploye !== 'PERSONNEL_DSD' && (
+                    <p className="text-xs text-gray-500">
+                      Facultatif pour ce type d&apos;employé
                     </p>
                   )}
                 </div>
               </div>
+
+              {formData.typeContrat !== 'CDI' && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                  <div className="space-y-2">
+                    <Label htmlFor="dateFinContrat" className="text-sm font-semibold text-gray-700">
+                      Date de Fin de Contrat *
+                    </Label>
+                    <Input
+                      id="dateFinContrat"
+                      type="date"
+                      value={formData.dateFinContrat}
+                      onChange={(e) => setFormData({ ...formData, dateFinContrat: e.target.value })}
+                      min={formData.dateEmbauche || undefined}
+                      className="h-11 border-2 border-gray-200 focus:border-[#ff8d13] focus:ring-4 focus:ring-violet-600/10 transition-all rounded-xl"
+                      required
+                    />
+                    {formData.dateEmbauche && (
+                      <p className="text-xs text-gray-500 mt-1">
+                        Doit être après le {new Date(formData.dateEmbauche).toLocaleDateString('fr-FR')}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
 

@@ -222,22 +222,28 @@ class EmployeeService {
   };
 
   createEmployee = async (dto: CreateEmployeeDto, file?: Express.Multer.File): Promise<EmployeeResponseDto> => {
+
     // Check if matricule already exists
     const existingMatricule = await Employee.findOne({ matricule: dto.matricule });
     if (existingMatricule) {
+      console.log('❌ [CREATE EMPLOYEE] Matricule existe déjà:', dto.matricule);
       const error: any = new Error('Ce matricule existe déjà');
       error.statusCode = 400;
       error.field = 'matricule';
       throw error;
     }
+    console.log('✅ [CREATE EMPLOYEE] Matricule disponible');
 
-    // Check if email already exists
-    const existingEmail = await Employee.findOne({ email: dto.email });
-    if (existingEmail) {
-      const error: any = new Error('Cet email existe déjà');
-      error.statusCode = 400;
-      error.field = 'email';
-      throw error;
+    // Check if email already exists (only if email is provided)
+    if (dto.email && dto.email.trim() !== '') {
+      const existingEmail = await Employee.findOne({ email: dto.email });
+      if (existingEmail) {
+        console.log('❌ [CREATE EMPLOYEE] Email existe déjà:', dto.email);
+        const error: any = new Error('Cet email existe déjà');
+        error.statusCode = 400;
+        error.field = 'email';
+        throw error;
+      }
     }
 
     // Préparer les données avec le chemin de la photo si elle existe
@@ -246,36 +252,58 @@ class EmployeeService {
       status: 'ACTIF',
     };
 
+    // Pour DNTT et DNTT_STAGIAIRE, forcer typeContrat et dateEmbauche à undefined
+    if (dto.type === 'DNTT' || dto.type === 'DNTT_STAGIAIRE') {
+      employeeData.typeContrat = undefined;
+      employeeData.dateEmbauche = undefined;
+      employeeData.dateFinContrat = undefined;
+      console.log('🔧 [CREATE EMPLOYEE] DNTT détecté - typeContrat, dateEmbauche et dateFinContrat définis à undefined');
+    }
+
     if (file) {
       // Enregistrer le chemin relatif de la photo
       employeeData.photo = `/uploads/employees/${file.filename}`;
+      console.log('📷 [CREATE EMPLOYEE] Photo enregistrée:', employeeData.photo);
     }
 
-    // Create employee
-    const employee = await Employee.create(employeeData);
+    console.log('💾 [CREATE EMPLOYEE] Données finales à enregistrer:', JSON.stringify(employeeData, null, 2));
 
-    return {
-      id: employee._id.toString(),
-      nom: employee.nom,
-      prenom: employee.prenom,
-      email: employee.email,
-      telephone: employee.telephone,
-      fonction: employee.fonction,
-      profil: employee.profil,
-      diplome: employee.diplome,
-      matricule: employee.matricule,
-      type: employee.type,
-      sousType: employee.sousType,
-      typeContrat: employee.typeContrat,
-      status: employee.status,
-      dateEmbauche: employee.dateEmbauche,
-      dateFinContrat: employee.dateFinContrat,
-      motifSuspension: employee.motifSuspension,
-      dateFinSuspension: employee.dateFinSuspension,
-      photo: employee.photo,
-      createdAt: employee.createdAt,
-      updatedAt: employee.updatedAt,
-    };
+    // Create employee
+    try {
+      console.log('🚀 [CREATE EMPLOYEE] Création dans la base de données...');
+      const employee = await Employee.create(employeeData);
+      console.log('✅ [CREATE EMPLOYEE] Employé créé avec succès, ID:', employee._id);
+
+      const response = {
+        id: employee._id.toString(),
+        nom: employee.nom,
+        prenom: employee.prenom,
+        email: employee.email,    
+        telephone: employee.telephone,
+        fonction: employee.fonction,
+        profil: employee.profil,
+        diplome: employee.diplome,
+        matricule: employee.matricule,
+        type: employee.type,
+        sousType: employee.sousType,
+        typeContrat: employee.typeContrat,
+        status: employee.status,
+        dateEmbauche: employee.dateEmbauche,
+        dateFinContrat: employee.dateFinContrat,
+        motifSuspension: employee.motifSuspension,
+        dateFinSuspension: employee.dateFinSuspension,
+        photo: employee.photo,
+        createdAt: employee.createdAt,
+        updatedAt: employee.updatedAt,
+      };
+
+      console.log('📤 [CREATE EMPLOYEE] Réponse envoyée:', JSON.stringify(response, null, 2));
+      return response;
+    } catch (error: any) {
+      console.error('❌ [CREATE EMPLOYEE] Erreur lors de la création:', error.message);
+      console.error('❌ [CREATE EMPLOYEE] Stack:', error.stack);
+      throw error;
+    }
   };
 
   updateEmployee = async (id: string, dto: UpdateEmployeeDto, file?: Express.Multer.File): Promise<EmployeeResponseDto> => {
@@ -296,8 +324,8 @@ class EmployeeService {
       }
     }
 
-    // If updating email, check it doesn't exist
-    if (dto.email && dto.email !== employee.email) {
+    // If updating email, check it doesn't exist (only if email is provided and not empty)
+    if (dto.email && dto.email.trim() !== '' && dto.email !== employee.email) {
       const existingEmail = await Employee.findOne({ email: dto.email });
       if (existingEmail) {
         const error: any = new Error('Cet email existe déjà');
@@ -317,6 +345,15 @@ class EmployeeService {
 
     // Préparer les données de mise à jour
     const updateData: any = { ...dto };
+
+    // Pour DNTT et DNTT_STAGIAIRE, forcer typeContrat, dateEmbauche et dateFinContrat à undefined
+    const employeeType = dto.type || employee.type;
+    if (employeeType === 'DNTT' || employeeType === 'DNTT_STAGIAIRE') {
+      updateData.typeContrat = undefined;
+      updateData.dateEmbauche = undefined;
+      updateData.dateFinContrat = undefined;
+      console.log('🔧 [UPDATE EMPLOYEE] DNTT détecté - typeContrat, dateEmbauche et dateFinContrat définis à undefined');
+    }
 
     // Ajouter la photo si un fichier est uploadé
     if (file) {
@@ -363,8 +400,12 @@ class EmployeeService {
       email: updatedEmployee.email,
       telephone: updatedEmployee.telephone,
       fonction: updatedEmployee.fonction,
+      profil: updatedEmployee.profil,
+      diplome: updatedEmployee.diplome,
       matricule: updatedEmployee.matricule,
       type: updatedEmployee.type,
+      sousType: updatedEmployee.sousType,
+      typeContrat: updatedEmployee.typeContrat,
       status: updatedEmployee.status,
       dateEmbauche: updatedEmployee.dateEmbauche,
       dateFinContrat: updatedEmployee.dateFinContrat,
@@ -459,7 +500,7 @@ class EmployeeService {
     // Check if badge already exists for this employee
     const existingBadge = await Badge.findOne({
       employee: employeeId,
-      status: { $in: ['EN_ATTENTE', 'IMPRIME'] },
+      status: { $in: ['EN_ATTENTE', 'IMPRIME', 'REIMPRESSION'] },
     });
     console.log('📝 Service - Badge existant:', existingBadge ? 'OUI' : 'NON');
 
@@ -490,12 +531,21 @@ class EmployeeService {
   };
 
   getEmployeeStats = async (): Promise<EmployeeStatsDto> => {
-    const [total, active, suspended, terminated, byType, recentEmployees] = await Promise.all([
+    // Calculer la date dans 30 jours
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const thirtyDaysFromNow = new Date(today);
+    thirtyDaysFromNow.setDate(thirtyDaysFromNow.getDate() + 30);
+
+    const [total, active, suspended, terminated, byType, recentEmployees, contractsExpiringSoon] = await Promise.all([
       Employee.countDocuments(),
       Employee.countDocuments({ status: 'ACTIF' }),
       Employee.countDocuments({ status: 'SUSPENDU' }),
       Employee.countDocuments({ status: 'TERMINE' }),
       Employee.aggregate([
+        {
+          $match: { status: 'ACTIF' }
+        },
         {
           $group: {
             _id: '$type',
@@ -504,6 +554,11 @@ class EmployeeService {
         },
       ]),
       Employee.find().sort('-createdAt').limit(5).select('nom prenom email telephone type status createdAt'),
+      // Compter les contrats expirés ou qui expirent dans 30 jours (employés actifs uniquement)
+      Employee.countDocuments({
+        status: 'ACTIF',
+        dateFinContrat: { $lte: thirtyDaysFromNow },
+      }),
     ]);
 
     return {
@@ -519,10 +574,14 @@ class EmployeeService {
         email: emp.email,
         telephone: emp.telephone,
         fonction: emp.fonction,
+        profil: emp.profil,
+        diplome: emp.diplome,
         matricule: emp.matricule,
         type: emp.type,
+        sousType: emp.sousType,
+        typeContrat: emp.typeContrat,
         status: emp.status,
-        dateEmbauche: emp.dateEmbauche,
+        dateEmbauche: emp.dateEmbauche || new Date(),
         dateFinContrat: emp.dateFinContrat,
         motifSuspension: emp.motifSuspension,
         dateFinSuspension: emp.dateFinSuspension,
@@ -530,6 +589,7 @@ class EmployeeService {
         createdAt: emp.createdAt,
         updatedAt: emp.updatedAt,
       })),
+      contractsExpiringSoon,
     };
   };
 }

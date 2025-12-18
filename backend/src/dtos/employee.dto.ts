@@ -3,7 +3,7 @@ import { EmployeeType, EmployeeStatus, ContractType } from '../types';
 export class CreateEmployeeDto {
   nom!: string;
   prenom!: string;
-  email!: string;
+  email?: string;
   telephone!: string;
   fonction!: string;
   profil?: string;
@@ -12,7 +12,7 @@ export class CreateEmployeeDto {
   type!: EmployeeType;
   sousType?: string;
   typeContrat!: ContractType;
-  dateEmbauche!: Date;
+  dateEmbauche?: Date;
   dateFinContrat?: Date;
   photo?: string;
 
@@ -48,7 +48,7 @@ export class EmployeeResponseDto {
   id!: string;
   nom!: string;
   prenom!: string;
-  email!: string;
+  email?: string;
   telephone!: string;
   fonction!: string;
   profil?: string;
@@ -58,7 +58,7 @@ export class EmployeeResponseDto {
   sousType?: string;
   typeContrat!: ContractType;
   status!: EmployeeStatus;
-  dateEmbauche!: Date;
+  dateEmbauche?: Date;
   dateFinContrat?: Date;
   motifSuspension?: string;
   dateFinSuspension?: Date;
@@ -96,4 +96,5 @@ export class EmployeeStatsDto {
   terminated!: number;
   byType!: Array<{ _id: string; count: number }>;
   recent!: EmployeeResponseDto[];
+  contractsExpiringSoon!: number;
 }
