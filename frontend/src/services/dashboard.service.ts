@@ -40,7 +40,7 @@ class DashboardService {
     try {
       console.log('📊 [Dashboard] Starting stats fetch...');
       console.log('📊 [Dashboard] EMPLOYEE_STATS endpoint:', API_ENDPOINTS.EMPLOYEE_STATS);
-      console.log('📊 [Dashboard] API_BASE_URL from constants:', process.env.NEXT_PUBLIC_API_URL || 'http://192.168.100.171:4003/api');
+      console.log('📊 [Dashboard] API_BASE_URL from constants:', process.env.NEXT_PUBLIC_API_URL || 'http://192.168.100.55:4000/api');
 
       // Fetch employee stats
       console.log('📊 [Dashboard] Fetching employee stats...');

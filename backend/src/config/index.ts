@@ -15,7 +15,7 @@ export const config = {
   jwtExpire: process.env.JWT_EXPIRE || '5d',
 
   // CORS
-  allowedOrigins: process.env.ALLOWED_ORIGINS?.split(',') || [
+  allowedOrigins: process.env.ALLOWED_ORIGINS ? process.env.ALLOWED_ORIGINS.split(',') : [
     'http://localhost:3001',
     'http://localhost:3000',
     'http://192.168.100.55:3000',

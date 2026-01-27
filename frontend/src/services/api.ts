@@ -4,7 +4,7 @@ import type { ApiResponse } from "@/src/types";
 /**
  * Base API configuration
  */
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://192.168.100.55:4003/api";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://192.168.100.55:4000/api";
 
 /**
  * Custom error class for API errors
