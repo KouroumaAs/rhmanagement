@@ -125,16 +125,19 @@ export default function ImpressionPage() {
 
       const response = await badgesService.getAll(params);
 
-      // La réponse API: { success: true, data: [...], pagination: {...} }
-      const payload = response.data as {
-        data?: any[];
-        pagination?: { pages?: number; total?: number };
-      };
-      const badges = payload?.data || [];
+      // La réponse API peut être:
+      // - { success: true, data: [...], pagination: {...} }
+      // - { success: true, data: { data: [...], pagination?: {...} } }
+      const topLevelData = response.data as any;
+      const badges = Array.isArray(topLevelData)
+        ? topLevelData
+        : (topLevelData?.data ?? []);
+
+      const pagination = (response as any).pagination || topLevelData?.pagination || {};
 
       setBadgeRequests(badges);
-      setTotalPages(payload?.pagination?.pages || 1);
-      setTotalBadges(payload?.pagination?.total || 0);
+      setTotalPages(pagination?.pages || pagination?.totalPages || 1);
+      setTotalBadges(pagination?.total || topLevelData?.total || 0);
     } catch (error: any) {
       console.error('Erreur chargement badges:', error);
       toast({
@@ -152,31 +155,7 @@ export default function ImpressionPage() {
     setIsPreviewOpen(true);
   };
 
-  const handleReprint = async (badge: any) => {
-    try {
-      // Appeler l'API pour enregistrer la réimpression
-      await badgesService.print(badge.id);
-
-      toast({
-        title: "✅ Badge réimprimé",
-        description: `Le badge de ${badge.employee?.prenom} ${badge.employee?.nom} a été réimprimé avec succès`,
-      });
-
-      // Mettre à jour les stats et la liste
-      fetchBadgeStats();
-      fetchBadges();
-
-      // Créer la fenêtre d'impression avec le badge
-      printBadgeDirectly(badge);
-    } catch (error: any) {
-      console.error("Erreur lors de la réimpression:", error);
-      toast({
-        variant: "destructive",
-        title: "Erreur",
-        description: error.message || "Impossible de réimprimer le badge",
-      });
-    }
-  };
+  
 
   const printBadgeDirectly = (badge: any) => {
     if (!badge) return;
