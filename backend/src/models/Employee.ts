@@ -63,6 +63,7 @@ const employeeSchema = new Schema<IEmployee>(
           'EMBOUTISSEUR',
           'DNTT_STAGIAIRE',
           'DEMARCHEUR',
+          'ASSURANCE',
         ],
         message: '{VALUE} n\'est pas un type valide',
       },
@@ -70,8 +71,9 @@ const employeeSchema = new Schema<IEmployee>(
     sousType: {
       type: String,
       default: null,
-      // Pour BANQUE: TTLB, GLOBAL, CRDIGITAL
-      // Pour EMBOUTISSEUR: nom de l'emboutisseur
+      // Pour BANQUE: TTLB, GLOBAL, CRDIGITAL, SACOF
+      // Pour EMBOUTISSEUR: nom de l'emboutisseur (SECK_CONTE, COPLAGUI, ABP_GUINEE, etc.)
+      // Pour ASSURANCE: VISTA_ASSURANCE, COSMOPOLITE
     },
     status: {
       type: String,
@@ -95,16 +97,15 @@ const employeeSchema = new Schema<IEmployee>(
         message: '{VALUE} n\'est pas un type de contrat valide',
       },
       required: function (this: IEmployee) {
-        // Type de contrat facultatif pour DNTT et DNTT_STAGIAIRE
-        return this.type !== 'DNTT' && this.type !== 'DNTT_STAGIAIRE';
+        // Type de contrat obligatoire uniquement pour PERSONNEL_DSD et STAGIAIRE_DSD
+        return this.type === 'PERSONNEL_DSD' || this.type === 'STAGIAIRE_DSD';
       },
     },
     dateFinContrat: {
       type: Date,
       required: function (this: IEmployee) {
-        // Facultatif pour DNTT et DNTT_STAGIAIRE
-        if (this.type === 'DNTT' || this.type === 'DNTT_STAGIAIRE') return false;
-        // Date de fin requise pour CDD et STAGE, pas pour CDI
+        // Date de fin requise uniquement pour PERSONNEL_DSD/STAGIAIRE_DSD avec CDD ou STAGE
+        if (this.type !== 'PERSONNEL_DSD' && this.type !== 'STAGIAIRE_DSD') return false;
         return this.typeContrat === 'CDD' || this.typeContrat === 'STAGE';
       },
       validate: {

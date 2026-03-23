@@ -16,6 +16,7 @@ const employeeTypeEnum = z.enum([
   'EMBOUTISSEUR',
   'DNTT_STAGIAIRE',
   'DEMARCHEUR',
+  'ASSURANCE',
 ]);
 
 const employeeStatusEnum = z.enum(['ACTIF', 'SUSPENDU', 'TERMINE', 'BLOQUE']);
@@ -71,7 +72,12 @@ export const createEmployeeSchema = z.object({
       .optional()
       .transform((val) => val === '' || val === undefined ? undefined : val),
 
-    typeContrat: contractTypeEnum.optional(),
+    typeContrat: z.preprocess((val) => {
+      if (val === 'undefined' || val === 'null' || val === '' || val === null) {
+        return undefined;
+      }
+      return val;
+    }, contractTypeEnum.optional()),
 
     dateEmbauche: z
       .preprocess((val) => {
@@ -123,13 +129,13 @@ export const createEmployeeSchema = z.object({
   .refine((data) => {
     console.log('🔍 [VALIDATOR REFINE dateFinContrat] Type:', data.type, 'TypeContrat:', data.typeContrat, 'dateFinContrat:', data.dateFinContrat);
 
-    // Pour DNTT et DNTT_STAGIAIRE, la date de fin est facultative
-    if (data.type === 'DNTT' || data.type === 'DNTT_STAGIAIRE') {
-      console.log('✅ [VALIDATOR] dateFinContrat facultative pour DNTT');
+    // Date de fin uniquement requise pour PERSONNEL_DSD et STAGIAIRE_DSD
+    if (data.type !== 'PERSONNEL_DSD' && data.type !== 'STAGIAIRE_DSD') {
+      console.log('✅ [VALIDATOR] dateFinContrat facultative pour type:', data.type);
       return true;
     }
 
-    // Si CDD ou STAGE, la date de fin est obligatoire (sauf pour DNTT)
+    // Si CDD ou STAGE, la date de fin est obligatoire
     if ((data.typeContrat === 'CDD' || data.typeContrat === 'STAGE') && !data.dateFinContrat) {
       console.log('❌ [VALIDATOR] dateFinContrat manquante pour CDD/STAGE');
       return false;
@@ -207,7 +213,12 @@ export const updateEmployeeSchema = z.object({
       .optional()
       .transform((val) => val === '' || val === undefined ? undefined : val),
 
-    typeContrat: contractTypeEnum.optional(),
+    typeContrat: z.preprocess((val) => {
+      if (val === 'undefined' || val === 'null' || val === '' || val === null) {
+        return undefined;
+      }
+      return val;
+    }, contractTypeEnum.optional()),
 
     dateEmbauche: z
       .string()

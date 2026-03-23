@@ -8,7 +8,8 @@ export type EmployeeType =
   | 'BANQUE'
   | 'EMBOUTISSEUR'
   | 'DNTT_STAGIAIRE'
-  | 'DEMARCHEUR';
+  | 'DEMARCHEUR'
+  | 'ASSURANCE';
 
 export type EmployeeStatus = 'ACTIF' | 'SUSPENDU' | 'TERMINE' | 'BLOQUE';
 

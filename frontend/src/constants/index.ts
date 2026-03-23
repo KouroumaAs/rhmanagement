@@ -9,6 +9,7 @@ export const EMPLOYEE_TYPE_LABELS: Record<EmployeeType, string> = {
   EMBOUTISSEUR: "Emboutisseurs",
   DNTT_STAGIAIRE: "DNTT Stagiaires",
   DEMARCHEUR: "Collectif des Démarcheurs",
+  ASSURANCE: "Assurances",
 };
 
 export const EMPLOYEE_TYPE_COLORS: Record<EmployeeType, string> = {
@@ -19,6 +20,7 @@ export const EMPLOYEE_TYPE_COLORS: Record<EmployeeType, string> = {
   EMBOUTISSEUR: "bg-pink-600",
   DNTT_STAGIAIRE: "bg-teal-600",
   DEMARCHEUR: "bg-amber-600",
+  ASSURANCE: "bg-cyan-600",
 };
 
 export const EMPLOYEE_TYPE_BADGE_TITLES: Record<EmployeeType, string> = {
@@ -29,6 +31,7 @@ export const EMPLOYEE_TYPE_BADGE_TITLES: Record<EmployeeType, string> = {
   EMBOUTISSEUR: "EMBOUTISSEURS",
   DNTT_STAGIAIRE: "DNTT STAGIAIRES",
   DEMARCHEUR: "COLLECTIF DES DEMARCHEURS",
+  ASSURANCE: "ASSURANCES",
 };
 
 // Employee Status
