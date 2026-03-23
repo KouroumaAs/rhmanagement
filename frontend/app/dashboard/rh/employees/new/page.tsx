@@ -615,6 +615,7 @@ export default function NewEmployeePage() {
                     <SelectItem value="EMBOUTISSEUR" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">Emboutisseur</SelectItem>
                     <SelectItem value="DNTT_STAGIAIRE" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">DNTT Stagiaire</SelectItem>
                     <SelectItem value="DEMARCHEUR" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">Collectif des Démarcheurs</SelectItem>
+                  
                   </SelectContent>
                 </Select>
                 <p className="text-xs text-gray-500 mt-1">
