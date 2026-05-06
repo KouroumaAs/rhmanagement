@@ -5,8 +5,20 @@ import { useParams, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { ArrowLeft, Save, Upload } from "lucide-react";
 import Link from "next/link";
 import { useToast } from "@/src/hooks/use-toast";
@@ -30,7 +42,6 @@ export default function EditEmployeePage() {
     telephone: "",
     email: "",
     dateEmbauche: "",
-    typeContrat: "CDD" as "CDI" | "CDD" | "STAGE",
     dateFinContrat: "",
     fonction: "",
     profil: "",
@@ -38,6 +49,7 @@ export default function EditEmployeePage() {
     matricule: "",
     typeEmploye: "PERSONNEL_DSD",
     sousType: "",
+    typeContrat: "CDD" as "CDI" | "CDD" | "STAGE",
     status: "ACTIF",
     motifSuspension: "",
     dateFinSuspension: "",
@@ -46,51 +58,66 @@ export default function EditEmployeePage() {
 
   // Liste des emboutisseurs avec leurs préfixes
   const emboutisseursMap: Record<string, string> = {
-    'SUPER_PLAQUE': 'SP',
-    'EPIG_SARL': 'ES',
-    'BARRY_ET_FILS': 'BEF',
-    'MK_GUINEE_PLAQUE': 'MKGP',
-    'ISB_PLA': 'IP',
-    'AKD': 'AKD',
-    'TRANSIT_224': 'T2',
-    'S': 'S',
-    'GALAXIE_GUINEE': 'GG',
-    'KAECK_CONTEQUE': 'KAC',
-    'BOLIBANA_SARLU': 'BS',
-    'BILHAQ_SIGNALISATION': 'BIS',
-    'FOURA_ET_FILS': 'FEF',
-    'PROFUCO_PLAQUE': 'PP',
-    'AZ_PROJET': 'AP',
-    'SOMBORI_BONFI': 'SB',
-    'SOGBE_GENERALE_SARL': 'SGS',
-    'AKIM': 'A',
-    'PLAQUE_DE_GUINEE': 'PDG',
-    'GOLFE_DE_GUINEE': 'GDG',
-    'BISSIKRI_PLAQUE': 'BP',
+    SUPER_PLAQUE: "SP",
+    EPIG_SARL: "ES",
+    BARRY_ET_FILS: "BEF",
+    MK_GUINEE_PLAQUE: "MKGP",
+    ISB_PLA: "IP",
+    AKD: "AKD",
+    TRANSIT_224: "T2",
+    S: "S",
+    GALAXIE_GUINEE: "GG",
+    KAECK_CONTEQUE: "KAC",
+    BOLIBANA_SARLU: "BS",
+    BILHAQ_SIGNALISATION: "BIS",
+    FOURA_ET_FILS: "FEF",
+    PROFUCO_PLAQUE: "PP",
+    AZ_PROJET: "AP",
+    SOMBORI_BONFI: "SB",
+    SOGBE_GENERALE_SARL: "SGS",
+    AKIM: "A",
+    PLAQUE_DE_GUINEE: "PDG",
+    GOLFE_DE_GUINEE: "GDG",
+    BISSIKRI_PLAQUE: "BP",
+    SECK_CONTE: "SEC",
+    COPLAGUI: "COP",
+    ABP_GUINEE: "ABP",
+  };
+
+  // Liste des assurances avec leurs préfixes
+  const assurancesMap: Record<string, string> = {
+    VISTA_ASSURANCE: "VIS",
+    COSMOPOLITE: "COS",
   };
 
   // Fonction pour obtenir le préfixe de matricule selon le type
-  const getMatriculePrefix = (typeEmploye: string, sousType?: string): string => {
+  const getMatriculePrefix = (
+    typeEmploye: string,
+    sousType?: string,
+  ): string => {
     switch (typeEmploye) {
-      case 'PERSONNEL_DSD':
-        return 'DSD';
-      case 'STAGIAIRE_DSD':
-        return 'Stage';
-      case 'DNTT':
-        return 'DNTT';
-      case 'DNTT_STAGIAIRE':
-        return 'DNTTST';
-      case 'DEMARCHEUR':
-        return 'CDDO';
-      case 'BANQUE':
-        if (sousType === 'TTLB') return 'TTLB';
-        if (sousType === 'GLOBAL') return 'GL';
-        if (sousType === 'CRDIGITAL') return 'CRD';
-        return 'BANQUE';
-      case 'EMBOUTISSEUR':
-        return sousType ? emboutisseursMap[sousType] || '' : '';
+      case "PERSONNEL_DSD":
+        return "DSD";
+      case "STAGIAIRE_DSD":
+        return "Stage";
+      case "DNTT":
+        return "DNTT";
+      case "DNTT_STAGIAIRE":
+        return "DNTTST";
+      case "DEMARCHEUR":
+        return "CDDO";
+      case "BANQUE":
+        if (sousType === "TTLB") return "TTLB";
+        if (sousType === "GLOBAL") return "GL";
+        if (sousType === "CRDIGITAL") return "CRD";
+        if (sousType === "SACOF") return "SAC";
+        return "BANQUE";
+      case "EMBOUTISSEUR":
+        return sousType ? emboutisseursMap[sousType] || "" : "";
+      case "ASSURANCE":
+        return sousType ? assurancesMap[sousType] || "" : "";
       default:
-        return 'DSD';
+        return "DSD";
     }
   };
 
@@ -107,7 +134,7 @@ export default function EditEmployeePage() {
   };
 
   useEffect(() => {
-    if (params.id && typeof params.id === 'string') {
+    if (params.id && typeof params.id === "string") {
       fetchEmployee();
     } else {
       toast({
@@ -120,47 +147,55 @@ export default function EditEmployeePage() {
   }, [params.id]);
 
   const fetchEmployee = async () => {
-    if (!params.id || typeof params.id !== 'string') {
+    if (!params.id || typeof params.id !== "string") {
       return;
     }
 
     try {
       setIsLoading(true);
-      console.log('Fetching employee with ID:', params.id);
+      console.log("Fetching employee with ID:", params.id);
 
       const response = await employeeService.getById(params.id);
-      console.log('Employee response:', response);
+      console.log("Employee response:", response);
 
       // Handle response structure
       const employee = response.data;
-      console.log('Employee data:', employee);
+      console.log("Employee data:", employee);
 
       if (!employee) {
-        throw new Error('Employé non trouvé');
+        throw new Error("Employé non trouvé");
       }
 
-      // Extraire seulement le numéro du matricule (enlever le préfixe)
+      // Extraire les chiffres du matricule en enlevant le préfixe
       const matriculeValue = employee.matricule || "";
-      // On extrait juste les chiffres à la fin
-      const matriculeNumbers = matriculeValue.replace(/\D/g, '');
+      const prefix = getMatriculePrefix(employee.type, employee.sousType);
+      const matriculeNumbers = prefix && matriculeValue.toUpperCase().startsWith(prefix.toUpperCase())
+        ? matriculeValue.substring(prefix.length)
+        : matriculeValue;
 
       setFormData({
         nom: employee.nom || "",
         prenom: employee.prenom || "",
         telephone: employee.telephone || "",
         email: employee.email || "",
-        dateEmbauche: employee.dateEmbauche ? new Date(employee.dateEmbauche).toISOString().split('T')[0] : "",
-        typeContrat: employee.typeContrat || "CDD",
-        dateFinContrat: employee.dateFinContrat ? new Date(employee.dateFinContrat).toISOString().split('T')[0] : "",
+        dateEmbauche: employee.dateEmbauche
+          ? new Date(employee.dateEmbauche).toISOString().split("T")[0]
+          : "",
+        dateFinContrat: employee.dateFinContrat
+          ? new Date(employee.dateFinContrat).toISOString().split("T")[0]
+          : "",
         fonction: employee.fonction || "",
         profil: employee.profil || "",
         diplome: employee.diplome || "",
         matricule: matriculeNumbers,
         typeEmploye: employee.type || "PERSONNEL_DSD",
         sousType: employee.sousType || "",
+        typeContrat: employee.typeContrat || "CDD",
         status: employee.status || "ACTIF",
         motifSuspension: employee.motifSuspension || "",
-        dateFinSuspension: employee.dateFinSuspension ? new Date(employee.dateFinSuspension).toISOString().split('T')[0] : "",
+        dateFinSuspension: employee.dateFinSuspension
+          ? new Date(employee.dateFinSuspension).toISOString().split("T")[0]
+          : "",
         photo: null,
       });
 
@@ -169,7 +204,7 @@ export default function EditEmployeePage() {
         setCurrentPhoto(employee.photo);
       }
     } catch (error: any) {
-      console.error('Erreur chargement employé:', error);
+      console.error("Erreur chargement employé:", error);
       toast({
         variant: "destructive",
         title: "Erreur",
@@ -185,17 +220,6 @@ export default function EditEmployeePage() {
     setIsSubmitting(true);
 
     try {
-      // Validation: date de fin obligatoire pour CDD et STAGE
-      if ((formData.typeContrat === 'CDD' || formData.typeContrat === 'STAGE') && !formData.dateFinContrat) {
-        toast({
-          variant: "destructive",
-          title: "Erreur de validation",
-          description: "La date de fin de contrat est obligatoire pour les CDD et STAGE",
-        });
-        setIsSubmitting(false);
-        return;
-      }
-
       // Validation: date de fin doit être supérieure à date d'embauche
       if (formData.dateFinContrat && formData.dateEmbauche) {
         const dateDebut = new Date(formData.dateEmbauche);
@@ -205,7 +229,8 @@ export default function EditEmployeePage() {
           toast({
             variant: "destructive",
             title: "Erreur de validation",
-            description: "La date de fin de contrat doit être supérieure à la date d'embauche",
+            description:
+              "La date de fin de contrat doit être supérieure à la date d'embauche",
           });
           setIsSubmitting(false);
           return;
@@ -213,72 +238,88 @@ export default function EditEmployeePage() {
       }
 
       // Générer le matricule avec le bon préfixe
-      const prefix = getMatriculePrefix(formData.typeEmploye, formData.sousType);
-      const fullMatricule = prefix ? `${prefix}${formData.matricule}` : formData.matricule;
+      const prefix = getMatriculePrefix(
+        formData.typeEmploye,
+        formData.sousType,
+      );
+      const fullMatricule = prefix
+        ? `${prefix}${formData.matricule}`
+        : formData.matricule;
 
       // Créer FormData pour envoyer les données avec la photo
       const formDataToSend = new FormData();
-      formDataToSend.append('nom', formData.nom);
-      formDataToSend.append('prenom', formData.prenom);
-      formDataToSend.append('telephone', formData.telephone);
+      formDataToSend.append("nom", formData.nom);
+      formDataToSend.append("prenom", formData.prenom);
+      formDataToSend.append("telephone", formData.telephone);
 
       // N'envoyer l'email que s'il est fourni et non vide
-      if (formData.email && formData.email.trim() !== '') {
-        formDataToSend.append('email', formData.email);
+      if (formData.email && formData.email.trim() !== "") {
+        formDataToSend.append("email", formData.email);
       }
 
-      formDataToSend.append('fonction', formData.fonction);
+      formDataToSend.append("fonction", formData.fonction);
 
       if (formData.profil) {
-        formDataToSend.append('profil', formData.profil);
+        formDataToSend.append("profil", formData.profil);
       }
 
       if (formData.diplome) {
-        formDataToSend.append('diplome', formData.diplome);
+        formDataToSend.append("diplome", formData.diplome);
       }
 
-      formDataToSend.append('matricule', fullMatricule);
-      formDataToSend.append('type', formData.typeEmploye);
+      formDataToSend.append("matricule", fullMatricule);
+      formDataToSend.append("type", formData.typeEmploye);
+
+      formDataToSend.append("status", formData.status);
 
       if (formData.sousType) {
-        formDataToSend.append('sousType', formData.sousType);
+        formDataToSend.append("sousType", formData.sousType);
       }
 
-      formDataToSend.append('status', formData.status);
-      formDataToSend.append('typeContrat', formData.typeContrat);
+      // Envoyer typeContrat, dateEmbauche, dateFinContrat uniquement pour PERSONNEL_DSD et STAGIAIRE_DSD
+      const hasContrat = formData.typeEmploye === "PERSONNEL_DSD" || formData.typeEmploye === "STAGIAIRE_DSD";
+      if (hasContrat && formData.typeContrat) {
+        formDataToSend.append("typeContrat", formData.typeContrat);
 
-      // Envoyer dateEmbauche seulement si elle est fournie et non vide
-      if (formData.dateEmbauche && formData.dateEmbauche.trim() !== '') {
-        formDataToSend.append('dateEmbauche', formData.dateEmbauche);
-      }
+        if (formData.dateEmbauche && formData.dateEmbauche.trim() !== "") {
+          formDataToSend.append("dateEmbauche", formData.dateEmbauche);
+        }
 
-      if (formData.typeContrat !== 'CDI' && formData.dateFinContrat) {
-        formDataToSend.append('dateFinContrat', formData.dateFinContrat);
-      } else if (formData.typeContrat === 'CDI') {
-        // Envoyer null pour effacer la date de fin si on passe à CDI
-        formDataToSend.append('dateFinContrat', '');
+        if (formData.typeContrat !== "CDI" && formData.dateFinContrat) {
+          formDataToSend.append("dateFinContrat", formData.dateFinContrat);
+        } else if (formData.typeContrat === "CDI") {
+          formDataToSend.append("dateFinContrat", "");
+        }
+      } else {
+        // Pour les autres types, envoyer dateEmbauche si fournie
+        if (formData.dateEmbauche && formData.dateEmbauche.trim() !== "") {
+          formDataToSend.append("dateEmbauche", formData.dateEmbauche);
+        }
       }
 
       // Ajouter les champs de suspension seulement si le statut est SUSPENDU
       if (formData.status === "SUSPENDU") {
         if (formData.motifSuspension) {
-          formDataToSend.append('motifSuspension', formData.motifSuspension);
+          formDataToSend.append("motifSuspension", formData.motifSuspension);
         }
         if (formData.dateFinSuspension) {
-          formDataToSend.append('dateFinSuspension', formData.dateFinSuspension);
+          formDataToSend.append(
+            "dateFinSuspension",
+            formData.dateFinSuspension,
+          );
         }
       }
 
       // Ajouter la nouvelle photo si elle existe
       if (formData.photo) {
-        formDataToSend.append('photo', formData.photo);
+        formDataToSend.append("photo", formData.photo);
       }
 
       // Envoyer avec fetch au lieu du service
       const response = await fetch(`${apiUrl}/employees/${params.id}`, {
-        method: 'PUT',
+        method: "PUT",
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
         body: formDataToSend,
       });
@@ -286,7 +327,7 @@ export default function EditEmployeePage() {
       const result = await response.json();
 
       if (!response.ok) {
-        throw new Error(result.message || 'Erreur lors de la modification');
+        throw new Error(result.message || "Erreur lors de la modification");
       }
 
       toast({
@@ -296,8 +337,8 @@ export default function EditEmployeePage() {
 
       router.push("/dashboard/rh/employees");
     } catch (error: any) {
-      console.error('Erreur complète:', error);
-      console.error('Message d\'erreur:', error.message);
+      console.error("Erreur complète:", error);
+      console.error("Message d'erreur:", error.message);
 
       // Déterminer le type d'erreur
       const errorMessage = (error.message || "").toLowerCase();
@@ -306,31 +347,54 @@ export default function EditEmployeePage() {
       let description = error.message || "Impossible de modifier l'employé";
 
       // Erreur de matricule dupliqué
-      if (errorMessage.includes("matricule") && errorMessage.includes("existe")) {
-        const prefix = getMatriculePrefix(formData.typeEmploye, formData.sousType);
-        const fullMatricule = prefix ? `${prefix}${formData.matricule}` : formData.matricule;
+      if (
+        errorMessage.includes("matricule") &&
+        errorMessage.includes("existe")
+      ) {
+        const prefix = getMatriculePrefix(
+          formData.typeEmploye,
+          formData.sousType,
+        );
+        const fullMatricule = prefix
+          ? `${prefix}${formData.matricule}`
+          : formData.matricule;
         title = "Matricule déjà existant";
         description = `Le matricule ${fullMatricule} est déjà utilisé par un autre employé. Veuillez en choisir un autre.`;
       }
       // Erreur d'email dupliqué
-      else if (errorMessage.includes("email") && errorMessage.includes("existe")) {
+      else if (
+        errorMessage.includes("email") &&
+        errorMessage.includes("existe")
+      ) {
         title = "Email déjà existant";
         description = `L'email ${formData.email} est déjà utilisé par un autre employé. Veuillez en choisir un autre.`;
       }
       // Erreur de validation email
-      else if (errorMessage.includes("email") && errorMessage.includes("invalide")) {
+      else if (
+        errorMessage.includes("email") &&
+        errorMessage.includes("invalide")
+      ) {
         title = "Format d'email invalide";
-        description = "Veuillez entrer une adresse email valide (ex: nom@domaine.com)";
+        description =
+          "Veuillez entrer une adresse email valide (ex: nom@domaine.com)";
       }
       // Erreur de validation matricule
-      else if (errorMessage.includes("matricule") && errorMessage.includes("dsd")) {
+      else if (
+        errorMessage.includes("matricule") &&
+        errorMessage.includes("dsd")
+      ) {
         title = "Format de matricule invalide";
-        description = "Le matricule doit commencer par DSD suivi de chiffres (ex: DSD001)";
+        description =
+          "Le matricule doit commencer par DSD suivi de chiffres (ex: DSD001)";
       }
       // Erreur de téléphone
-      else if (errorMessage.includes("téléphone") || errorMessage.includes("telephone")) {
+      else if (
+        errorMessage.includes("téléphone") ||
+        errorMessage.includes("telephone")
+      ) {
         title = "Format de téléphone invalide";
-        description = "Veuillez entrer un numéro valide (ex: 6xx xx xx xx ou +224 6xx xx xx xx)";
+        description =
+          "Veuillez entrer un numéro valide (ex: 6xx xx xx xx ou +224 6xx xx xx xx)";
       }
 
       toast({
@@ -361,7 +425,11 @@ export default function EditEmployeePage() {
         <div className="container mx-auto px-6 py-4">
           <div className="flex items-center gap-3">
             <Link href="/dashboard/rh/employees">
-              <Button variant="ghost" size="icon" className="hover:bg-violet-100">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="hover:bg-violet-100"
+              >
                 <ArrowLeft className="w-5 h-5" />
               </Button>
             </Link>
@@ -372,7 +440,9 @@ export default function EditEmployeePage() {
               <h1 className="text-2xl font-bold bg-gradient-to-r from-[#ff8d13] to-[#ff8d13] bg-clip-text text-transparent">
                 Modifier l'Employé
               </h1>
-              <p className="text-sm text-gray-600">Mettre à jour les informations de l'employé</p>
+              <p className="text-sm text-gray-600">
+                Mettre à jour les informations de l'employé
+              </p>
             </div>
           </div>
         </div>
@@ -383,7 +453,9 @@ export default function EditEmployeePage() {
           {/* Photo Upload */}
           <Card className="shadow-xl border-0 bg-white">
             <CardHeader className="bg-gradient-to-r from-orange-50 to-orange-50 border-b border-[#fff5ed]">
-              <CardTitle className="text-xl font-bold text-gray-900">Photo de Profil</CardTitle>
+              <CardTitle className="text-xl font-bold text-gray-900">
+                Photo de Profil
+              </CardTitle>
               <CardDescription className="text-gray-600">
                 Modifier la photo de l&apos;employé pour le badge
               </CardDescription>
@@ -392,16 +464,21 @@ export default function EditEmployeePage() {
               <div className="flex items-center gap-6">
                 <div className="w-32 h-32 rounded-2xl border-2 border-dashed border-[#fed7aa] bg-violet-50/50 flex items-center justify-center overflow-hidden">
                   {photoPreview ? (
-                    <img src={photoPreview} alt="Preview" className="w-full h-full object-cover" />
+                    <img
+                      src={photoPreview}
+                      alt="Preview"
+                      className="w-full h-full object-cover"
+                    />
                   ) : currentPhoto ? (
                     <Avatar className="w-full h-full rounded-2xl">
                       <AvatarImage
-                        src={getImageUrl(currentPhoto) || ''}
+                        src={getImageUrl(currentPhoto) || ""}
                         alt="Photo actuelle"
                         className="object-cover"
                       />
                       <AvatarFallback className="bg-gradient-to-br from-orange-500 to-orange-600 text-white font-bold text-2xl rounded-2xl">
-                        {formData.prenom[0]}{formData.nom[0]}
+                        {formData.prenom[0]}
+                        {formData.nom[0]}
                       </AvatarFallback>
                     </Avatar>
                   ) : (
@@ -426,14 +503,22 @@ export default function EditEmployeePage() {
                     className="border-[#fed7aa] hover:bg-violet-50"
                   >
                     <Upload className="w-4 h-4 mr-2" />
-                    {currentPhoto || photoPreview ? 'Modifier la photo' : 'Ajouter une photo'}
+                    {currentPhoto || photoPreview
+                      ? "Modifier la photo"
+                      : "Ajouter une photo"}
                   </Button>
-                  <p className="text-sm text-gray-500 mt-2">Format: JPG, PNG (Max: 5MB)</p>
+                  <p className="text-sm text-gray-500 mt-2">
+                    Format: JPG, PNG (Max: 5MB)
+                  </p>
                   {currentPhoto && !photoPreview && (
-                    <p className="text-xs text-green-600 mt-1">Photo actuelle affichée</p>
+                    <p className="text-xs text-green-600 mt-1">
+                      Photo actuelle affichée
+                    </p>
                   )}
                   {photoPreview && (
-                    <p className="text-xs text-orange-600 mt-1">Nouvelle photo sélectionnée</p>
+                    <p className="text-xs text-orange-600 mt-1">
+                      Nouvelle photo sélectionnée
+                    </p>
                   )}
                 </div>
               </div>
@@ -443,7 +528,9 @@ export default function EditEmployeePage() {
           {/* Personal Information */}
           <Card className="shadow-xl border-0 bg-white">
             <CardHeader className="bg-gradient-to-r from-orange-50 to-orange-50 border-b border-[#fff5ed]">
-              <CardTitle className="text-xl font-bold text-gray-900">Informations Personnelles</CardTitle>
+              <CardTitle className="text-xl font-bold text-gray-900">
+                Informations Personnelles
+              </CardTitle>
               <CardDescription className="text-gray-600">
                 Détails de l'identité de l'employé
               </CardDescription>
@@ -451,13 +538,18 @@ export default function EditEmployeePage() {
             <CardContent className="p-6 space-y-5">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 <div className="space-y-2">
-                  <Label htmlFor="prenom" className="text-sm font-semibold text-gray-700">
+                  <Label
+                    htmlFor="prenom"
+                    className="text-sm font-semibold text-gray-700"
+                  >
                     Prénom *
                   </Label>
                   <Input
                     id="prenom"
                     value={formData.prenom}
-                    onChange={(e) => setFormData({ ...formData, prenom: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, prenom: e.target.value })
+                    }
                     placeholder="Ex: Amadou"
                     className="h-11 border-2 border-gray-200 focus:border-[#ff8d13] focus:ring-4 focus:ring-violet-600/10 transition-all rounded-xl"
                     required
@@ -465,13 +557,18 @@ export default function EditEmployeePage() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="nom" className="text-sm font-semibold text-gray-700">
+                  <Label
+                    htmlFor="nom"
+                    className="text-sm font-semibold text-gray-700"
+                  >
                     Nom *
                   </Label>
                   <Input
                     id="nom"
                     value={formData.nom}
-                    onChange={(e) => setFormData({ ...formData, nom: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, nom: e.target.value })
+                    }
                     placeholder="Ex: Diallo"
                     className="h-11 border-2 border-gray-200 focus:border-[#ff8d13] focus:ring-4 focus:ring-violet-600/10 transition-all rounded-xl"
                     required
@@ -484,7 +581,9 @@ export default function EditEmployeePage() {
           {/* Contact Information */}
           <Card className="shadow-xl border-0 bg-white">
             <CardHeader className="bg-gradient-to-r from-orange-50 to-orange-50 border-b border-[#fff5ed]">
-              <CardTitle className="text-xl font-bold text-gray-900">Informations de Contact</CardTitle>
+              <CardTitle className="text-xl font-bold text-gray-900">
+                Informations de Contact
+              </CardTitle>
               <CardDescription className="text-gray-600">
                 Moyens de communication avec l'employé
               </CardDescription>
@@ -492,14 +591,19 @@ export default function EditEmployeePage() {
             <CardContent className="p-6 space-y-5">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 <div className="space-y-2">
-                  <Label htmlFor="telephone" className="text-sm font-semibold text-gray-700">
+                  <Label
+                    htmlFor="telephone"
+                    className="text-sm font-semibold text-gray-700"
+                  >
                     Téléphone *
                   </Label>
                   <Input
                     id="telephone"
                     type="tel"
                     value={formData.telephone}
-                    onChange={(e) => setFormData({ ...formData, telephone: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, telephone: e.target.value })
+                    }
                     placeholder="6xx xx xx xx ou +224 6xx xx xx xx"
                     className="h-11 border-2 border-gray-200 focus:border-[#ff8d13] focus:ring-4 focus:ring-violet-600/10 transition-all rounded-xl"
                     required
@@ -507,14 +611,19 @@ export default function EditEmployeePage() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="email" className="text-sm font-semibold text-gray-700">
+                  <Label
+                    htmlFor="email"
+                    className="text-sm font-semibold text-gray-700"
+                  >
                     Email (facultatif)
                   </Label>
                   <Input
                     id="email"
                     type="email"
                     value={formData.email}
-                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, email: e.target.value })
+                    }
                     placeholder="exemple@email.com"
                     className="h-11 border-2 border-gray-200 focus:border-[#ff8d13] focus:ring-4 focus:ring-violet-600/10 transition-all rounded-xl"
                   />
@@ -526,7 +635,9 @@ export default function EditEmployeePage() {
           {/* Employment Information */}
           <Card className="shadow-xl border-0 bg-white">
             <CardHeader className="bg-gradient-to-r from-orange-50 to-orange-50 border-b border-[#fff5ed]">
-              <CardTitle className="text-xl font-bold text-gray-900">Informations d'Emploi</CardTitle>
+              <CardTitle className="text-xl font-bold text-gray-900">
+                Informations d'Emploi
+              </CardTitle>
               <CardDescription className="text-gray-600">
                 Détails du contrat et du type d'employé
               </CardDescription>
@@ -534,105 +645,365 @@ export default function EditEmployeePage() {
             <CardContent className="p-6 space-y-5">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 <div className="space-y-2">
-                  <Label htmlFor="typeEmploye" className="text-sm font-semibold text-gray-700">
+                  <Label
+                    htmlFor="typeEmploye"
+                    className="text-sm font-semibold text-gray-700"
+                  >
                     Type d'Employé *
                   </Label>
                   <Select
                     value={formData.typeEmploye}
-                    onValueChange={(value) => setFormData({ ...formData, typeEmploye: value, sousType: "" })}
+                    onValueChange={(value) =>
+                      setFormData({
+                        ...formData,
+                        typeEmploye: value,
+                        sousType: "",
+                      })
+                    }
                   >
                     <SelectTrigger className="h-11 w-full border-2 border-gray-200 focus:border-[#ff8d13] rounded-xl bg-white text-gray-900 font-medium">
                       <SelectValue placeholder="Sélectionner un type" />
                     </SelectTrigger>
                     <SelectContent className="bg-white border-2 border-gray-200 shadow-2xl z-50">
-                      <SelectItem value="PERSONNEL_DSD" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">Personnel DSD Guinée</SelectItem>
-                      <SelectItem value="DNTT" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">DNTT</SelectItem>
-                      <SelectItem value="STAGIAIRE_DSD" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">Stagiaire DSD Guinée</SelectItem>
-                      <SelectItem value="BANQUE" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">Banque</SelectItem>
-                      <SelectItem value="EMBOUTISSEUR" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">Emboutisseur</SelectItem>
-                      <SelectItem value="DNTT_STAGIAIRE" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">DNTT Stagiaire</SelectItem>
-                      <SelectItem value="DEMARCHEUR" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">Collectif des Démarcheurs</SelectItem>
+                      <SelectItem
+                        value="PERSONNEL_DSD"
+                        className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer"
+                      >
+                        Personnel DSD Guinée
+                      </SelectItem>
+                      <SelectItem
+                        value="DNTT"
+                        className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer"
+                      >
+                        DNTT
+                      </SelectItem>
+                      <SelectItem
+                        value="STAGIAIRE_DSD"
+                        className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer"
+                      >
+                        Stagiaire DSD Guinée
+                      </SelectItem>
+                      <SelectItem
+                        value="BANQUE"
+                        className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer"
+                      >
+                        Banque
+                      </SelectItem>
+                      <SelectItem
+                        value="EMBOUTISSEUR"
+                        className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer"
+                      >
+                        Emboutisseur
+                      </SelectItem>
+                      <SelectItem
+                        value="DNTT_STAGIAIRE"
+                        className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer"
+                      >
+                        DNTT Stagiaire
+                      </SelectItem>
+                      <SelectItem
+                        value="DEMARCHEUR"
+                        className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer"
+                      >
+                        Collectif des Démarcheurs
+                      </SelectItem>
+                      <SelectItem
+                        value="ASSURANCE"
+                        className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer"
+                      >
+                        Assurance
+                      </SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="status" className="text-sm font-semibold text-gray-700">
+                  <Label
+                    htmlFor="status"
+                    className="text-sm font-semibold text-gray-700"
+                  >
                     Statut *
                   </Label>
                   <Select
                     value={formData.status}
-                    onValueChange={(value) => setFormData({ ...formData, status: value })}
+                    onValueChange={(value) =>
+                      setFormData({ ...formData, status: value })
+                    }
                   >
                     <SelectTrigger className="h-11 w-full border-2 border-gray-200 focus:border-[#ff8d13] rounded-xl bg-white text-gray-900 font-medium">
                       <SelectValue placeholder="Sélectionner un statut" />
                     </SelectTrigger>
                     <SelectContent className="bg-white border-2 border-gray-200 shadow-2xl z-50">
-                      <SelectItem value="ACTIF" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">Actif</SelectItem>
-                      <SelectItem value="SUSPENDU" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">Suspendu</SelectItem>
-                      <SelectItem value="TERMINE" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">Terminé</SelectItem>
+                      <SelectItem
+                        value="ACTIF"
+                        className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer"
+                      >
+                        Actif
+                      </SelectItem>
+                      <SelectItem
+                        value="SUSPENDU"
+                        className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer"
+                      >
+                        Suspendu
+                      </SelectItem>
+                      <SelectItem
+                        value="TERMINE"
+                        className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer"
+                      >
+                        Terminé
+                      </SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
               </div>
 
               {/* Sous-sélection pour les Banques */}
-              {formData.typeEmploye === 'BANQUE' && (
+              {formData.typeEmploye === "BANQUE" && (
                 <div className="space-y-2">
-                  <Label htmlFor="sousType" className="text-sm font-semibold text-gray-700">
+                  <Label
+                    htmlFor="sousType"
+                    className="text-sm font-semibold text-gray-700"
+                  >
                     Type de Banque *
                   </Label>
                   <Select
                     value={formData.sousType}
-                    onValueChange={(value) => setFormData({ ...formData, sousType: value })}
+                    onValueChange={(value) =>
+                      setFormData({ ...formData, sousType: value })
+                    }
                   >
                     <SelectTrigger className="h-11 w-full border-2 border-gray-200 focus:border-[#ff8d13] rounded-xl bg-white text-gray-900 font-medium">
                       <SelectValue placeholder="Sélectionner une banque" />
                     </SelectTrigger>
                     <SelectContent className="bg-white border-2 border-gray-200 shadow-2xl z-50">
-                      <SelectItem value="TTLB" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">TTLB</SelectItem>
-                      <SelectItem value="GLOBAL" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">GLOBAL</SelectItem>
-                      <SelectItem value="CRDIGITAL" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">CRDIGITAL</SelectItem>
+                      <SelectItem
+                        value="TTLB"
+                        className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer"
+                      >
+                        TTLB
+                      </SelectItem>
+                      <SelectItem
+                        value="GLOBAL"
+                        className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer"
+                      >
+                        GLOBAL
+                      </SelectItem>
+                      <SelectItem
+                        value="CRDIGITAL"
+                        className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer"
+                      >
+                        CRDIGITAL
+                      </SelectItem>
+                      <SelectItem
+                        value="SACOF"
+                        className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer"
+                      >
+                        SACOF
+                      </SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
               )}
 
               {/* Sous-sélection pour les Emboutisseurs */}
-              {formData.typeEmploye === 'EMBOUTISSEUR' && (
+              {formData.typeEmploye === "EMBOUTISSEUR" && (
                 <div className="space-y-2">
-                  <Label htmlFor="sousType" className="text-sm font-semibold text-gray-700">
+                  <Label
+                    htmlFor="sousType"
+                    className="text-sm font-semibold text-gray-700"
+                  >
                     Nom de l&apos;Emboutisseur *
                   </Label>
                   <Select
                     value={formData.sousType}
-                    onValueChange={(value) => setFormData({ ...formData, sousType: value })}
+                    onValueChange={(value) =>
+                      setFormData({ ...formData, sousType: value })
+                    }
                   >
                     <SelectTrigger className="h-11 w-full border-2 border-gray-200 focus:border-[#ff8d13] rounded-xl bg-white text-gray-900 font-medium">
                       <SelectValue placeholder="Sélectionner un emboutisseur" />
                     </SelectTrigger>
                     <SelectContent className="bg-white border-2 border-gray-200 shadow-2xl z-50 max-h-[300px]">
-                      <SelectItem value="SUPER_PLAQUE" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">SUPER PLAQUE</SelectItem>
-                      <SelectItem value="EPIG_SARL" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">EPIG SARL</SelectItem>
-                      <SelectItem value="BARRY_ET_FILS" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">BARRY ET FILS</SelectItem>
-                      <SelectItem value="MK_GUINEE_PLAQUE" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">M.K GUINEE PLAQUE</SelectItem>
-                      <SelectItem value="ISB_PLA" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">ISB PLA</SelectItem>
-                      <SelectItem value="AKD" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">A.K.D</SelectItem>
-                      <SelectItem value="TRANSIT_224" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">TRANSIT 224</SelectItem>
-                      <SelectItem value="S" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">S</SelectItem>
-                      <SelectItem value="GALAXIE_GUINEE" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">GALAXIE GUINEE</SelectItem>
-                      <SelectItem value="KAECK_CONTEQUE" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">K.AECK CONTEQUE</SelectItem>
-                      <SelectItem value="BOLIBANA_SARLU" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">BOLIBANA SARLU</SelectItem>
-                      <SelectItem value="BILHAQ_SIGNALISATION" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">BILHAQ SIGNALISATION</SelectItem>
-                      <SelectItem value="FOURA_ET_FILS" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">FOURA ET FILS</SelectItem>
-                      <SelectItem value="PROFUCO_PLAQUE" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">PROFUCO PLAQUE</SelectItem>
-                      <SelectItem value="AZ_PROJET" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">AZ PROJET</SelectItem>
-                      <SelectItem value="SOMBORI_BONFI" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">SOMBORI BONFI</SelectItem>
-                      <SelectItem value="SOGBE_GENERALE_SARL" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">SOGBE GENERALE SARL</SelectItem>
-                      <SelectItem value="AKIM" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">AKIM</SelectItem>
-                      <SelectItem value="PLAQUE_DE_GUINEE" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">Plaque de Guinée</SelectItem>
-                      <SelectItem value="GOLFE_DE_GUINEE" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">Golfe de Guinée</SelectItem>
-                      <SelectItem value="BISSIKRI_PLAQUE" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">Bissikri Plaque</SelectItem>
+                      <SelectItem
+                        value="SUPER_PLAQUE"
+                        className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer"
+                      >
+                        SUPER PLAQUE
+                      </SelectItem>
+                      <SelectItem
+                        value="EPIG_SARL"
+                        className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer"
+                      >
+                        EPIG SARL
+                      </SelectItem>
+                      <SelectItem
+                        value="BARRY_ET_FILS"
+                        className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer"
+                      >
+                        BARRY ET FILS
+                      </SelectItem>
+                      <SelectItem
+                        value="MK_GUINEE_PLAQUE"
+                        className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer"
+                      >
+                        M.K GUINEE PLAQUE
+                      </SelectItem>
+                      <SelectItem
+                        value="ISB_PLA"
+                        className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer"
+                      >
+                        ISB PLA
+                      </SelectItem>
+                      <SelectItem
+                        value="AKD"
+                        className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer"
+                      >
+                        A.K.D
+                      </SelectItem>
+                      <SelectItem
+                        value="TRANSIT_224"
+                        className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer"
+                      >
+                        TRANSIT 224
+                      </SelectItem>
+                      <SelectItem
+                        value="S"
+                        className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer"
+                      >
+                        S
+                      </SelectItem>
+                      <SelectItem
+                        value="GALAXIE_GUINEE"
+                        className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer"
+                      >
+                        GALAXIE GUINEE
+                      </SelectItem>
+                      <SelectItem
+                        value="KAECK_CONTEQUE"
+                        className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer"
+                      >
+                        K.AECK CONTEQUE
+                      </SelectItem>
+                      <SelectItem
+                        value="BOLIBANA_SARLU"
+                        className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer"
+                      >
+                        BOLIBANA SARLU
+                      </SelectItem>
+                      <SelectItem
+                        value="BILHAQ_SIGNALISATION"
+                        className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer"
+                      >
+                        BILHAQ SIGNALISATION
+                      </SelectItem>
+                      <SelectItem
+                        value="FOURA_ET_FILS"
+                        className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer"
+                      >
+                        FOURA ET FILS
+                      </SelectItem>
+                      <SelectItem
+                        value="PROFUCO_PLAQUE"
+                        className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer"
+                      >
+                        PROFUCO PLAQUE
+                      </SelectItem>
+                      <SelectItem
+                        value="AZ_PROJET"
+                        className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer"
+                      >
+                        AZ PROJET
+                      </SelectItem>
+                      <SelectItem
+                        value="SOMBORI_BONFI"
+                        className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer"
+                      >
+                        SOMBORI BONFI
+                      </SelectItem>
+                      <SelectItem
+                        value="SOGBE_GENERALE_SARL"
+                        className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer"
+                      >
+                        SOGBE GENERALE SARL
+                      </SelectItem>
+                      <SelectItem
+                        value="AKIM"
+                        className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer"
+                      >
+                        AKIM
+                      </SelectItem>
+                      <SelectItem
+                        value="PLAQUE_DE_GUINEE"
+                        className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer"
+                      >
+                        Plaque de Guinée
+                      </SelectItem>
+                      <SelectItem
+                        value="GOLFE_DE_GUINEE"
+                        className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer"
+                      >
+                        Golfe de Guinée
+                      </SelectItem>
+                      <SelectItem
+                        value="BISSIKRI_PLAQUE"
+                        className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer"
+                      >
+                        Bissikri Plaque
+                      </SelectItem>
+                      <SelectItem
+                        value="SECK_CONTE"
+                        className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer"
+                      >
+                        SECK CONTE
+                      </SelectItem>
+                      <SelectItem
+                        value="COPLAGUI"
+                        className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer"
+                      >
+                        COPLAGUI
+                      </SelectItem>
+                      <SelectItem
+                        value="ABP_GUINEE"
+                        className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer"
+                      >
+                        ABP GUINEE
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+
+              {/* Sous-sélection pour les Assurances */}
+              {formData.typeEmploye === "ASSURANCE" && (
+                <div className="space-y-2">
+                  <Label
+                    htmlFor="sousType"
+                    className="text-sm font-semibold text-gray-700"
+                  >
+                    Nom de l&apos;Assurance *
+                  </Label>
+                  <Select
+                    value={formData.sousType}
+                    onValueChange={(value) =>
+                      setFormData({ ...formData, sousType: value })
+                    }
+                  >
+                    <SelectTrigger className="h-11 w-full border-2 border-gray-200 focus:border-[#ff8d13] rounded-xl bg-white text-gray-900 font-medium">
+                      <SelectValue placeholder="Sélectionner une assurance" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-white border-2 border-gray-200 shadow-2xl z-50">
+                      <SelectItem
+                        value="VISTA_ASSURANCE"
+                        className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer"
+                      >
+                        VISTA ASSURANCE
+                      </SelectItem>
+                      <SelectItem
+                        value="COSMOPOLITE"
+                        className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer"
+                      >
+                        COSMOPOLITE
+                      </SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -642,31 +1013,48 @@ export default function EditEmployeePage() {
               {formData.status === "SUSPENDU" && (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5 p-4 bg-[#fff5ed] rounded-xl border-2 border-[#fed7aa]">
                   <div className="space-y-2 md:col-span-2">
-                    <Label htmlFor="motifSuspension" className="text-sm font-semibold text-gray-700">
+                    <Label
+                      htmlFor="motifSuspension"
+                      className="text-sm font-semibold text-gray-700"
+                    >
                       Motif de la suspension
                     </Label>
                     <Input
                       id="motifSuspension"
                       value={formData.motifSuspension}
-                      onChange={(e) => setFormData({ ...formData, motifSuspension: e.target.value })}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          motifSuspension: e.target.value,
+                        })
+                      }
                       placeholder="Ex: Absence injustifiée, retard répétitif..."
                       className="h-11 border-2 border-orange-300 focus:border-[#ff8d13] focus:ring-4 focus:ring-[#ff8d13]/10 transition-all rounded-xl"
                     />
                   </div>
                   <div className="space-y-2 md:col-span-2">
-                    <Label htmlFor="dateFinSuspension" className="text-sm font-semibold text-gray-700">
+                    <Label
+                      htmlFor="dateFinSuspension"
+                      className="text-sm font-semibold text-gray-700"
+                    >
                       Date de fin de suspension
                     </Label>
                     <Input
                       id="dateFinSuspension"
                       type="date"
                       value={formData.dateFinSuspension}
-                      onChange={(e) => setFormData({ ...formData, dateFinSuspension: e.target.value })}
-                      min={new Date().toISOString().split('T')[0]}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          dateFinSuspension: e.target.value,
+                        })
+                      }
+                      min={new Date().toISOString().split("T")[0]}
                       className="h-11 border-2 border-orange-300 focus:border-[#ff8d13] focus:ring-4 focus:ring-[#ff8d13]/10 transition-all rounded-xl"
                     />
                     <p className="text-xs text-orange-700 mt-1">
-                      Indiquez jusqu&apos;à quelle date l&apos;employé sera suspendu
+                      Indiquez jusqu&apos;à quelle date l&apos;employé sera
+                      suspendu
                     </p>
                   </div>
                 </div>
@@ -674,13 +1062,18 @@ export default function EditEmployeePage() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 <div className="space-y-2">
-                  <Label htmlFor="fonction" className="text-sm font-semibold text-gray-700">
+                  <Label
+                    htmlFor="fonction"
+                    className="text-sm font-semibold text-gray-700"
+                  >
                     Fonction *
                   </Label>
                   <Input
                     id="fonction"
                     value={formData.fonction}
-                    onChange={(e) => setFormData({ ...formData, fonction: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, fonction: e.target.value })
+                    }
                     placeholder="Ex: Développeur, Comptable, etc."
                     className="h-11 border-2 border-gray-200 focus:border-[#ff8d13] focus:ring-4 focus:ring-[#ff8d13]/10 transition-all rounded-xl"
                     required
@@ -688,51 +1081,22 @@ export default function EditEmployeePage() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="profil" className="text-sm font-semibold text-gray-700">
-                    Profil
-                  </Label>
-                  <Input
-                    id="profil"
-                    value={formData.profil}
-                    onChange={(e) => setFormData({ ...formData, profil: e.target.value })}
-                    placeholder="Ex: Comptable, Informaticien, etc."
-                    className="h-11 border-2 border-gray-200 focus:border-[#ff8d13] focus:ring-4 focus:ring-[#ff8d13]/10 transition-all rounded-xl"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                <div className="space-y-2">
-                  <Label htmlFor="diplome" className="text-sm font-semibold text-gray-700">
-                    Diplôme
-                  </Label>
-                  <Select
-                    value={formData.diplome}
-                    onValueChange={(value) => setFormData({ ...formData, diplome: value })}
+                  <Label
+                    htmlFor="matricule"
+                    className="text-sm font-semibold text-gray-700"
                   >
-                    <SelectTrigger className="h-11 w-full border-2 border-gray-200 focus:border-[#ff8d13] rounded-xl bg-white text-gray-900 font-medium">
-                      <SelectValue placeholder="Sélectionner un diplôme" />
-                    </SelectTrigger>
-                    <SelectContent className="bg-white border-2 border-gray-200 shadow-2xl z-50">
-                      <SelectItem value="BAC" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">BAC</SelectItem>
-                      <SelectItem value="BTS" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">BTS</SelectItem>
-                      <SelectItem value="Licence 1" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">Licence 1</SelectItem>
-                      <SelectItem value="Licence 2" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">Licence 2</SelectItem>
-                      <SelectItem value="Licence 3" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">Licence 3</SelectItem>
-                      <SelectItem value="Master 1" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">Master 1</SelectItem>
-                      <SelectItem value="Master 2" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">Master 2</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="matricule" className="text-sm font-semibold text-gray-700">
                     Matricule *
                   </Label>
                   <div className="flex items-center gap-2">
-                    {getMatriculePrefix(formData.typeEmploye, formData.sousType) && (
+                    {getMatriculePrefix(
+                      formData.typeEmploye,
+                      formData.sousType,
+                    ) && (
                       <div className="h-11 px-4 border-2 border-gray-200 bg-gray-100 rounded-xl flex items-center font-semibold text-gray-700">
-                        {getMatriculePrefix(formData.typeEmploye, formData.sousType)}
+                        {getMatriculePrefix(
+                          formData.typeEmploye,
+                          formData.sousType,
+                        )}
                       </div>
                     )}
                     <Input
@@ -740,7 +1104,7 @@ export default function EditEmployeePage() {
                       type="text"
                       value={formData.matricule}
                       onChange={(e) => {
-                        const value = e.target.value.replace(/\D/g, '');
+                        const value = e.target.value.replace(/\D/g, "");
                         setFormData({ ...formData, matricule: value });
                       }}
                       placeholder="001, 002, 254..."
@@ -749,9 +1113,17 @@ export default function EditEmployeePage() {
                       maxLength={10}
                     />
                   </div>
-                  {getMatriculePrefix(formData.typeEmploye, formData.sousType) ? (
+                  {getMatriculePrefix(
+                    formData.typeEmploye,
+                    formData.sousType,
+                  ) ? (
                     <p className="text-xs text-gray-500 mt-1">
-                      Le matricule sera: {getMatriculePrefix(formData.typeEmploye, formData.sousType)}{formData.matricule || "___"}
+                      Le matricule sera:{" "}
+                      {getMatriculePrefix(
+                        formData.typeEmploye,
+                        formData.sousType,
+                      )}
+                      {formData.matricule || "___"}
                     </p>
                   ) : (
                     <p className="text-xs text-gray-500 mt-1">
@@ -761,42 +1133,79 @@ export default function EditEmployeePage() {
                 </div>
               </div>
 
+              {/* Type de contrat - uniquement pour PERSONNEL_DSD et STAGIAIRE_DSD */}
+              {(formData.typeEmploye === "PERSONNEL_DSD" ||
+                formData.typeEmploye === "STAGIAIRE_DSD") && (
+                  <div className="space-y-2">
+                    <Label
+                      htmlFor="typeContrat"
+                      className="text-sm font-semibold text-gray-700"
+                    >
+                      Type de Contrat *
+                    </Label>
+                    <Select
+                      value={formData.typeContrat}
+                      onValueChange={(value: "CDI" | "CDD" | "STAGE") => {
+                        setFormData({
+                          ...formData,
+                          typeContrat: value,
+                          dateFinContrat:
+                            value === "CDI" ? "" : formData.dateFinContrat,
+                        });
+                      }}
+                    >
+                      <SelectTrigger className="h-11 w-full border-2 border-gray-200 focus:border-[#ff8d13] rounded-xl bg-white text-gray-900 font-medium">
+                        <SelectValue placeholder="Sélectionner le type" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-white border-2 border-gray-200 shadow-2xl z-50">
+                        <SelectItem
+                          value="CDI"
+                          className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer"
+                        >
+                          CDI - Contrat à Durée Indéterminée
+                        </SelectItem>
+                        <SelectItem
+                          value="CDD"
+                          className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer"
+                        >
+                          CDD - Contrat à Durée Déterminée
+                        </SelectItem>
+                        <SelectItem
+                          value="STAGE"
+                          className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer"
+                        >
+                          STAGE - Convention de Stage
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <p className="text-xs text-gray-500 mt-1">
+                      {formData.typeContrat === "CDI"
+                        ? "Pas de date de fin pour les CDI"
+                        : "Date de fin obligatoire"}
+                    </p>
+                  </div>
+                )}
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 <div className="space-y-2">
-                  <Label htmlFor="typeContrat" className="text-sm font-semibold text-gray-700">
-                    Type de Contrat *
-                  </Label>
-                  <Select
-                    value={formData.typeContrat}
-                    onValueChange={(value) => setFormData({ ...formData, typeContrat: value as "CDI" | "CDD" | "STAGE", dateFinContrat: value === 'CDI' ? '' : formData.dateFinContrat })}
+                  <Label
+                    htmlFor="dateEmbauche"
+                    className="text-sm font-semibold text-gray-700"
                   >
-                    <SelectTrigger className="h-11 w-full border-2 border-gray-200 focus:border-[#ff8d13] rounded-xl bg-white text-gray-900 font-medium">
-                      <SelectValue placeholder="Sélectionner un type de contrat" />
-                    </SelectTrigger>
-                    <SelectContent className="bg-white border-2 border-gray-200 shadow-2xl z-50">
-                      <SelectItem value="CDI" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">CDI - Contrat à Durée Indéterminée</SelectItem>
-                      <SelectItem value="CDD" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">CDD - Contrat à Durée Déterminée</SelectItem>
-                      <SelectItem value="STAGE" className="text-gray-900 hover:bg-[#fff5ed] cursor-pointer">STAGE - Stagiaire</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <p className="text-xs text-gray-500 mt-1">
-                    {formData.typeContrat === 'CDI' ? 'Pas de date de fin pour les CDI' : 'Date de fin obligatoire'}
-                  </p>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="dateEmbauche" className="text-sm font-semibold text-gray-700">
-                    Date d&apos;Embauche {formData.typeEmploye === 'PERSONNEL_DSD' && '*'}
+                    Date d&apos;Embauche{" "}
+                    {(formData.typeEmploye === "PERSONNEL_DSD" || formData.typeEmploye === "STAGIAIRE_DSD") && "*"}
                   </Label>
                   <Input
                     id="dateEmbauche"
                     type="date"
                     value={formData.dateEmbauche}
-                    onChange={(e) => setFormData({ ...formData, dateEmbauche: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, dateEmbauche: e.target.value })
+                    }
                     className="h-11 border-2 border-gray-200 focus:border-[#ff8d13] focus:ring-4 focus:ring-[#ff8d13]/10 transition-all rounded-xl"
-                    required={formData.typeEmploye === 'PERSONNEL_DSD'}
+                    required={formData.typeEmploye === "PERSONNEL_DSD" || formData.typeEmploye === "STAGIAIRE_DSD"}
                   />
-                  {formData.typeEmploye !== 'PERSONNEL_DSD' && (
+                  {formData.typeEmploye !== "PERSONNEL_DSD" && formData.typeEmploye !== "STAGIAIRE_DSD" && (
                     <p className="text-xs text-gray-500">
                       Facultatif pour ce type d&apos;employé
                     </p>
@@ -804,24 +1213,36 @@ export default function EditEmployeePage() {
                 </div>
               </div>
 
-              {formData.typeContrat !== 'CDI' && (
+              {(formData.typeEmploye === "PERSONNEL_DSD" || formData.typeEmploye === "STAGIAIRE_DSD") &&
+                formData.typeContrat !== "CDI" && (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                   <div className="space-y-2">
-                    <Label htmlFor="dateFinContrat" className="text-sm font-semibold text-gray-700">
+                    <Label
+                      htmlFor="dateFinContrat"
+                      className="text-sm font-semibold text-gray-700"
+                    >
                       Date de Fin de Contrat *
                     </Label>
                     <Input
                       id="dateFinContrat"
                       type="date"
                       value={formData.dateFinContrat}
-                      onChange={(e) => setFormData({ ...formData, dateFinContrat: e.target.value })}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          dateFinContrat: e.target.value,
+                        })
+                      }
                       min={formData.dateEmbauche || undefined}
                       className="h-11 border-2 border-gray-200 focus:border-[#ff8d13] focus:ring-4 focus:ring-violet-600/10 transition-all rounded-xl"
                       required
                     />
                     {formData.dateEmbauche && (
                       <p className="text-xs text-gray-500 mt-1">
-                        Doit être après le {new Date(formData.dateEmbauche).toLocaleDateString('fr-FR')}
+                        Doit être après le{" "}
+                        {new Date(formData.dateEmbauche).toLocaleDateString(
+                          "fr-FR",
+                        )}
                       </p>
                     )}
                   </div>
@@ -839,7 +1260,11 @@ export default function EditEmployeePage() {
                 </p>
                 <div className="flex gap-3">
                   <Link href="/dashboard/rh/employees">
-                    <Button type="button" variant="outline" className="border-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="border-2"
+                    >
                       Annuler
                     </Button>
                   </Link>

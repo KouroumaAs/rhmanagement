@@ -37,25 +37,13 @@ export default function PrintBadgePage() {
   // Auto-impression si demandée
   useEffect(() => {
     if (shouldAutoPrint && badge && qrCodeImage && !isLoading) {
-      // Marquer comme imprimé puis imprimer
-      const autoPrintBadge = async () => {
-        try {
-          await badgesService.print(badgeId);
-          console.log('✅ Badge marqué comme imprimé (auto-print)');
-
-          // Petit délai pour s'assurer que tout est bien rendu
-          setTimeout(() => {
-            window.print();
-          }, 500);
-        } catch (error) {
-          console.error('❌ Erreur auto-print:', error);
-        }
-      };
-
-      const timer = setTimeout(autoPrintBadge, 1000);
+      // Petit délai pour s'assurer que tout est bien rendu
+      const timer = setTimeout(() => {
+        window.print();
+      }, 1000);
       return () => clearTimeout(timer);
     }
-  }, [shouldAutoPrint, badge, qrCodeImage, isLoading, badgeId]);
+  }, [shouldAutoPrint, badge, qrCodeImage, isLoading]);
 
   const fetchBadgeData = async () => {
     try {
@@ -79,18 +67,8 @@ export default function PrintBadgePage() {
     }
   };
 
-  const handlePrint = async () => {
-    try {
-      // Marquer le badge comme imprimé dans la base de données
-      await badgesService.print(badgeId);
-      console.log('✅ Badge marqué comme imprimé');
-
-      // Ouvrir la fenêtre d'impression
-      window.print();
-    } catch (error) {
-      console.error('❌ Erreur lors de l\'impression:', error);
-      alert('Erreur lors de l\'impression du badge. Veuillez réessayer.');
-    }
+  const handlePrint = () => {
+    window.print();
   };
 
   if (!mounted) {
@@ -312,80 +290,21 @@ export default function PrintBadgePage() {
                 backgroundColor: "#FFFFFF",
                 padding: "8px 0"
               }}>
-                {employee?.type === "PERSONNEL_DSD" && (
-                  <p style={{
-                    fontSize: "42px",
-                    fontWeight: "400",
-                    color: "#ff8d13",
-                    margin: 0,
-                    fontStyle: "italic"
-                  }}>Personnel DSD Guinée</p>
-                )}
-                {employee?.type === "DNTT" && (
-                  <p style={{
-                    fontSize: "42px",
-                    fontWeight: "400",
-                    color: "#ff8d13",
-                    margin: 0,
-                    fontStyle: "italic"
-                  }}>DNTT</p>
-                )}
-                {employee?.type === "STAGIAIRE_DSD" && (
-                  <p style={{
-                    fontSize: "42px",
-                    fontWeight: "400",
-                    color: "#ff8d13",
-                    margin: 0,
-                    fontStyle: "italic"
-                  }}>Stagiaire DSD Guinée</p>
-                )}
-                {employee?.type === "BANQUE" && (
-                  <p style={{
-                    fontSize: "42px",
-                    fontWeight: "400",
-                    color: "#ff8d13",
-                    margin: 0,
-                    fontStyle: "italic"
-                  }}>Banque {employee?.sousType || ''}</p>
-                )}
-                {employee?.type === "EMBOUTISSEUR" && (
-                  <div style={{ lineHeight: "1.2" }}>
-                    <p style={{
-                      fontSize: "42px",
-                      fontWeight: "400",
-                      color: "#ff8d13",
-                      margin: 0,
-                      fontStyle: "italic"
-                    }}>Emboutisseur</p>
-                    {employee?.sousType && (
-                      <p style={{
-                        fontSize: "36px",
-                        fontWeight: "700",
-                        color: "#ff8d13",
-                        margin: 0,
-                        fontStyle: "italic"
-                      }}>{employee.sousType}</p>
-                    )}
-                  </div>
-                )}
-                {employee?.type === "DNTT_STAGIAIRE" && (
-                  <p style={{
-                    fontSize: "42px",
-                    fontWeight: "400",
-                    color: "#ff8d13",
-                    margin: 0,
-                    fontStyle: "italic"
-                  }}>DNTT Stagiaire</p>
-                )}
-                {employee?.type === "DEMARCHEUR" && (
-                  <p style={{
-                    fontSize: "42px",
-                    fontWeight: "400",
-                    color: "#ff8d13",
-                    margin: 0,
-                    fontStyle: "italic"
-                  }}>Collectif des démarcheurs</p>
-                )}
+                <p style={{
+                  fontSize: "42px",
+                  fontWeight: "400",
+                  color: "#ff8d13",
+                  margin: 0,
+                  fontStyle: "italic"
+                }}>
+                  {employee?.type === "PERSONNEL_DSD" && "Personnel DSD Guinée"}
+                  {employee?.type === "DNTT" && "DNTT"}
+                  {employee?.type === "STAGIAIRE_DSD" && "Stagiaire DSD Guinée"}
+                  {employee?.type === "BANQUE" && "Banque"}
+                  {employee?.type === "EMBOUTISSEUR" && "Emboutisseur"}
+                  {employee?.type === "DNTT_STAGIAIRE" && "DNTT Stagiaire"}
+                  {employee?.type === "DEMARCHEUR" && "Collectif des démarcheurs"}
+                </p>
               </div>
 
               {/*

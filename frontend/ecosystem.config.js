@@ -1,18 +1,24 @@
 module.exports = {
   apps: [
     {
-      name: 'rh-frontend',
+
       script: '.next/standalone/server.js',
       cwd: '/var/www/rhmanagement/frontend',
       instances: 1,
       exec_mode: 'fork',
       env: {
         NODE_ENV: 'production',
+
         PORT: 3001
       },
       env_production: {
         NODE_ENV: 'production',
         PORT: 3001
+        PORT: 3007,
+      },
+      env_production: {
+        NODE_ENV: 'production',
+        PORT: 3007
       },
       // Configuration pour les logs
       // log_file: '/var/log/pm2/rhmanagement-frontend.log',

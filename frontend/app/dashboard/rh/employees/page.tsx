@@ -414,6 +414,8 @@ export default function EmployeesPage() {
       MAISONS_PLAQUE: "Emboutisseur",
       DNTT_STAGIAIRES: "DNTT Stagiaires",
       DEMARCHEURS: "Démarcheurs",
+      ASSURANCE: "Assurance",
+      ASSURANCES: "Assurance",
     };
 
     const colors: Record<string, string> = {
@@ -424,6 +426,8 @@ export default function EmployeesPage() {
       MAISONS_PLAQUE: "bg-pink-600",
       DNTT_STAGIAIRES: "bg-teal-600",
       DEMARCHEURS: "bg-amber-600",
+      ASSURANCE: "bg-cyan-600",
+      ASSURANCES: "bg-cyan-600",
     };
 
     const label = typeLabels[type] || type;
@@ -599,6 +603,7 @@ export default function EmployeesPage() {
                       <SelectItem value="EMBOUTISSEUR">Emboutisseur</SelectItem>
                       <SelectItem value="DNTT_STAGIAIRE">DNTT Stagiaire</SelectItem>
                       <SelectItem value="DEMARCHEUR">Démarcheur</SelectItem>
+                      <SelectItem value="ASSURANCE">Assurance</SelectItem>
                     </SelectContent>                  </Select>
                 </div>
                 <div>
