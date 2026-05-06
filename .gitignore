@@ -46,3 +46,10 @@ backend/uploads/
 *.sln
 *.sw?
 nul
+/backend - Copie
+/frontend - Copie
+/frontend - Copie/
+/frontend/.next
+/backend/dist
+
+

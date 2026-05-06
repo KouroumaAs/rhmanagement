@@ -49,6 +49,15 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  async rewrites() {
+    const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://rhmanagement.dsdguinee.com/api';
+    return [
+      {
+        source: '/uploads/:path*',
+        destination: `${apiBaseUrl}/uploads/:path*`,
+      },
+    ];
+  },
 };
 
 export default nextConfig;

@@ -935,15 +935,13 @@ export default function ImpressionPage() {
                       <TableCell>
                         <div className="flex items-center justify-end gap-2">
                           {/* Bouton Imprimer/Réimprimer */}
-                          {request.status === "REIMPRESSION" || request.status === "EN_ATTENTE" ? (
-                            <Link href={`/dashboard/impression/badges/${request.id}/print`}>
-                              <Button
-                                size="sm"
-                                className="gap-2 bg-gradient-to-r from-[#ff8d13] to-[#ff8d13] hover:from-[#e67d0f] hover:to-[#ff8d13] shadow-md"
-                              >
-                                <Printer className="w-4 h-4" />
-                                {request.status === "REIMPRESSION" ? "Réimprimer" : "Imprimer"}
-                              </Button>
+                          {request.status.toLowerCase() === "reimpression" || request.status.toLowerCase() === "en_attente" ? (
+                            <Link href={`/dashboard/impression/badges/${request.id}/print`} 
+                               type="button"  
+                              className="gap-2 bg-gradient-to-r from-[#ff8d13] to-[#ff8d13] hover:from-[#e67d0f] hover:to-[#ff8d13] shadow-md"
+                            >
+                            <Printer className="w-4 h-4" />
+                              {request.status.toLowerCase() === "reimpression" ? "Réimprimer" : "Imprimer"}
                             </Link>
                           ) : (
                             <Button
@@ -960,10 +958,10 @@ export default function ImpressionPage() {
                           <Button
                             size="sm"
                             variant="outline"
-                            className={`gap-2 ${request.status === "IMPRIME" ? "border-gray-200 text-gray-400 cursor-not-allowed" : "border-green-200 hover:bg-green-50 text-green-600"}`}
+                            className={`gap-2 ${request.status.toLowerCase() === "imprime" ? "border-gray-200 text-gray-400 cursor-not-allowed" : "border-green-200 hover:bg-green-50 text-green-600"}`}
                             onClick={() => downloadQRCode(request)}
-                            disabled={request.status === "IMPRIME"}
-                            title={request.status === "IMPRIME" ? "Téléchargement désactivé - Badge déjà imprimé" : "Télécharger le QR code"}
+                            disabled={request.status.toLowerCase() === "imprime"}
+                            title={request.status.toLowerCase() === "imprime" ? "Téléchargement désactivé - Badge déjà imprimé" : "Télécharger le QR code"}
                           >
                             <Download className="w-4 h-4" />
                             QR Code
@@ -972,10 +970,10 @@ export default function ImpressionPage() {
                             <Button
                               size="sm"
                               variant="outline"
-                              className={`gap-2 ${request.status === "IMPRIME" ? "border-gray-200 text-gray-400 cursor-not-allowed" : "border-blue-200 hover:bg-blue-50 text-blue-600"}`}
+                              className={`gap-2 ${request.status.toLowerCase() === "imprime" ? "border-gray-200 text-gray-400 cursor-not-allowed" : "border-blue-200 hover:bg-blue-50 text-blue-600"}`}
                               onClick={() => downloadPhoto(request)}
-                              disabled={request.status === "IMPRIME"}
-                              title={request.status === "IMPRIME" ? "Téléchargement désactivé - Badge déjà imprimé" : "Télécharger la photo"}
+                              disabled={request.status.toLowerCase() === "imprime"}
+                              title={request.status.toLowerCase() === "imprime" ? "Téléchargement désactivé - Badge déjà imprimé" : "Télécharger la photo"}
                             >
                               <Image className="w-4 h-4" />
                               Photo
